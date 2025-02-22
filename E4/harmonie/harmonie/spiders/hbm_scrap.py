@@ -15,11 +15,19 @@ class HbmScrapSpider(scrapy.Spider):
                 partition_url = partition.xpath("./@href").get()
                 yield response.follow(partition, callback=self.parse_partition)
             
+        nombre_pages = response.xpath("//ul[@class='pager-list reset']/li//a/text()").getall()[-1]
+        nombre_pages = '2'
+
+        next_page = f'https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/?page={nombre_pages}'
+
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
+
 
     def parse_partition(self, response):
         item = HarmonieItem()
         item["titre"]           = response.xpath("//h1/text()").get()
-        item["sous_titre"]      = response.xpath("//h2/text()").get()
+        item["sous_titre"]      = response.xpath("//td[contains(text(), 'Subtitle')]/following-sibling::td/text()").get()
         item["compositeur"]     = response.xpath("//td[contains(text(), 'Compositeur')]/following-sibling::td/text()").getall()
         item["arrangeur"]       = response.xpath("//td[contains(text(), 'Arrangeur')]/following-sibling::td/text()").getall()
         item["edition"]         = response.xpath("//td[contains(text(), 'Édition musicale')]/following-sibling::td/text()").get()

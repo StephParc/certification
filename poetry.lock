@@ -765,6 +765,21 @@ w3lib = ">=1.17.0"
 "zope.interface" = ">=5.1.0"
 
 [[package]]
+name = "scrapy-splash"
+version = "0.11.1"
+description = "JavaScript support for Scrapy using Splash"
+optional = false
+python-versions = "*"
+files = [
+    {file = "scrapy_splash-0.11.1-py2.py3-none-any.whl", hash = "sha256:81d76bdc9033a2df6689e5738dbdb99027aaece4586b45a48ebd88736ec775df"},
+    {file = "scrapy_splash-0.11.1.tar.gz", hash = "sha256:c7d5c155c76392b922f3090d133409d1b060a4991b027f3b77cc93abc2096214"},
+]
+
+[package.dependencies]
+scrapy = ">=2.4"
+six = "*"
+
+[[package]]
 name = "service-identity"
 version = "24.2.0"
 description = "Service identity verification for pyOpenSSL & cryptography."
@@ -807,6 +822,17 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-
 enabler = ["pytest-enabler (>=2.2)"]
 test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.7.2)", "jaraco.test (>=5.5)", "packaging (>=24.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
 type = ["importlib_metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (==1.14.*)", "pytest-mypy"]
+
+[[package]]
+name = "six"
+version = "1.17.0"
+description = "Python 2 and 3 compatibility utilities"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+files = [
+    {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
+    {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
+]
 
 [[package]]
 name = "tldextract"
@@ -960,4 +986,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "e6a10cadd83cec625dbcd8c51480f470a42319053dfea65322bfecfb3eb282c2"
+content-hash = "1248194b7039aac65af105d8f7f9894c44eff6cae0dadff536af6d32fa9d007b"
