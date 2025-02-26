@@ -13,6 +13,7 @@ class HarmonieItem(scrapy.Item):
     sous_titre      = scrapy.Field()
     compositeur     = scrapy.Field()
     arrangeur       = scrapy.Field()
+    artiste         = scrapy.Field()
     edition         = scrapy.Field()
     instrumentation = scrapy.Field()
     niveau          = scrapy.Field()
