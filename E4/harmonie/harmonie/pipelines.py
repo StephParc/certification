@@ -28,7 +28,7 @@ class HarmoniePipeline:
         item = self.clean_collection(item)
         item = self.clean_ref_editeur(item)
         item = self.clean_duree(item)
-        # item = self.clean_description(item)
+        item = self.clean_description(item)
         item = self.clean_url(item)
         return item
 
@@ -178,6 +178,11 @@ class HarmoniePipeline:
 
     def clean_description(self, item):
         adapter= ItemAdapter(item)
+        description = adapter.get("description")
+        # Pour le cas où la description serait tronquée
+        if description:
+            description = re.findall(r'.*[.!?]', description)[0]
+        adapter["description"] = description
         return item
 
     def clean_url(self, item):
