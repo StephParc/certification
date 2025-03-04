@@ -5,23 +5,26 @@ from harmonie.items import HarmonieItem
 class HbmScrapSpider(scrapy.Spider):
     name = "hbm_scrap"
     allowed_domains = ["musicshopeurope.fr"]
-    start_urls = ["https://musicshopeurope.fr/partitions/band/orchestre-d-harmonie/?page=1"] 
+    start_urls = ["https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page=1501"] 
 
     def parse(self, response):
         partitions = response.xpath("//a[@class='product-title']")
+        # for partition in partitions:
+        #     if partition.xpath("./following-sibling::div[@class='product-attributes']/span[contains(text(), 'Set')]"):
+        #         partition_url = partition.xpath("./@href").get()
+        #         yield response.follow(partition, callback=self.parse_partition)
+
         for partition in partitions:
-            if partition.xpath("./following-sibling::div[@class='product-attributes']/span[contains(text(), 'Set')]"):
-                partition_url = partition.xpath("./@href").get()
-                yield response.follow(partition, callback=self.parse_partition)
-            
+            yield response.follow(partition, callback=self.parse_partition)
+
         nombre_pages = int(response.xpath("//ul[@class='pager-list reset']/li//a/text()").getall()[-1])
-        # nombre_pages = '2'
-        numero_page_actuelle = 1
+        # nombre_pages = 1500
+        numero_page_actuelle = 1501
         if re.findall(r'page=(\d+)', response.url)[0] and int(re.findall(r'page=(\d+)', response.url)[0]) < nombre_pages:
             numero_page_actuelle = int(re.findall(r'page=(\d+)', response.url)[0])
             numero_page_suivante = numero_page_actuelle + 1
         
-        next_page = f'https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/?page={numero_page_suivante}'
+        next_page = f'https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page={numero_page_suivante}'
 
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
