@@ -14,6 +14,7 @@ input_file2 = "musicshop0200"
 output_file = "100-200"
 output_file = f"{write_path}{output_file}.csv"
 
+
 path_csv1 = f"{read_path}{input_file1}.csv"
 path_csv2 = f"{read_path}{input_file2}.csv"
 
