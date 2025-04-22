@@ -9,7 +9,7 @@ erDiagram
         int auteur_id PK
         string nom
         string prenom
-        int ISNI
+        int INSI
     }
     partition{
         int partition_id PK
@@ -47,20 +47,20 @@ erDiagram
         string type_evenement
         string affiche
     }
-    Ass_auteur_partition {
+    ass_auteur_partition {
         int auteur_id PK, FK
         int partition_id PK, FK
         string role PK
     }
-    Ass_evenement_hbm {
+    ass_evenement_hbm {
         int evenement_id PK, FK
         int hbm_id PK, FK
     }
 
-    auteur ||--|{ Ass_auteur_partition : a_oeuvre_pour
-    Ass_auteur_partition }|--|| partition : a_oeuvre_pour
-    hbm ||--|{ Ass_evenement_hbm : a_ete_jouee_lors
-    Ass_evenement_hbm }|--|| evenement : a_ete_jouee_lors
+    auteur ||--|{ ass_auteur_partition : a_oeuvre_pour
+    ass_auteur_partition }|--|| partition : a_oeuvre_pour
+    hbm ||--|{ ass_evenement_hbm : a_ete_jouee_lors
+    ass_evenement_hbm }|--|| evenement : a_ete_jouee_lors
     partition ||--|| hbm : possede
 
 ``` 
