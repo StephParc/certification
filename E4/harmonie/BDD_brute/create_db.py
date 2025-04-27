@@ -4,7 +4,7 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
 import csv
-from crud import insert_event, insert_partition, insert_auteur, insert_asso_auteur_partition
+from crud import create_event, create_partition, create_auteur, create_asso_auteur_partition
 
 session = SessionLocal()
 # Exécution du script princpal models.py
@@ -25,7 +25,7 @@ def insert_event_to_db(file_path):
                 lieu = row.get('lieu')
                 type_evenement = row.get('type_event')
                 affiche = row.get('affiche')
-                insert_event(session, date_evenement, nom_evenement, lieu, type_evenement, affiche)    
+                create_event(session, date_evenement, nom_evenement, lieu, type_evenement, affiche)    
  
         # Commit des changements
         session.commit()
@@ -62,29 +62,34 @@ def insert_scrapy_to_db(file_path):
                 compositeur_list = row.get('compositeur', None).upper().split(",")
                 artiste_list = row.get('artiste', None).upper().split(",")
                 arrangeur_list = row.get('arrangeur', None).upper().split(",")
-                part_id = insert_partition(session, titre, sous_titre, edition, collection, instrumentation, niveau,
+                # partition = insert_partition(session, titre, sous_titre, edition, collection, instrumentation, niveau,
+                #                  genre, style, annee_sortie, ISMN, ref_editeur, duree, description, url)
+
+                part_id = create_partition(session, titre, sous_titre, edition, collection, instrumentation, niveau,
                                  genre, style, annee_sortie, ISMN, ref_editeur, duree, description, url).partition_id
 
                 # Boucle sur les compositeurs 
                 if compositeur_list and compositeur_list!=[]:                
                     for i in range(len(compositeur_list)):
                         if compositeur_list[i]!='':
-                            compositeur_id = insert_auteur(session, compositeur_list[i]).auteur_id
-                            insert_asso_auteur_partition(session, part_id, compositeur_id, 'compositeur')
+                            compositeur = create_auteur(session, compositeur_list[i])
+                            compositeur_id = create_auteur(session, compositeur_list[i]).auteur_id
+                            # partition.rel_auteur_partition.append(compositeur)
+                            create_asso_auteur_partition(session, part_id, compositeur_id, 'compositeur')
 
                 # Boucle sur les artistes 
                 if artiste_list and artiste_list!=[]:                
                     for i in range(len(artiste_list)):
                         if artiste_list[i]!='':
-                            artiste_id = insert_auteur(session, artiste_list[i]).auteur_id
-                            insert_asso_auteur_partition(session, part_id, artiste_id, 'artiste')
+                            artiste_id = create_auteur(session, artiste_list[i]).auteur_id
+                            create_asso_auteur_partition(session, part_id, artiste_id, 'artiste')
 
                 # Boucle sur les arrangeurs 
                 if arrangeur_list and arrangeur_list!=[]:                
                     for i in range(len(arrangeur_list)):
                         if arrangeur_list[i]!='':
-                            arrangeur_id = insert_auteur(session, arrangeur_list[i]).auteur_id
-                            insert_asso_auteur_partition(session, part_id, arrangeur_id, 'arrangeur')            
+                            arrangeur_id = create_auteur(session, arrangeur_list[i]).auteur_id
+                            create_asso_auteur_partition(session, part_id, arrangeur_id, 'arrangeur')            
 
         # Commit des changements
         session.commit()

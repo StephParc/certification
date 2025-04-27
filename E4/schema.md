@@ -28,10 +28,9 @@ erDiagram
         string duree
         string description
         url url
-        bool hbm
     }
-    hbm {
-        int hbm_id PK, FK
+    partition_hbm {
+        int partition_hbm_id PK, FK
         date distribution
         bool rendue
         int archive
@@ -54,13 +53,13 @@ erDiagram
     }
     ass_evenement_hbm {
         int evenement_id PK, FK
-        int hbm_id PK, FK
+        int partition_hbm_id PK, FK
     }
 
     auteur ||--|{ ass_auteur_partition : a_oeuvre_pour
     ass_auteur_partition }|--|| partition : a_oeuvre_pour
-    hbm ||--|{ ass_evenement_hbm : a_ete_jouee_lors
+    partition_hbm ||--|{ ass_evenement_hbm : a_ete_jouee_lors
     ass_evenement_hbm }|--|| evenement : a_ete_jouee_lors
-    partition ||--|| hbm : possede
+    partition ||--|| partition_hbm : possede
 
 ``` 

@@ -18,6 +18,16 @@ class Base(DeclarativeBase):
 
 metadata = MetaData()
 
+# AssAuteurPartition = Table('ass_auteur_partition', Base.metadata,
+#     Column('auteur_id', Integer,  ForeignKey('auteur.auteur_id'), primary_key=True),
+#     Column('partition_id', Integer, ForeignKey('partition.partition_id'), primary_key=True),
+#     Column('role', String, primary_key=True, nullable=False))
+
+# AssEvenementHbm = Table('ass_evenement_hbm', Base.metadata,
+#     Column('evenement_id', Integer, ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True),
+#     Column('partition_hbm_id', Integer, ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True))
+
+
 class Auteur(Base):
     __tablename__ = "auteur"
 
@@ -51,20 +61,21 @@ class Partition(Base):
     duree:          Mapped[str]     = mapped_column(String(), nullable=True)
     description:    Mapped[str]     = mapped_column(String(), nullable=True)
     url:            Mapped[str]     = mapped_column(String(), nullable=True)
-    hbm:            Mapped[bool]    = mapped_column(Boolean(), nullable=True)     
+    # hbm:            Mapped[bool]    = mapped_column(Boolean(), nullable=True)     
 
     rel_auteur_partition: Mapped[List['Auteur']] = relationship(
         'Auteur', 
         secondary='ass_auteur_partition', 
         back_populates='rel_partition_auteur',
         lazy='joined')
-    rel_hbm_partition: Mapped[Optional['HBM']]= relationship(
-        'HBM', 
+    rel_hbm_partition: Mapped[Optional['PartitionHBM']]= relationship(
+        'PartitionHBM', 
         back_populates='rel_partition_hbm', 
         uselist=False
         # , cascade='all, delete-orphan'
         )
-
+    
+# Version1
 class AssAuteurPartition(Base):
     __tablename__ = 'ass_auteur_partition'
     
@@ -72,10 +83,10 @@ class AssAuteurPartition(Base):
     partition_id: Mapped[int] = mapped_column(ForeignKey('partition.partition_id'), primary_key=True)
     role: Mapped[str] = mapped_column(String(), primary_key=True, nullable=False)
 
-class HBM(Base):
-    __tablename__ = "hbm"
+class PartitionHBM(Base):
+    __tablename__ = "partition_hbm"
 
-    hbm_id:         Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
+    partition_hbm_id:Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
     partition_id:   Mapped[int]     = mapped_column(ForeignKey('partition.partition_id'), nullable=False, unique=True)
     distribution:   Mapped[date]    = mapped_column(Date(), nullable=True)
     rendue:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
@@ -104,17 +115,18 @@ class Evenement(Base):
     type_evenement: Mapped[str]     = mapped_column(String(), nullable=True)
     affiche:        Mapped[str]     = mapped_column(String(), nullable=True)
 
-    rel_hbm_evenement: Mapped[List['HBM']] = relationship(
-        'HBM', 
+    rel_hbm_evenement: Mapped[List['PartitionHBM']] = relationship(
+        'PartitionHBM', 
         secondary='ass_evenement_hbm', 
         back_populates='rel_evenement_hbm',
         lazy='joined')
 
+# Version1
 class AssEvenementHbm(Base):
     __tablename__ = 'ass_evenement_hbm'
 
-    evenement_id:   Mapped[int] = mapped_column(ForeignKey('evenement.evenement_id'), primary_key=True)
-    hbm_id:         Mapped[int] = mapped_column(ForeignKey('hbm.hbm_id'), primary_key=True)
+    evenement_id:   Mapped[int] = mapped_column(ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True)
+    partition_hbm_id: Mapped[int] = mapped_column(ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True)
 
 
 if __name__ == "__main__":
