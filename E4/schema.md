@@ -9,7 +9,9 @@ erDiagram
         int auteur_id PK
         string nom
         string prenom
-        int INSI
+        string pays
+        string IPI
+        string ISNI
     }
     partition{
         int partition_id PK

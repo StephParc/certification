@@ -18,7 +18,7 @@ def get_api_externe(identity):
                     artist = data["artists"][1]
 
                 identity_list = artist["sort-name"].split(",") # "name" renvoie dans la langue -> pb pour les noms asiatiques
-                nom = identity_list[0] 
+                nom = identity_list[0]
                 if len(identity_list)>=2:
                     prenom = identity_list[1]
                 else:
@@ -43,7 +43,7 @@ def get_api_externe(identity):
 # print(get_api_externe("Satoshi Yagisawa"))
 # print(get_api_externe("MIMI"))
 # print(get_api_externe("ijdzoij"))
-print(get_api_externe("erik satie"))
+# print(get_api_externe("erik satie"))
 # print(get_api_externe("nirvana"))
 # print(get_api_externe(None))
 # print(get_api_externe(""))

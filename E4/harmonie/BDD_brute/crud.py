@@ -1,29 +1,27 @@
 # from models import Auteur, Partition, HBM, Evenement
 from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, SessionLocal
 from datetime import date, datetime
-from sqlalchemy.orm import Session, Mapped, mapped_column, relationship
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData, delete, update
+from sqlalchemy.orm import Session, Mapped, mapped_column, relationship, noload
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
+from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
 import csv
 
-# ******** CREATE ********
-def create_event(session,
-    date_evenement,
-    nom_evenement,
-    lieu=None,
-    type_evenement=None,
-    affiche=None):
-
+# ******** CREATE / POST ********
+def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
+    # Définition des variables de la requête pour vérifier l'existence
     date_evenement_test = date_evenement
     nom_evenement_test = nom_evenement
     lieu_test = lieu
     type_evenement_test = type_evenement
     affiche_test = affiche
 
+    # Requête de vérification d"existence
     event_exist = session.query(Evenement).filter_by(
                     date_evenement = date_evenement_test,
                     nom_evenement = nom_evenement_test).first()
+    
+    # Création d'un nouvel Evenement
     if event_exist is None:
-    # Création d'un objet Evenement
         evenement = Evenement(
                 date_evenement = date_evenement_test,
                 nom_evenement = nom_evenement_test,
@@ -38,6 +36,7 @@ def create_event(session,
 def create_partition(session, titre, sous_titre=None, edition=None, collection=None,
                 instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
                 ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
+    # Définition des variables de la requête pour vérifier l'existence
     titre_test           = titre
     sous_titre_test      = sous_titre
     edition_test         = edition
@@ -53,12 +52,13 @@ def create_partition(session, titre, sous_titre=None, edition=None, collection=N
     description_test     = description
     url_test             = url
 
+    # Requête de vérification d"existence
     existing_partition = session.query(Partition).filter_by(
                     titre = titre_test,
                     ref_editeur = ref_editeur_test
                     ).first()
                 
-    # Sélection ou création de l'enregistrement
+    # Sélection ou création de la partition
     if existing_partition:
         partition = existing_partition
     else:
@@ -82,41 +82,51 @@ def create_partition(session, titre, sous_titre=None, edition=None, collection=N
         session.flush()  
     return partition
 
-def create_auteur(session, identity, nom=None, prenom=None, INSI=None):
-    identity_test = identity
+def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None):
+    # Définition des variables de la requête pour vérifier l'existence
     nom_test = nom
     prenom_test = prenom
-    INSI_test = INSI
+    pays_test = pays
+    IPI_test = IPI
+    ISNI_test = ISNI
 
+    # Requête de vérification d"existence
     existing_auteur = session.query(Auteur).filter_by(
-                    identity = identity_test).first()
+                    nom = nom_test,
+                    prenom = prenom_test,
+                    pays = pays_test,
+                    IPI = IPI_test,
+                    ISNI = ISNI_test).first()
     
+    # Sélection ou création de l'auteur
     if existing_auteur :
         auteur = existing_auteur
     else:
-    # Création d'un objet Partition
         auteur = Auteur(
-                identity = identity_test,
                 nom = nom_test,
                 prenom = prenom_test,
-                INSI = INSI_test
+                pays = pays_test,
+                IPI = IPI_test,
+                ISNI = ISNI_test
                 )
         session.add(auteur)
         session.flush()
     return auteur
 
-# Version1
 def create_asso_auteur_partition(session, partition_id, auteur_id, role):
+    # Définition des variables de la requête pour vérifier l'existence
     partition_id_test = partition_id
     auteur_id_test = auteur_id 
     role_test = role  
 
+    # Requête de vérification d"existence
     existing_asso = session.query(AssAuteurPartition).filter_by(
                 partition_id = partition_id_test,
                 auteur_id = auteur_id_test,
                 role = role_test
                 ).first()
     
+    # Création de l'association auteur/partition
     if existing_asso is None:
         # Création de l'association
         asso = AssAuteurPartition(
@@ -151,7 +161,8 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
 #     return asso
 
 def create_partition_hbm_from_partition(session, partition_id, distribution=None, rendue=None, 
-               archive=None, concert=True, defile=False, sonnerie=False):
+                archive=None, concert=True, defile=False, sonnerie=False):
+    # Définition des variables de la requête pour vérifier l'existence
     partition_id_test = partition_id
     distribution_test = distribution
     rendue_test = rendue
@@ -163,7 +174,6 @@ def create_partition_hbm_from_partition(session, partition_id, distribution=None
     existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id_test)
 
     if existing_hbm is None:
-        # raise error
         pass
     else:
         hbm = PartitionHBM(
@@ -179,51 +189,53 @@ def create_partition_hbm_from_partition(session, partition_id, distribution=None
     return hbm
 
 
-######## A FAIRE ########
-def create_hbm_from_scratch(session, partition_id, distribution=None, rendue=None, 
-               archive=None, concert=True, defile=False, sonnerie=False):
-    partition_id_test = partition_id
-    distribution_test = distribution
-    rendue_test = rendue
-    archive_test = archive
-    concert_test = concert
-    defile_test = defile
-    sonnerie_test = sonnerie
+######## A FAIRE OU PAS (procédure création par étapes: partition, auteur(s), asso, partition_hbm) ########
+# def create_hbm_from_scratch(session, partition_id, distribution=None, rendue=None, 
+#                archive=None, concert=True, defile=False, sonnerie=False):
+#     partition_id_test = partition_id
+#     distribution_test = distribution
+#     rendue_test = rendue
+#     archive_test = archive
+#     concert_test = concert
+#     defile_test = defile
+#     sonnerie_test = sonnerie
 
-    existing_hbm = session.query(HBM).filter_by(partition_id=partition_id_test)
+#     existing_hbm = session.query(HBM).filter_by(partition_id=partition_id_test)
 
-    if existing_hbm is None:
-        # raise error
-        pass
-    else:
-        hbm = HBM(
-            partition_id = partition_id_test,
-            distribution = distribution_test,
-            rendue = rendue_test,
-            archive = archive_test,
-            concert = concert_test,
-            defile = defile_test,
-            sonnerie = sonnerie_test)
-        session.add(hbm)
-        session.flush()
+#     if existing_hbm is None:
+#         # raise error
+#         pass
+#     else:
+#         hbm = HBM(
+#             partition_id = partition_id_test,
+#             distribution = distribution_test,
+#             rendue = rendue_test,
+#             archive = archive_test,
+#             concert = concert_test,
+#             defile = defile_test,
+#             sonnerie = sonnerie_test)
+#         session.add(hbm)
+#         session.flush()
 
 def create_asso_hbm_event(session, hbm_id, evenement_id):
     hbm_id_test = hbm_id
     event_id_test = evenement_id
 
     existing_asso = session.query(AssEvenementHbm).filter_by(
-        hbm_id=hbm_id_test, evenement_id=event_id_test).first()
+        partition_hbm_id=hbm_id_test, evenement_id=event_id_test).first()
 
     if existing_asso is None:
-        asso = AssEvenementHbm(
-            partition_hbm_id = hbm_id_test,
-            evenement_id = event_id_test
-        )
-        session.add(asso)
-        session.flush()
-    return asso
+        existing_partition = session.query(PartitionHBM).filter_by(partition_hbm_id=hbm_id_test).first()
+        if existing_partition:
+            asso = AssEvenementHbm(
+                partition_hbm_id = hbm_id_test,
+                evenement_id = event_id_test
+            )
+            session.add(asso)
+            session.flush()
+            return asso
 
-# ******** DELETE ********
+# ******** DELETE / DELETE ********
 def delete_event(session, event_id):
     try:
         existing_event = session.query(Evenement).filter_by(evenement_id=event_id).first()
@@ -275,7 +287,8 @@ def delete_auteur(session, auteur_id):
 def delete_partition(session, partition_id):
     try:
         existing_partition = session.query(Partition).filter_by(partition_id=partition_id).first()
-        if existing_partition:
+        existing_asso_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id).first()
+        if existing_partition and not existing_asso_hbm:
             partition_id = existing_partition.partition_id
             session.delete(existing_partition)
             session.flush()
@@ -285,7 +298,7 @@ def delete_partition(session, partition_id):
             print("La partition a été supprimée")
             session.commit()
         else:
-            print("aucune partition trouvée")
+            print("suppression refusée")
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -303,7 +316,6 @@ def delete_partition_hbm(session, partition_hbm_id):
             partition_hbm_id = existing_partition.partition_hbm_id
             session.delete(existing_partition)
             session.commit()
-
             print("La partition a été supprimée")
         else:
             print("aucune partition trouvée")
@@ -318,6 +330,7 @@ def delete_partition_hbm(session, partition_hbm_id):
 
 def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
     try:
+        # Requête de vérification d"existence
         existing_asso = session.query(AssAuteurPartition).filter_by(
                 partition_id = partition_id,
                 auteur_id = auteur_id,
@@ -325,7 +338,7 @@ def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
                 ).first()
     
         if existing_asso:
-        # Création de l'association
+        # Suppression de l'association
             stmt = delete(AssAuteurPartition).where(
                 AssAuteurPartition.partition_id == partition_id,
                 AssAuteurPartition.auteur_id == auteur_id,
@@ -346,13 +359,14 @@ def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
 
 def delete_asso_partition_event(session, partition_hbm_id, event_id):
     try:
+        # Requête de vérification d"existence
         existing_asso = session.query(AssEvenementHbm).filter_by(
                 partition_hbm_id = partition_hbm_id,
                 evenement_id = event_id
                 ).first()
     
         if existing_asso:
-        # Création de l'association
+        # Suppression de l'association
             stmt = delete(AssEvenementHbm).where(
                 AssEvenementHbm.partition_hbm_id == partition_hbm_id,
                 AssEvenementHbm.evenement_id == event_id)
@@ -370,7 +384,256 @@ def delete_asso_partition_event(session, partition_hbm_id, event_id):
         # Fermeture de la session
         session.close()
 
-# ******** UPDATE ********
+
+# ******** READ / GET ********
+def read_event_by_id(session, event_id):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Evenement).options(noload('*')).where(Evenement.evenement_id==event_id)
+    result = session.execute(stmt)
+    evenement = result.first()
+    session.close()
+    return evenement
+
+def read_event_by_date(session, event_date):
+    # la date doit être au format YYYY-mm-dd
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Evenement).options(noload('*')).where(Evenement.date_evenement==event_date)
+    result = session.execute(stmt)
+    evenement = result.first()
+    session.close()
+    return evenement
+
+def read_event_by_year(session, year):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Evenement).options(noload('*')).where(func.extract('year',Evenement.date_evenement)==year)
+    result = session.execute(stmt)
+    evenement = result.all()
+    session.close()
+    return evenement
+
+def read_event_by_type(session, type):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Evenement).options(noload('*')).where(Evenement.type_evenement==type)
+    result = session.execute(stmt)
+    evenement = result.all()
+    session.close()
+    return evenement
+
+def read_event_by_partition(session, partition_id):
+    # liste les événements où une partition a été jouée
+    stmt = select(Evenement).options(noload('*'))\
+        .join(AssEvenementHbm)\
+        .join(PartitionHBM)\
+        .where(PartitionHBM.partition_hbm_id==partition_id)
+    result = session.execute(stmt)
+    evenement = result.all()
+    session.close()
+    return evenement
+
+def read_partition_by_event_id(session, event_id):
+    # liste le programme d'un événement (partitions jouées)
+    stmt = select(PartitionHBM.partition_hbm_id, Partition.titre).options(noload('*'))\
+        .join(AssEvenementHbm)\
+        .join(Evenement)\
+        .join(Partition)\
+        .where(Evenement.evenement_id==event_id)
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_event_date(session, event_date):
+        # liste le programme d'un événement (partitions jouées)
+    stmt = select(PartitionHBM.partition_hbm_id, Partition.titre).options(noload('*'))\
+        .join(AssEvenementHbm)\
+        .join(Evenement)\
+        .join(Partition)\
+        .where(Evenement.date_evenement==event_date)
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_event_year(session, year):
+        # liste le programme d'un événement (partitions jouées)
+    stmt = select(PartitionHBM.partition_hbm_id, Partition.titre).options(noload('*'))\
+        .join(AssEvenementHbm)\
+        .join(Evenement)\
+        .join(Partition)\
+        .where(func.extract('year',Evenement.date_evenement)==year).distinct()
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_id(session, partition_id):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Partition).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id).add_columns(AssAuteurPartition.role)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur).where(Partition.partition_id==partition_id).distinct()
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_composer_id(session, composer_id, name):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    name=f"%{name}%"
+    stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur.prenom, Auteur.nom).where(and_(AssAuteurPartition.role=='compositeur', or_(Auteur.auteur_id==composer_id, Auteur.nom.ilike(name))))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_arranger_id(session, arranger_id, name):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    name=f"%{name}%"
+    stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur.prenom, Auteur.nom).where(and_(AssAuteurPartition.role=='arrangeur', or_(Auteur.auteur_id==arranger_id, Auteur.nom.ilike(name))))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_artist_id(session, artist_id, name):
+    pass# l'option noload permet de ne pas charger les relations avec les autres tables
+    name=f"%{name}%"
+    stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur.prenom, Auteur.nom).where(and_(AssAuteurPartition.role=='artiste', or_(Auteur.auteur_id==artist_id, Auteur.nom.ilike(name))))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_author_id(session, author_id, name):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    name=f"%{name}%"
+    stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .where(or_(Auteur.auteur_id==author_id, Auteur.nom.ilike(name)))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_creation_date(session, creation_date):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Partition.partition_id, Partition.titre, Partition.annee_sortie).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .where(Partition.annee_sortie==creation_date)
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_grade(session, grade):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Partition.partition_id, Partition.titre, Partition.niveau).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .where(Partition.niveau==grade)
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_by_type(session, type):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    type=f"%{type}%"
+    stmt = select(Partition.partition_id, Partition.titre, Partition.genre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .where(Partition.genre.ilike(type))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_possessed(session):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .join(PartitionHBM)\
+        .add_columns(PartitionHBM.distribution, PartitionHBM.concert, PartitionHBM.defile, PartitionHBM.sonnerie)\
+        .where(and_(PartitionHBM.distribution==None, or_(PartitionHBM.rendue==None, PartitionHBM.rendue==False)))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_possessed_by_type(session, type):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    if type == 'concert':
+        stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .join(PartitionHBM)\
+        .where(and_(PartitionHBM.distribution==None, or_(PartitionHBM.rendue==None, PartitionHBM.rendue==False), PartitionHBM.concert==True))
+        result = session.execute(stmt)
+        partition = result.all()
+    elif type == 'défilé':
+        stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .join(PartitionHBM)\
+        .where(and_(PartitionHBM.distribution==None, or_(PartitionHBM.rendue==None, PartitionHBM.rendue==False), PartitionHBM.defile==True))
+        result = session.execute(stmt)
+        partition = result.all()
+    elif type == 'sonnerie':
+        stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .join(PartitionHBM)\
+        .where(and_(PartitionHBM.distribution==None, or_(PartitionHBM.rendue==None, PartitionHBM.rendue==False), PartitionHBM.sonnerie==True))
+        result = session.execute(stmt)
+        partition = result.all()
+    else:
+        partition = []
+    session.close()
+    return partition
+
+def read_auteur_by_id(session, auteur_id):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Auteur).options(noload('*')).where(Auteur.auteur_id==auteur_id)
+    result = session.execute(stmt)
+    auteur = result.first()
+    session.close()
+    return auteur
+
+def read_auteur_by_name(session, nom):
+    nom_partiel = f"%{nom}%"
+    stmt = select(Auteur).options(noload('*')).where(Auteur.nom.ilike(nom_partiel))
+    result = session.execute(stmt)
+    auteur = result.all()
+    session.close()
+    return auteur
+
+def read_auteur_by_role(session, role):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(Auteur).options(noload('*'))\
+        .join(AssAuteurPartition)\
+        .where(AssAuteurPartition.role==role).distinct()
+    result = session.execute(stmt)
+    auteur = result.all()
+    session.close()
+    return auteur
+
+# ******** UPDATE / PUT ********
 # A FINIR
 def update_event(session, event_id, date_evenement=None, nom_evenement=None, lieu=None, type_evenement=None, affiche=None):
     try:
@@ -395,19 +658,43 @@ def update_event(session, event_id, date_evenement=None, nom_evenement=None, lie
         # Fermeture de la session
         session.close()
 
-# ******** READ ********
-def read_event_id(session):
+def update_partition_hbm(session, partition_hbm_id):
     pass
 
+def update_partition(session, partition_id):
+    pass
+
+def update_auteur(session, author_id):
+    pass
 
 session=SessionLocal()
-# create_hbm_from_partition(session, 3)
+# print(read_event_by_year(session, 2025))
+# print(read_event_by_partition(session, 1))
+# print(read_partition_by_event_id(session, 8))
+# print(read_partition_by_event_date(session, '2025-04-27'))
+# print(read_partition_by_event_year(session, 2025))
+# print(read_auteur_by_id(session, 7))
+# print(read_auteur_by_name(session, 'on'))
+# print(read_auteur_by_role(session, 'arrangeur'))
+# print(read_partition_by_id(session, 1))
+# print(read_partition_by_author_id(session, 1, name='on'))
+# print(read_partition_by_creation_date(session, None))
+# print(read_partition_by_grade(session, None))
+# print(read_partition_by_type(session, 'jazz'))
+# print(read_partition_possessed(session))
+print(read_partition_possessed_by_type(session, 'concert'))
+# create_auteur(session, "Mozart", "Wolfgang")
+# delete_auteur(session, 10)
+# create_partition_hbm_from_partition(session, 3)
 # session.commit()
-# create_hbm_from_partition(session, 4)
+# create_partition_hbm_from_partition(session, 4)
 # session.commit()
-# create_asso_hbm_event(session, 3, 2)
+# create_asso_hbm_event(session, 1,8)
 # session.commit()
-# create_asso_hbm_event(session, 4, 2)
+# create_asso_hbm_event(session, 2, 2)
 # session.commit()
-delete_event(session, 2)
-session.commit()
+# delete_asso_partition_event(session, 4, 2)
+# session.commit()
+# delete_event(session, 2)
+# session.commit()
+session.close()

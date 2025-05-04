@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
 import csv
 from crud import create_event, create_partition, create_auteur, create_asso_auteur_partition
+from api_externe import get_api_externe
 
 session = SessionLocal()
 # Exécution du script princpal models.py
@@ -46,22 +47,22 @@ def insert_scrapy_to_db(file_path):
             for row in csv_reader:
                 # déclarations des variables
                 titre = row.get('titre').upper()
-                sous_titre = row.get('sous_titre', None)
-                edition = row.get('edition', None)
-                collection = row.get('collection', None)
-                instrumentation = row.get('instrumentation', None)
+                sous_titre = row.get('sous_titre')
+                edition = row.get('edition')
+                collection = row.get('collection')
+                instrumentation = row.get('instrumentation')
                 niveau = float(row['niveau']) if row['niveau'] else None
-                genre = row.get('genre', None)
-                style = row.get('style', None)
+                genre = row.get('genre')
+                style = row.get('style')
                 annee_sortie = int(row['annee_sortie']) if row['annee_sortie'] else None
-                ISMN = row.get('ISMN', None)
-                ref_editeur = row.get('ref_editeur', None)
-                duree = row.get('duree', None)
-                description = row.get('description', None)
-                url = row.get('url', None)
-                compositeur_list = row.get('compositeur', None).upper().split(",")
-                artiste_list = row.get('artiste', None).upper().split(",")
-                arrangeur_list = row.get('arrangeur', None).upper().split(",")
+                ISMN = row.get('ISMN')
+                ref_editeur = row.get('ref_editeur')
+                duree = row.get('duree')
+                description = row.get('description')
+                url = row.get('url')
+                compositeur_list = row.get('compositeur').split(",")
+                artiste_list = row.get('artiste').split(",")
+                arrangeur_list = row.get('arrangeur').split(",")
                 # partition = insert_partition(session, titre, sous_titre, edition, collection, instrumentation, niveau,
                 #                  genre, style, annee_sortie, ISMN, ref_editeur, duree, description, url)
 
@@ -72,8 +73,14 @@ def insert_scrapy_to_db(file_path):
                 if compositeur_list and compositeur_list!=[]:                
                     for i in range(len(compositeur_list)):
                         if compositeur_list[i]!='':
-                            compositeur = create_auteur(session, compositeur_list[i])
-                            compositeur_id = create_auteur(session, compositeur_list[i]).auteur_id
+                            compo_api = get_api_externe(compositeur_list[i])
+                            nom = compo_api.get("Nom")
+                            prenom = compo_api.get("Prénom")
+                            pays = compo_api.get("Pays")
+                            IPI = compo_api.get("IPI")
+                            ISNI = compo_api.get("ISNI")
+                            compositeur = create_auteur(session, nom, prenom, pays, IPI, ISNI)
+                            compositeur_id = compositeur.auteur_id
                             # partition.rel_auteur_partition.append(compositeur)
                             create_asso_auteur_partition(session, part_id, compositeur_id, 'compositeur')
 
@@ -81,14 +88,28 @@ def insert_scrapy_to_db(file_path):
                 if artiste_list and artiste_list!=[]:                
                     for i in range(len(artiste_list)):
                         if artiste_list[i]!='':
-                            artiste_id = create_auteur(session, artiste_list[i]).auteur_id
+                            artiste_api = get_api_externe(artiste_list[i])
+                            nom = artiste_api.get("Nom")
+                            prenom = artiste_api.get("Prénom")
+                            pays = artiste_api.get("Pays")
+                            IPI = artiste_api.get("IPI")
+                            ISNI = artiste_api.get("ISNI")
+                            artiste = create_auteur(session, nom, prenom, pays, IPI, ISNI)
+                            artiste_id = artiste.auteur_id
                             create_asso_auteur_partition(session, part_id, artiste_id, 'artiste')
 
                 # Boucle sur les arrangeurs 
                 if arrangeur_list and arrangeur_list!=[]:                
                     for i in range(len(arrangeur_list)):
                         if arrangeur_list[i]!='':
-                            arrangeur_id = create_auteur(session, arrangeur_list[i]).auteur_id
+                            arrangeur_api = get_api_externe(arrangeur_list[i])
+                            nom = arrangeur_api.get("Nom")
+                            prenom = arrangeur_api.get("Prénom")
+                            pays = arrangeur_api.get("Pays")
+                            IPI = arrangeur_api.get("IPI")
+                            ISNI = arrangeur_api.get("ISNI")
+                            arrangeur = create_auteur(session, nom, prenom, pays, IPI, ISNI)
+                            arrangeur_id = arrangeur.auteur_id
                             create_asso_auteur_partition(session, part_id, arrangeur_id, 'arrangeur')            
 
         # Commit des changements
