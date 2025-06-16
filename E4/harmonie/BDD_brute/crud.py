@@ -476,7 +476,7 @@ def read_partition_by_id(session, partition_id):
     session.close()
     return partition
 
-def read_partition_by_composer_id(session, composer_id, name):
+def read_partition_by_composer(session, composer_id, name):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -487,7 +487,7 @@ def read_partition_by_composer_id(session, composer_id, name):
     session.close()
     return partition
 
-def read_partition_by_arranger_id(session, arranger_id, name):
+def read_partition_by_arranger(session, arranger_id, name):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -498,7 +498,7 @@ def read_partition_by_arranger_id(session, arranger_id, name):
     session.close()
     return partition
 
-def read_partition_by_artist_id(session, artist_id, name):
+def read_partition_by_artist(session, artist_id, name):
     pass# l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -509,7 +509,7 @@ def read_partition_by_artist_id(session, artist_id, name):
     session.close()
     return partition
 
-def read_partition_by_author_id(session, author_id, name):
+def read_partition_by_author(session, author_id, name):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -558,6 +558,34 @@ def read_partition_by_type(session, type):
     partition = result.all()
     session.close()
     return partition
+
+# à vérifier
+def read_partition_hbm_by_id(session, partition_id):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    stmt = select(PartitionHBM).options(noload('*'))\
+        .join(Partition, PartitionHBM.partition_id==Partition.partition_id)\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id).add_columns(AssAuteurPartition.role)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur).where(PartitionHBM.partition_hbm_id==partition_id)
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+# à vérifier
+def read_partition_hbm_by_composer(session, composer_id, name):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+    name=f"%{name}%"
+    stmt = select(PartitionHBM.partition_hbm_id, Partition).options(noload('*'))\
+        .join(Partition,PartitionHBM.partition_id==Partition.partition_id)\
+        .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+        .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id).add_columns(Auteur.prenom, Auteur.nom).where(and_(AssAuteurPartition.role=='compositeur', or_(Auteur.auteur_id==composer_id, Auteur.nom.ilike(name))))
+    result = session.execute(stmt)
+    partition = result.all()
+    session.close()
+    return partition
+
+def read_partition_hbm_by_title(session, extrait):
+    pass
 
 def read_partition_possessed(session):
     # l'option noload permet de ne pas charger les relations avec les autres tables
@@ -667,7 +695,11 @@ def update_partition(session, partition_id):
 def update_auteur(session, author_id):
     pass
 
+# with open("database.py") as m:
+#     code = m.read()
+# exec(code)
 session=SessionLocal()
+print(read_event_by_id(session, 10))
 # print(read_event_by_year(session, 2025))
 # print(read_event_by_partition(session, 1))
 # print(read_partition_by_event_id(session, 8))
@@ -677,12 +709,14 @@ session=SessionLocal()
 # print(read_auteur_by_name(session, 'on'))
 # print(read_auteur_by_role(session, 'arrangeur'))
 # print(read_partition_by_id(session, 1))
-# print(read_partition_by_author_id(session, 1, name='on'))
+# print(read_partition_by_author(session, 1, name='on'))
 # print(read_partition_by_creation_date(session, None))
 # print(read_partition_by_grade(session, None))
 # print(read_partition_by_type(session, 'jazz'))
 # print(read_partition_possessed(session))
-print(read_partition_possessed_by_type(session, 'concert'))
+# print(read_partition_hbm_by_id(session, 1))
+# print(read_partition_hbm_by_composer(session, None, 'cahn'))
+# print(read_partition_possessed_by_type(session, 'concert'))
 # create_auteur(session, "Mozart", "Wolfgang")
 # delete_auteur(session, 10)
 # create_partition_hbm_from_partition(session, 3)

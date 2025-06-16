@@ -1,10 +1,12 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData #, create_engine
 from typing import List, Optional
-from sqlalchemy.orm import Mapped, mapped_column, relationship, sessionmaker, DeclarativeBase
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase #,sessionmaker
 from datetime import date, datetime
 import csv
 import os
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 env_path = os.path.join(os.path.dirname(__file__),'.env')
 load_dotenv(dotenv_path=env_path)

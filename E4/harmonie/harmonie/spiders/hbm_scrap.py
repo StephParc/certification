@@ -3,8 +3,14 @@ import scrapy
 from harmonie.items import HarmonieItem
 
 class HbmScrapSpider(scrapy.Spider):
+    """
+    name: nom du spider / name of the spider
+    domain: domaine du site scrapé / scraped site domain
+    start_urls:  
+    """
     name = "hbm_scrap"
     allowed_domains = ["musicshopeurope.fr"]
+    
     start_urls = ["https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page=1501"] 
 
     def parse(self, response):
