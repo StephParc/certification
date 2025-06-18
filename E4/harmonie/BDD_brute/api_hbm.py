@@ -1,13 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Path
 # from fastapi.responses import JSONResponse
 from sqlalchemy import Column, Integer, String, Float, MetaData, create_engine, and_, select
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, noload
 # from .models import Evenement
 # from models import Auteur, Partition, AssAuteurPartition, Evenement, HBM, AssEvenementHbm
-from typing import Union
+from typing import Union, Annotated
 from pydantic import BaseModel
-from .crud import read_event_by_id
-from .models import Evenement
+from crud import read_event_by_id, create_event
+from models import Evenement
+from schemas import Event, Event2
 
 import os
 from dotenv import load_dotenv
@@ -31,25 +32,44 @@ class Item(BaseModel):
     price: float
     is_offer: Union[bool, None] = None
 
-@app.get("/event/unique")
+@app.get("/event/{event_id}", response_model= list[Event2])
 def get_event_by_id(event_id:int):
     session = session_open()
-    stmt = select(Evenement()).options(noload('*')).where(Evenement().evenement_id==event_id)
+    stmt = select(Evenement).options(noload('*')).where(Evenement.evenement_id==event_id)
     result = session.execute(stmt)
     evenement = result.first()
     session.close()
-    return {"Hello": event_id}
+    return evenement
 
-@app.get("/event/module")
-def get_event(event_id:int):
+@app.get("/event/{event_id}/2", response_model=list[Event2])
+def get_event(event_id:int)-> list[Event]:
     session = session_open()
-    read_event_by_id(session, event_id)
-    return {"hello": event_id}
+    result= read_event_by_id(session, event_id)
+    return result
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/event/", response_model=Event2)
+def create_event(event:Event):
+    session = session_open()
+    evenement=create_event(session, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
+    # evenement=create_event(session, date_evenement = event.date_evenement, nom_evenement=event.nom_evenement, lieu =event.lieu, type_evenement=event.type_evenement,affiche= event.affiche)
+    return evenement
+
+
+# @app.get("/items/{item_id}")
+# def read_item(item_id: int, q: Union[str, None] = None):
+#     return {"item_id": item_id, "q": q}
 
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
+
+@app.get("/items/{item_id}")
+async def read_items(
+    item_id: Annotated[int, Path(title="The ID of the item to get")],
+    q: Annotated[str | None, Query(alias="item-query")] = None,
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
+

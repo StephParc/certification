@@ -699,7 +699,7 @@ def update_auteur(session, author_id):
 #     code = m.read()
 # exec(code)
 session=SessionLocal()
-print(read_event_by_id(session, 10))
+# print(read_event_by_id(session, 10))
 # print(read_event_by_year(session, 2025))
 # print(read_event_by_partition(session, 1))
 # print(read_partition_by_event_id(session, 8))

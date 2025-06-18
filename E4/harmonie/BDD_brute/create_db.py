@@ -9,7 +9,8 @@ from api_externe import get_api_externe
 
 session = SessionLocal()
 # Exécution du script princpal models.py
-with open("models.py") as m:
+file_path2 ="C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/E4/harmonie/BDD_brute/models.py"
+with open(file_path2) as m:
     code = m.read()
 exec(code)         
 
