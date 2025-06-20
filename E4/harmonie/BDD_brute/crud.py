@@ -9,6 +9,7 @@ import csv
 # ******** CREATE / POST ********
 def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
     # Définition des variables de la requête pour vérifier l'existence
+    # date_evenement = datetime.strptime(date_evenement, "%d-%m-%Y").date()
     date_evenement_test = date_evenement
     nom_evenement_test = nom_evenement
     lieu_test = lieu
@@ -248,10 +249,10 @@ def delete_event(session, event_id):
             session.execute(stmt) 
             # existing_asso = session.query(AssEvenementHbm).filter_by(evenement_id=event_id).first()
             # session.delete(existing_asso)
-            print("L'événement a été supprimé")
+            message = "L'événement a été supprimé"
             session.commit()
         else:
-            print("aucun événement trouvé")
+            message = "l'événement n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -260,6 +261,7 @@ def delete_event(session, event_id):
     finally:
         # Fermeture de la session
         session.close()
+        return message
 
 def delete_auteur(session, auteur_id):
     try:
@@ -670,13 +672,19 @@ def update_event(session, event_id, date_evenement=None, nom_evenement=None, lie
         if existing_event:    
             stmt = update(Evenement).where(
                 Evenement.evenement_id == event_id).values(
-                    date_evenement=date_evenement
+                    date_evenement=date_evenement,
+                    nom_evenement=nom_evenement,
+                    lieu=lieu,
+                    type_evenement=type_evenement,
+                    affiche=affiche
                 )
             session.execute(stmt) 
             print("L'évènement a été mis à jour")
+            message = "L'événement a été mis à jour"
             session.commit()
         else:
             print("aucune correspondance trouvée")
+            message = "L'événement n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -685,6 +693,7 @@ def update_event(session, event_id, date_evenement=None, nom_evenement=None, lie
     finally:
         # Fermeture de la session
         session.close()
+    return message
 
 def update_partition_hbm(session, partition_hbm_id):
     pass
@@ -698,7 +707,7 @@ def update_auteur(session, author_id):
 # with open("database.py") as m:
 #     code = m.read()
 # exec(code)
-session=SessionLocal()
+# session=SessionLocal()
 # print(read_event_by_id(session, 10))
 # print(read_event_by_year(session, 2025))
 # print(read_event_by_partition(session, 1))
@@ -731,4 +740,7 @@ session=SessionLocal()
 # session.commit()
 # delete_event(session, 2)
 # session.commit()
-session.close()
+# create_event(session,datetime.strptime("03-10-2025", "%d-%m-%Y").date(),"semaine découverte", "auditorium CACFM", "concert","" )
+# update_event(session, 32, datetime.strptime("03-10-2025", "%d-%m-%Y").date(), "modif", "ailleurs", "défilé","mon_affiche.jpg")
+# session.commit()
+# session.close()

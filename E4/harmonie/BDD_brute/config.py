@@ -1,1 +1,1 @@
-DATABASE_URL = "sqlite+pysqlite:///musicshop.db"
+SQL_DATABASE_URL = "sqlite+pysqlite:///musicshop.db"

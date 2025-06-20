@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 #exemple
@@ -19,7 +19,7 @@ class Event(BaseModel):
     class Config:
         orm_mode=True
 
-class Event2(Event):
+class EventId(Event):
     evenement_id: int | None = None
 
     class Config:

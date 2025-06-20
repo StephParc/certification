@@ -6,6 +6,13 @@ from dotenv import load_dotenv
 env_path = os.path.join(os.path.dirname(__file__),'.env')
 load_dotenv(dotenv_path=env_path)
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
+SQL_DATABASE_URL = os.getenv('SQL_DATABASE_URL')
+engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()

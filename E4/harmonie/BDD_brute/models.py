@@ -1,18 +1,19 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData #, create_engine
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData, create_engine
 from typing import List, Optional
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase #,sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
 from datetime import date, datetime
 import csv
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+# from database import get_session
 
 env_path = os.path.join(os.path.dirname(__file__),'.env')
 load_dotenv(dotenv_path=env_path)
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
+SQL_DATABASE_URL = os.getenv('SQL_DATABASE_URL')
+engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
