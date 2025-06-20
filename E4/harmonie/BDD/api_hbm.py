@@ -8,46 +8,57 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker, noload, Session
 # from models import Auteur, Partition, AssAuteurPartition, Evenement, HBM, AssEvenementHbm
 from typing import Union, Annotated
 from pydantic import BaseModel
-from crud import read_event_by_id, create_event, delete_event, update_event
-from models import Evenement
-from schemas import Event, EventId
+# from crud import read_event_by_id, create_event, delete_event, update_event
+# from models import Evenement
+# from schemas import Event, EventId
 from datetime import datetime, date
-from database import get_session_sql
+# from database import get_session_sql
+
+# from .routes import evenements
+# from BDD.routes import evenements
+from routes import evenements
 
 import os
 from dotenv import load_dotenv
 
 app = FastAPI()
 
-@app.get("/event/{event_id}", response_model=list[EventId])
-def get_event(event_id:int, session:Session=Depends(get_session_sql))-> list[Event]:
-    result= read_event_by_id(session, event_id)
-    return result
+# app.include_router(evenements.router)
 
-@app.post("/event/", response_model=EventId)
-def create_evenement(event:Event, session:Session=Depends(get_session_sql)):
-    evenement=create_event(session, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
-    session.commit()
-    session.refresh(evenement)
-    return evenement
+# # VERSION sans routes/
+# app = FastAPI()
 
-@app.delete("/event/{event_id}")
-def del_evenement(id:int, session:Session=Depends(get_session_sql)):
-    result = delete_event(session,id)
-    session.commit()
-    return result
+# @app.get("/event/{event_id}", response_model=list[EventId])
+# def get_event(event_id:int, session:Session=Depends(get_session_sql))-> list[Event]:
+#     result= read_event_by_id(session, event_id)
+#     return result
 
-@app.put("/event/{event_id}")
-def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
-    result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
-    session.commit()
-    return result
+# @app.post("/event/", response_model=EventId)
+# def create_evenement(event:Event, session:Session=Depends(get_session_sql)):
+#     evenement=create_event(session, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
+#     session.commit()
+#     session.refresh(evenement)
+#     return evenement
 
-@app.patch("/event/{event_id}")
-def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
-    result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
-    session.commit()
-    return result
+# @app.delete("/event/{event_id}")
+# def del_evenement(id:int, session:Session=Depends(get_session_sql)):
+#     result = delete_event(session,id)
+#     session.commit()
+#     return result
+
+# @app.put("/event/{event_id}")
+# def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
+#     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
+#     session.commit()
+#     return result
+
+# @app.patch("/event/{event_id}")
+# def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
+#     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
+#     session.commit()
+#     return result
+
+# VERSION sans database.py
 ## Spécifiez le chemin vers votre fichier .env
 # env_path = os.path.join(os.path.dirname(__file__),'.env')
 # # Chargez les variables d'environnement depuis le fichier .env

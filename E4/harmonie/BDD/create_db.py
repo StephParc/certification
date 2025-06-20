@@ -136,6 +136,6 @@ event_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification
 scrapy_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/E4/harmonie/harmonie/nouveau.csv"
 
 # Importation des données CSV dans la base de données
-# create_db()
-# insert_event_to_db(event_path)
+create_db()
+insert_event_to_db(event_path)
 insert_scrapy_to_db(scrapy_path)
