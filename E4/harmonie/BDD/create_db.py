@@ -1,5 +1,6 @@
 # from models import Auteur, Partition, HBM, Evenement, SessionLocal
-from models import Auteur, Partition, AssAuteurPartition, Evenement, SessionLocal
+from models import Auteur, Partition, AssAuteurPartition, Evenement
+from database import get_session_sql, sql_connect
 from datetime import date, datetime
 from sqlalchemy.orm import Session, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
@@ -8,7 +9,10 @@ from crud import create_event, create_partition, create_auteur, create_asso_aute
 from api_externe import get_api_externe
 from typing import Optional, List
 
+# session = get_session_sql()
+SessionLocal= sql_connect()
 session = SessionLocal()
+
 # Exécution du script princpal models.py
 def create_db():
     with open("models.py") as m:
@@ -17,6 +21,8 @@ def create_db():
 
 # Insertion du csv évènements dans BDD
 def insert_event_to_db(file_path):
+    SessionLocal= sql_connect()
+    session = SessionLocal()
     try:
         # Ouverture du fichier CSV
         with open(file_path, mode='r', encoding='utf-8') as file:
@@ -130,6 +136,6 @@ event_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification
 scrapy_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/E4/harmonie/harmonie/nouveau.csv"
 
 # Importation des données CSV dans la base de données
-create_db()
-insert_event_to_db(event_path)
+# create_db()
+# insert_event_to_db(event_path)
 insert_scrapy_to_db(scrapy_path)

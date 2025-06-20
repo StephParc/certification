@@ -1,10 +1,15 @@
 # from models import Auteur, Partition, HBM, Evenement
-from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, SessionLocal
+from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement
+from database import get_session_sql, sql_connect
 from datetime import date, datetime
 from sqlalchemy.orm import Session, Mapped, mapped_column, relationship, noload
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
 import csv
+
+# pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi:
+# Session = sql_connect()
+# session = Session()
 
 # ******** CREATE / POST ********
 def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):

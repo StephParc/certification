@@ -1,20 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData, create_engine
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
 from datetime import date, datetime
-import csv
-import os
-from dotenv import load_dotenv
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from database import get_session
-
-env_path = os.path.join(os.path.dirname(__file__),'.env')
-load_dotenv(dotenv_path=env_path)
-
-SQL_DATABASE_URL = os.getenv('SQL_DATABASE_URL')
-engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from database import get_session_sql, get_engine
 
 class Base(DeclarativeBase):
     pass
@@ -161,5 +149,6 @@ class AssEvenementHbm(Base):
         return f"AssEvenement(evenement_id={self.evenement_id!r}, partition_hbm_id={self.partition_hbm_id!r})"
 
 if __name__ == "__main__":
+    engine = get_engine()
     Base.metadata.create_all(bind=engine)
     print("BDD créée")
