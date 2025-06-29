@@ -1,4 +1,4 @@
-import json
+# api_externe.py
 import requests
 
 def get_api_externe(identity):

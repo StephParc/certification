@@ -1,15 +1,18 @@
-# from models import Auteur, Partition, HBM, Evenement
-from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement
+# crud.py
+from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User
+from schemas import UserPublic, UserAdmin, UserPass
+from auth import get_password_hash
 from database import get_session_sql, sql_connect
-from datetime import date, datetime
-from sqlalchemy.orm import Session, Mapped, mapped_column, relationship, noload
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
+from api_externe import get_api_externe
+from sqlalchemy.orm import noload
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
-import csv
 
-# pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi:
+## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
 # Session = sql_connect()
 # session = Session()
+## selon les opérations
+# session.commit()
+# session.close()
 
 # ******** CREATE / POST ********
 def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
@@ -39,7 +42,7 @@ def create_event(session, date_evenement, nom_evenement, lieu=None, type_eveneme
         session.flush()
     return evenement          
 
-def create_partition(session, titre, sous_titre=None, edition=None, collection=None,
+def create_part(session, titre, sous_titre=None, edition=None, collection=None,
                 instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
                 ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
     # Définition des variables de la requête pour vérifier l'existence
@@ -108,12 +111,19 @@ def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None
     if existing_auteur :
         auteur = existing_auteur
     else:
+        auteur_identity = f"{nom} {prenom}"
+        auteur_api = get_api_externe(auteur_identity)
+        nom_api = auteur_api.get("Nom")
+        prenom_api = auteur_api.get("Prénom")
+        pays_api = auteur_api.get("Pays")
+        IPI_api = auteur_api.get("IPI")
+        ISNI_api = auteur_api.get("ISNI")
         auteur = Auteur(
-                nom = nom_test,
-                prenom = prenom_test,
-                pays = pays_test,
-                IPI = IPI_test,
-                ISNI = ISNI_test
+                nom = nom_api,
+                prenom = prenom_api,
+                pays = pays_api,
+                IPI = IPI_api,
+                ISNI = ISNI_api
                 )
         session.add(auteur)
         session.flush()
@@ -142,31 +152,11 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
                 )
         session.add(asso)
         session.flush()
-    # return asso
+        return asso
+    else:
+        return "L'association existe déjà"
 
-# def create_asso_auteur_partition(session, partition:Partition, auteur:Auteur, role:str):
-#     partition_id_test = partition.partition_id
-#     auteur_id_test = auteur.auteur_id 
-#     role_test = role  
-
-#     existing_asso = session.query(AssAuteurPartition).filter_by(
-#                 partition_id = partition_id_test,
-#                 auteur_id = auteur_id_test,
-#                 role = role_test
-#                 ).first()
-    
-#     if existing_asso is None:
-#         # Création de l'association
-#         asso = AssAuteurPartition(
-#                 partition_id = partition_id_test,
-#                 auteur_id = auteur_id_test,
-#                 role = role_test
-#                 )
-#         session.add(asso)
-#         session.flush()
-#     return asso
-
-def create_partition_hbm_from_partition(session, partition_id, distribution=None, rendue=None, 
+def create_part_hbm_from_partition(session, partition_id, distribution=None, rendue=None, 
                 archive=None, concert=True, defile=False, sonnerie=False):
     # Définition des variables de la requête pour vérifier l'existence
     partition_id_test = partition_id
@@ -241,6 +231,63 @@ def create_asso_hbm_event(session, hbm_id, evenement_id):
             session.flush()
             return asso
 
+def create_user(session, username, password, fullname=None, email=None):
+    # Fonction de hachage du mot de passe
+    password = get_password_hash(password)
+    
+    # Requête de vérification d"existence
+    existing_user = session.query(User).filter_by(
+                    username = username,
+                    hashed_password = password,
+                    fullname = fullname,
+                    email = email).first()
+
+    # Création d'un nouvel utilisateur
+    if existing_user is None:
+        user = User(
+                username = username,
+                fullname = fullname,
+                email = email,
+                hashed_password = password
+                )
+    else:
+        return "Cet utilisateur existe déjà"
+    
+    session.add(user)
+    session.commit()
+    return user
+
+def create_user_admin(session, username, fullname, hashed_password, email, permissions):
+     # Requête de vérification d"existence
+    username_test = username
+    fullname_test = fullname
+    hashed_password_test = hashed_password
+    email_test = email
+    permissions_test = permissions
+
+    existing_user = session.query(User).filter_by(
+                    username = username_test,
+                    fullname = fullname_test,
+                    hashed_password =hashed_password_test,
+                    email = email_test,
+                    permissions = permissions_test).first()
+
+    # Création d'un nouvel utilisateur
+    if existing_user is None:
+        user = User(
+                username = username_test,
+                fullname = fullname_test,
+                email = email_test,
+                hashed_password = hashed_password_test,
+                permissions = permissions_test
+                )
+    else:
+        return print("Cet utilisateur existe déjà")
+    
+    session.add(user)
+    session.commit()
+    return user
+
 # ******** DELETE / DELETE ********
 def delete_event(session, event_id):
     try:
@@ -257,7 +304,7 @@ def delete_event(session, event_id):
             message = "L'événement a été supprimé"
             session.commit()
         else:
-            message = "l'événement n'existe pas"
+            message = "L'événement n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -278,18 +325,19 @@ def delete_auteur(session, auteur_id):
 
             stmt = delete(AssAuteurPartition).where(AssAuteurPartition.auteur_id == auteur_id)
             session.execute(stmt) 
-            print("L'auteur a été supprimé")
+            message = "L'auteur a été supprimé"
             session.commit()
         else:
-            print("aucun auteur trouvé")
+            message = "aucun auteur trouvé"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
     finally:
         # Fermeture de la session
         session.close()
+        return message
 
 def delete_partition(session, partition_id):
     try:
@@ -302,18 +350,19 @@ def delete_partition(session, partition_id):
 
             stmt = delete(AssAuteurPartition).where(AssAuteurPartition.partition_id == partition_id)
             session.execute(stmt) 
-            print("La partition a été supprimée")
+            message = "La partition a été supprimée"
             session.commit()
         else:
-            print("suppression refusée")
+            message= "La partition n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
     finally:
         # Fermeture de la session
         session.close()
+        return message
 
 def delete_partition_hbm(session, partition_hbm_id):
     try:
@@ -323,17 +372,18 @@ def delete_partition_hbm(session, partition_hbm_id):
             partition_hbm_id = existing_partition.partition_hbm_id
             session.delete(existing_partition)
             session.commit()
-            print("La partition a été supprimée")
+            message = "La partition a été supprimée"
         else:
-            print("aucune partition trouvée")
+            message = "aucune partition trouvée"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
     finally:
         # Fermeture de la session
         session.close()
+        return message
 
 def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
     try:
@@ -351,18 +401,19 @@ def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
                 AssAuteurPartition.auteur_id == auteur_id,
                 AssAuteurPartition.role == role)
             session.execute(stmt) 
-            print("L'association partition/auteur/role a été supprimée")
+            message = "L'association partition/auteur/role a été supprimée"
             session.commit()
         else:
-            print("aucune correspondance trouvée")
+            message = "aucune correspondance trouvée"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
     finally:
         # Fermeture de la session
         session.close()
+        return message
 
 def delete_asso_partition_event(session, partition_hbm_id, event_id):
     try:
@@ -378,19 +429,39 @@ def delete_asso_partition_event(session, partition_hbm_id, event_id):
                 AssEvenementHbm.partition_hbm_id == partition_hbm_id,
                 AssEvenementHbm.evenement_id == event_id)
             session.execute(stmt) 
-            print("L'association partition/évènement a été supprimée")
+            message = "L'association partition/évènement a été supprimée"
             session.commit()
         else:
-            print("aucune correspondance trouvée")
+            message = "aucune correspondance trouvée"
+
+    except Exception as e:
+        # En cas d'erreur, annuler les changements
+        session.rollback()
+        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
+    finally:
+        # Fermeture de la session
+        session.close()
+        return message
+
+def delete_user(session, user_id):
+    try:
+        existing_user = session.query(User).filter_by(user_id=user_id).first()
+        if existing_user:
+            session.delete(existing_user)
+            message = "L'utilisateur a été supprimé"
+            session.commit()
+        else:
+            message = "L'utilisateur n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
         print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+
     finally:
         # Fermeture de la session
         session.close()
-
+        return message
 
 # ******** READ / GET ********
 def read_event_by_id(session, event_id):
@@ -437,6 +508,12 @@ def read_event_by_partition(session, partition_id):
     session.close()
     return evenement
 
+def read_event_all(session):
+    return session.query(Evenement).all()
+
+def read_asso_partition_event_all(session):
+    return session.query(AssEvenementHbm).all()
+
 def read_partition_by_event_id(session, event_id):
     # liste le programme d'un événement (partitions jouées)
     stmt = select(PartitionHBM.partition_hbm_id, Partition.titre).options(noload('*'))\
@@ -474,6 +551,14 @@ def read_partition_by_event_year(session, year):
     return partition
 
 def read_partition_by_id(session, partition_id):
+    # l'option noload permet de ne pas charger les relations avec les autres tables
+        stmt = select(Partition).options(noload('*')).where(Partition.partition_id==partition_id)
+        result = session.execute(stmt)
+        partition = result.first()
+        session.close()
+        return partition
+
+def read_partition_by_id_complete(session, partition_id):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     stmt = select(Partition).options(noload('*'))\
         .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id).add_columns(AssAuteurPartition.role)\
@@ -566,6 +651,9 @@ def read_partition_by_type(session, type):
     session.close()
     return partition
 
+def read_partition_all(session):
+    return session.query(Partition).all()
+
 # à vérifier
 def read_partition_hbm_by_id(session, partition_id):
     # l'option noload permet de ne pas charger les relations avec les autres tables
@@ -642,6 +730,9 @@ def read_partition_possessed_by_type(session, type):
     session.close()
     return partition
 
+def read_partition_possessed_all(session):
+    return session.query(PartitionHBM).all()
+
 def read_auteur_by_id(session, auteur_id):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     stmt = select(Auteur).options(noload('*')).where(Auteur.auteur_id==auteur_id)
@@ -667,6 +758,26 @@ def read_auteur_by_role(session, role):
     auteur = result.all()
     session.close()
     return auteur
+
+def read_auteur_all(session):
+    return session.query(Auteur).all()
+
+def read_asso_auteur_partition_all(session):
+    return session.query(AssAuteurPartition).all()
+
+
+# user complet pour admin
+def read_user_by_id(session, user_id):
+    stmt = select(User).where(User.user_id==user_id)
+    result = session.execute(stmt)
+    user = result.first()
+    return user
+
+def read_user_by_username(session, username):
+    stmt = select(User.username, User.fullname, User.email).where(User.username==username)
+    result = session.execute(stmt)
+    user = result.first()
+    return user
 
 # ******** UPDATE / PUT ********
 # A FINIR
@@ -709,6 +820,12 @@ def update_partition(session, partition_id):
 def update_auteur(session, author_id):
     pass
 
+def update_user_sample(session, username, fullname, password, email):
+    pass
+
+def update_user_complete(session, user_id, username, fullname, email, permissions):
+    pass
+
 # with open("database.py") as m:
 #     code = m.read()
 # exec(code)
@@ -747,5 +864,12 @@ def update_auteur(session, author_id):
 # session.commit()
 # create_event(session,datetime.strptime("03-10-2025", "%d-%m-%Y").date(),"semaine découverte", "auditorium CACFM", "concert","" )
 # update_event(session, 32, datetime.strptime("03-10-2025", "%d-%m-%Y").date(), "modif", "ailleurs", "défilé","mon_affiche.jpg")
+# session.commit()
+# session.close()
+
+# Session = sql_connect()
+# session = Session()
+# create_asso_hbm_event(session, 1, 15)
+# # print(read_partition_by_id(session, 7))
 # session.commit()
 # session.close()

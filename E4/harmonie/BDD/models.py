@@ -1,3 +1,4 @@
+# models.py
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
@@ -139,14 +140,28 @@ class Evenement(Base):
 class AssEvenementHbm(Base):
     __tablename__ = 'ass_evenement_hbm'
 
-    evenement_id:   Mapped[int] = mapped_column(ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True)
-    partition_hbm_id: Mapped[int] = mapped_column(ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True)
+    evenement_id:       Mapped[int] = mapped_column(ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True)
+    partition_hbm_id:   Mapped[int] = mapped_column(ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True)
 
     def __repr__(self):
         return super().__repr__()
     
     def __repr__(self) -> str:
         return f"AssEvenement(evenement_id={self.evenement_id!r}, partition_hbm_id={self.partition_hbm_id!r})"
+    
+class User(Base):
+    __tablename__ = "utilisateur"
+
+    user_id:            Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username:           Mapped[str] = mapped_column(String(), nullable=False)
+    fullname:           Mapped[str] = mapped_column(String(), nullable=True)
+    hashed_password:    Mapped[str] = mapped_column(String(), nullable=False)
+    email:              Mapped[str] = mapped_column(String(), nullable=True)
+    permissions:        Mapped[str] = mapped_column(String(), nullable=True)
+
+    def __repr__(self):
+        return f"User(user_id={self.user_id!r}, username={self.username}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
+
 
 if __name__ == "__main__":
     engine = get_engine()

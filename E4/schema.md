@@ -32,7 +32,8 @@ erDiagram
         url url
     }
     partition_hbm {
-        int partition_hbm_id PK, FK
+        int partition_hbm_id PK
+        int partition_id FK
         date distribution
         bool rendue
         int archive
@@ -56,6 +57,14 @@ erDiagram
     ass_evenement_hbm {
         int evenement_id PK, FK
         int partition_hbm_id PK, FK
+    }
+    user{
+        int user_id PK
+        string username
+        string fullname
+        string hashed_password
+        string email
+        string permissions
     }
 
     auteur ||--|{ ass_auteur_partition : a_oeuvre_pour

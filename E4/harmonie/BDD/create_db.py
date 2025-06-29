@@ -1,23 +1,18 @@
-# from models import Auteur, Partition, HBM, Evenement, SessionLocal
-from models import Auteur, Partition, AssAuteurPartition, Evenement
+# create_db.py
 from database import get_session_sql, sql_connect
 from datetime import date, datetime
-from sqlalchemy.orm import Session, Mapped, mapped_column, relationship
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, create_engine, ForeignKey, Table, MetaData
 import csv
-from crud import create_event, create_partition, create_auteur, create_asso_auteur_partition
+from crud import create_event, create_partition, create_auteur, create_asso_auteur_partition, create_user_admin
 from api_externe import get_api_externe
-from typing import Optional, List
 
 # session = get_session_sql()
 SessionLocal= sql_connect()
 session = SessionLocal()
 
-# Exécution du script princpal models.py
-def create_db():
-    with open("models.py") as m:
-        code = m.read()
-    exec(code)         
+# Exécution du script princpal models.py      
+with open("models.py") as m:
+    code = m.read()
+exec(code)
 
 # Insertion du csv évènements dans BDD
 def insert_event_to_db(file_path):
@@ -131,11 +126,42 @@ def insert_scrapy_to_db(file_path):
         # Fermeture de la session
         session.close()  
     
+# Insertion du csv users dans BDD
+def insert_users_to_db(file_path):
+    SessionLocal= sql_connect()
+    session = SessionLocal()
+    try:
+        # Ouverture du fichier CSV
+        with open(file_path, mode='r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            # Parcours des lignes du fichier CSV
+            for row in csv_reader:
+                username = row.get('username')
+                fullname = row.get('fullname')
+                hashed_password = row.get('hashed_password')
+                email = row.get('email')
+                permissions = row.get('permissions')
+                create_user_admin(session, username, fullname, hashed_password, email, permissions)    
+ 
+        # Commit des changements
+        session.commit()
+    except Exception as e:
+        # En cas d'erreur, annuler les changements
+        session.rollback()
+        print(f"Erreur lors de l'importation des données : {e}")
+    finally:
+        # Fermeture de la session
+        session.close()
+
+
 # Chemin vers le fichier CSV
 event_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/sources/events.csv"
 scrapy_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/E4/harmonie/harmonie/nouveau.csv"
+user_path = "C:/Users/Stephanie/Documents/Formations_info/Simplon/Certification/sources/users.csv"
+# event_path = "../sources/events.csv" # prompt au niveau E4/
+# scrapy_path = "./harmonie/harmonie/nouveau.csv" # prompt au niveau E4/
 
 # Importation des données CSV dans la base de données
-create_db()
 insert_event_to_db(event_path)
 insert_scrapy_to_db(scrapy_path)
+insert_users_to_db(user_path)
