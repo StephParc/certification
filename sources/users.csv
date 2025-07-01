@@ -1,0 +1,4 @@
+username,fullname,hashed_password,email,permissions
+"admin","Super Admin","$2b$12$xJbcCMPMvg5.3gwjhZhKs.mH6YG3cQasepEnQZ3jwgnm0.2MwG95y","email1@domain.fr","full_admin"
+"useradmin","Users Admin","$2b$12$xJbcCMPMvg5.3gwjhZhKs.mH6YG3cQasepEnQZ3jwgnm0.2MwG95y","email2@domain.fr","user_admin"
+"lambdauser","Lambda User","$2b$12$xJbcCMPMvg5.3gwjhZhKs.mH6YG3cQasepEnQZ3jwgnm0.2MwG95y","email3@domain.fr","read_only"
