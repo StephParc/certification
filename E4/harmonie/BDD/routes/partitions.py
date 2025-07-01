@@ -1,8 +1,9 @@
 # partitions.py
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, Query
 from sqlalchemy.orm import  Session
-from crud import create_part, read_partition_all, read_partition_by_id, delete_partition
-from schemas import Partition, PartitionID
+from crud import read_partition_by_id, read_partition_by_event_id, read_partition_by_event_date, read_partition_by_event_year, read_partition_by_id_complete, read_partition_by_composer, read_partition_by_arranger, read_partition_by_artist,read_partition_by_author, read_partition_by_creation_date, read_partition_by_grade, read_partition_by_genre, read_partition_all
+from crud import create_part, delete_partition
+from schemas import Partition, PartitionID, PartitionHbmID
 from auth import get_current_user
 from database import get_session_sql
 
@@ -13,13 +14,54 @@ router = APIRouter(
     responses={404: {"description":"Not found"}},
 )
 
-@router.get("/", response_model=list[PartitionID])
-def get_partition_all(session:Session=Depends(get_session_sql)):
-    return read_partition_all(session)
-
-@router.get("/{partition_id}", response_model=PartitionID)
+@router.get("/{partition_id}", response_model=list[PartitionID])
 def get_partition_by_id(id: int,session:Session=Depends(get_session_sql)):
     return read_partition_by_id(session, id)
+
+# @router.get("/complete/{partition_id}", response_model=PartitionID)
+# def get_partition_by_id_complete(id: int,session:Session=Depends(get_session_sql)):
+#     return read_partition_by_id_complete(session, id)
+
+# @router.get("/by_event_id/", response_model=list[list[PartitionHbmID]])
+# def get_partition_by_event_id(id: int,session:Session=Depends(get_session_sql)):
+#     return read_partition_by_event_id(session, id)
+
+# @router.get("/by_event_date/", response_model=PartitionID)
+# def get_partition_by_event_date(event_date:str=Query(description="Date au format YYYY-MM-DD"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_event_date(session, event_date)
+
+# @router.get("/event_year/", response_model=PartitionID)
+# def get_partition_by_event_year(event_year: int,session:Session=Depends(get_session_sql)):
+#     return read_partition_by_event_year(session, event_year)
+
+# @router.get("/by_composer/", response_model=PartitionID)
+# def get_partition_by_composer(composer_id: int, name:str=Query(description="le nom contient:"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_composer(session, composer_id, name)
+
+# @router.get("/by_arranger/", response_model=PartitionID)
+# def get_partition_by_arranger(arranger_id: int, name:str=Query(description="le nom contient:"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_arranger(session, arranger_id, name)
+
+# @router.get("/by_artist/", response_model=PartitionID)
+# def get_partition_by_artist(artist_id: int, name:str=Query(description="le nom contient:"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_artist(session, artist_id, name)
+
+# @router.get("/by_author/", response_model=PartitionID)
+# def get_partition_by_author(author_id: int, name:str=Query(description="le nom contient:"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_author(session, author_id, name)
+
+@router.get("/by_creation_date/", response_model=list[PartitionID])
+def get_partition_by_creation_date(creation_date,session:Session=Depends(get_session_sql)):
+     return read_partition_by_creation_date(session, creation_date)
+
+
+# @router.get("/by_grade/", response_model=PartitionID)
+# def get_partition_by_grade(grade: float,session:Session=Depends(get_session_sql)):
+#     return read_partition_by_grade(session, grade)
+
+# @router.get("/by_genre/", response_model=list[PartitionID])
+# def get_partition_by_genre(genre: str=Query(description="le genre contient:"),session:Session=Depends(get_session_sql)):
+#     return read_partition_by_genre/(session, genre)
 
 @router.post("/", response_model=Partition)
 def create_partition(part:Partition, session:Session=Depends(get_session_sql)):
@@ -59,3 +101,7 @@ def del_partition(id:int, session:Session=Depends(get_session_sql)):
 #     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
 #     session.commit()
 #     return result
+
+@router.get("/", response_model=list[PartitionID])
+def get_partition_all(session:Session=Depends(get_session_sql)):
+    return read_partition_all(session)

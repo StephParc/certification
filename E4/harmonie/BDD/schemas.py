@@ -4,8 +4,16 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
 
+# pour aller plus loin
+class TypeEvent(str, Enum):
+    concert = "concert"
+    defile = "défilé"
+    concert_defile = "concert + défilé"
+    sonnerie = "sonnerie"
+    autre = "autre prestation"
+
 class Event(BaseModel):
-    date_evenement: date | None = None
+    date_evenement: date | None
     nom_evenement: str | None = None
     lieu: str | None = None
     type_evenement: str | None = None

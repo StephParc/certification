@@ -508,12 +508,6 @@ def read_event_by_partition(session, partition_id):
     session.close()
     return evenement
 
-def read_event_all(session):
-    return session.query(Evenement).all()
-
-def read_asso_partition_event_all(session):
-    return session.query(AssEvenementHbm).all()
-
 def read_partition_by_event_id(session, event_id):
     # liste le programme d'un événement (partitions jouées)
     stmt = select(PartitionHBM.partition_hbm_id, Partition.titre).options(noload('*'))\
@@ -568,7 +562,7 @@ def read_partition_by_id_complete(session, partition_id):
     session.close()
     return partition
 
-def read_partition_by_composer(session, composer_id, name):
+def read_partition_by_composer(session, composer_id=None, name=None):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -579,7 +573,7 @@ def read_partition_by_composer(session, composer_id, name):
     session.close()
     return partition
 
-def read_partition_by_arranger(session, arranger_id, name):
+def read_partition_by_arranger(session, arranger_id=None, name=None):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     name=f"%{name}%"
     stmt = select(Partition.partition_id, Partition.titre).options(noload('*'))\
@@ -638,21 +632,18 @@ def read_partition_by_grade(session, grade):
     session.close()
     return partition
 
-def read_partition_by_type(session, type):
+def read_partition_by_genre(session, genre):
     # l'option noload permet de ne pas charger les relations avec les autres tables
-    type=f"%{type}%"
+    genre=f"%{genre}%"
     stmt = select(Partition.partition_id, Partition.titre, Partition.genre).options(noload('*'))\
         .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
         .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
         .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
-        .where(Partition.genre.ilike(type))
+        .where(Partition.genre.ilike(genre))
     result = session.execute(stmt)
     partition = result.all()
     session.close()
     return partition
-
-def read_partition_all(session):
-    return session.query(Partition).all()
 
 # à vérifier
 def read_partition_hbm_by_id(session, partition_id):
@@ -730,9 +721,6 @@ def read_partition_possessed_by_type(session, type):
     session.close()
     return partition
 
-def read_partition_possessed_all(session):
-    return session.query(PartitionHBM).all()
-
 def read_auteur_by_id(session, auteur_id):
     # l'option noload permet de ne pas charger les relations avec les autres tables
     stmt = select(Auteur).options(noload('*')).where(Auteur.auteur_id==auteur_id)
@@ -759,12 +747,6 @@ def read_auteur_by_role(session, role):
     session.close()
     return auteur
 
-def read_auteur_all(session):
-    return session.query(Auteur).all()
-
-def read_asso_auteur_partition_all(session):
-    return session.query(AssAuteurPartition).all()
-
 
 # user complet pour admin
 def read_user_by_id(session, user_id):
@@ -778,6 +760,25 @@ def read_user_by_username(session, username):
     result = session.execute(stmt)
     user = result.first()
     return user
+
+# tables complètes
+def read_auteur_all(session):
+    return session.query(Auteur).all()
+
+def read_partition_all(session):
+    return session.query(Partition).all()
+
+def read_partition_possessed_all(session):
+    return session.query(PartitionHBM).all()
+
+def read_event_all(session):
+    return session.query(Evenement).all()
+
+def read_asso_partition_event_all(session):
+    return session.query(AssEvenementHbm).all()
+
+def read_asso_auteur_partition_all(session):
+    return session.query(AssAuteurPartition).all()
 
 # ******** UPDATE / PUT ********
 # A FINIR
@@ -795,17 +796,15 @@ def update_event(session, event_id, date_evenement=None, nom_evenement=None, lie
                     affiche=affiche
                 )
             session.execute(stmt) 
-            print("L'évènement a été mis à jour")
             message = "L'événement a été mis à jour"
             session.commit()
         else:
-            print("aucune correspondance trouvée")
             message = "L'événement n'existe pas"
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la mise à jour de l'enregistrement : {e}")
+        message = f"Erreur lors de la mise à jour de l'enregistrement : {e}"
     finally:
         # Fermeture de la session
         session.close()
@@ -867,9 +866,8 @@ def update_user_complete(session, user_id, username, fullname, email, permission
 # session.commit()
 # session.close()
 
-# Session = sql_connect()
-# session = Session()
-# create_asso_hbm_event(session, 1, 15)
-# # print(read_partition_by_id(session, 7))
+Session = sql_connect()
+session = Session()
+print(read_partition_by_creation_date(session, 2024))
 # session.commit()
-# session.close()
+session.close()

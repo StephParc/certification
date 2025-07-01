@@ -44,6 +44,7 @@ site/
 # Ignore les csv
 *.csv
 
-E4/harmonie/BDD/.env
+E4/harmonie/BDD/
+*.env
 .venv/
 essais/

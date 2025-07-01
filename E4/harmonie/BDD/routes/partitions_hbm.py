@@ -24,7 +24,7 @@ def get_partition_hbm_by_id(part:PartitionHbmID, session:Session=Depends(get_ses
 
 @router.post("/", response_model=PartitionHbmID)
 def create_partition_hbm_from_partition(part:PartitionHBM, session:Session=Depends(get_session_sql)):
-    part=create_part_hbm_from_partition(session, part.partition_id, part.distribution, part.rendue, part.archive, part.concert, part.defile, part.sonnerie)
+    part = create_part_hbm_from_partition(session, part.partition_id, part.distribution, part.rendue, part.archive, part.concert, part.defile, part.sonnerie)
     session.commit()
     session.refresh(part)
     return part
