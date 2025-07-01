@@ -42,8 +42,9 @@ terraform.rc
 site/
 
 # Ignore les csv
-*hhh.csv
-
+#*.csv
+*musicshop0*.csv
+*musicshop1*.csv
 
 *.env
 .venv/
