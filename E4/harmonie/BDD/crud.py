@@ -622,10 +622,21 @@ def read_partition_by_creation_date(session, creation_date):
 
 def read_partition_by_grade(session, grade):
     # l'option noload permet de ne pas charger les relations avec les autres tables
-    stmt = select(Partition.partition_id, Partition.titre, Partition.niveau).options(noload('*'))\
+    # les champs sont retournés null
+    # stmt = select(Partition).options(noload('*'))\
+    #     .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
+    #     .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
+    #     .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+    #     .where(Partition.niveau==grade)
+    
+    stmt = select(Partition.partition_id, Partition.titre, Partition.sous_titre,Partition.edition, Partition.collection, \
+                Partition.instrumentation, Partition.niveau, Partition.genre, \
+                Partition.style, Partition.annee_sortie, Partition.ISMN, Partition.ref_editeur,\
+                Partition.duree, Partition.description, Partition.url)\
+        .options(noload('*'))\
         .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
         .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
-        .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
+        .add_columns(AssAuteurPartition.role, (Auteur.prenom + " " + Auteur.nom).label("auteur_nom_complet"))\
         .where(Partition.niveau==grade)
     result = session.execute(stmt)
     partition = result.all()
@@ -866,8 +877,8 @@ def update_user_complete(session, user_id, username, fullname, email, permission
 # session.commit()
 # session.close()
 
-Session = sql_connect()
-session = Session()
-print(read_partition_by_creation_date(session, 2024))
-# session.commit()
-session.close()
+# Session = sql_connect()
+# session = Session()
+# print(read_partition_by_creation_date(session, 2024))
+# # session.commit()
+# session.close()

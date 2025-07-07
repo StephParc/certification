@@ -50,15 +50,33 @@ def get_partition_by_id(id: int,session:Session=Depends(get_session_sql)):
 # def get_partition_by_author(author_id: int, name:str=Query(description="le nom contient:"),session:Session=Depends(get_session_sql)):
 #     return read_partition_by_author(session, author_id, name)
 
+# informations partielles
 @router.get("/by_creation_date/", response_model=list[PartitionID])
 def get_partition_by_creation_date(creation_date,session:Session=Depends(get_session_sql)):
      return read_partition_by_creation_date(session, creation_date)
 
 
-# @router.get("/by_grade/", response_model=PartitionID)
-# def get_partition_by_grade(grade: float,session:Session=Depends(get_session_sql)):
-#     return read_partition_by_grade(session, grade)
+@router.get("/by_grade/")
+def get_partition_by_grade(grade: float,session:Session=Depends(get_session_sql)):
+    partitions = read_partition_by_grade(session, grade)
+    response = []
+    for partition in partitions:
+        partition_dict = {
+            "partition_id": partition.partition_id,
+            "titre": partition.titre,
+            "sous_titre": partition.sous_titre,
+            "edition": partition.edition,
+            "collection": partition.collection,
+            "instrumentation": partition.instrumentation,
+            "niveau": partition.niveau,
+            "genre": partition.genre,
+            "role": partition.role,
+            "auteur": partition.auteur_nom_complet
+        }
+        response.append(partition_dict)
 
+    return response
+    
 # @router.get("/by_genre/", response_model=list[PartitionID])
 # def get_partition_by_genre(genre: str=Query(description="le genre contient:"),session:Session=Depends(get_session_sql)):
 #     return read_partition_by_genre/(session, genre)

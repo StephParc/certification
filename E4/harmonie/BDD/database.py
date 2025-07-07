@@ -23,8 +23,3 @@ def get_session_sql():
         yield session
     finally:
         session.close()
-
-# SessionLocal = sql_connect()
-# session = SessionLocal()
-# print(type(session))
-# print(type(get_session_sql()))

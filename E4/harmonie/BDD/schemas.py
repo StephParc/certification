@@ -1,7 +1,7 @@
-# schema.py
+# schema.py . Contient les modèles Pydantic.
 from datetime import date
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Dict
 from enum import Enum
 
 # pour aller plus loin
@@ -93,6 +93,10 @@ class PartitionEvent(BaseModel):
 
     class Config:
         orm_mode=True
+
+# class Combo(BaseModel):
+#     partition: List[PartitionID]
+#     auteur: Dict["auteur":List[Auteur], "role": AssoAuteurPartition]
 
 class UserPublic(BaseModel):
     username: str | None = None
