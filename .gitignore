@@ -43,9 +43,8 @@ site/
 
 # Ignore les csv
 #*.csv
-**/*musicshop0*.csv
-**/*musicshop1*.csv
+#**/*musicshop0*.csv
+#**/*musicshop1*.csv
 
 *.env
 .venv/
-essais/
