@@ -4,9 +4,15 @@
 ```
 .
 ├── docs/  
-|    ├── A_vous_de_jouer.md  
+|    ├── E1.md
+|    ├── E2.md
+|    ├── E3.md
+|    ├── E4.md
+|    ├── E5.md
+|    ├── E6.md
+|    ├── E7.md  
 |    ├── index.md  
-|    └── Projet.md
+|    └── structure_du_projet.md
 ├── Avant-projet/ 
 |   ├── présentation certif.odp
 |   └── référentiel écoresponsable.odt
@@ -18,45 +24,58 @@
 |       ├── GU02.odt
 |       ├── GU03.odt
 |       ├── GU04.odt
-|       ├── GU05.odt
-|   ├── E1.odt
+|       └── GU05.odt
+|   └── E1.odt
 ├── E2/
-|   ├── E2.odt
+|   └── E2.odt
 ├── E3/
-|   ├── E3.odt
+|   └── E3.odt
 ├── E4/
 |   ├── harmonie/
-|       ├── BDD_brute/
-|           ├── __pycache__
+|       ├── BDD/
 |           ├── pages/
-|               ├── 1_auteurs
-|               ├── 2_partitions
-|               ├── 3_événements
+|               ├── 1_auteurs.py
+|               ├── 2_partitions.py
+|               ├── 3_evenements.py
 |               ├──
-|           ├── __init__.py
+|           ├── routes/
+|               ├── associations.py
+|               ├── auteurs.py
+|               ├── authentification.py
+|               ├── evenements.py
+|               ├── partitions_hbm.py
+|               ├── partitions.py
+|               └── users.py
 |           ├── .env
 |           ├── api_externe.py
-|           ├── api_hbmpy
-|           ├── app.py
+|           ├── api_hbm.py
+|           ├── app_streamlit.py
+|           ├── auth.py
 |           ├── config.py
 |           ├── create_db.py
 |           ├── crud.py
-|           ├── main.py
+|           ├── hbm.db
 |           ├── models.py
-|           ├── schemas.py
+|           └── schemas.py
 |       ├── harmonie/
-|           ├── __pycache__/
+|           ├── archives/
+|               ├── musicshop_2025-02-27.csv
+|               ├── musicshop_2025-07-02.csv
+|               └── ...
 |           ├── spiders/
-|               ├── __init__.py
 |               └── hbm_scrap.py
-|           ├── __init__.py
-|           ├── clean.py 
+|           ├── clean_scrapy.py 
 |           ├── items.py
 |           ├── middlewares.py
+|           ├── musicshop_all.csv
+|           ├── musicshop_last.csv
+|           ├── musicshop_new.csv
 |           ├── pipelines.py
 |           ├── settings.py
+|           └── sources/
+|               ├── events.csv
+|               └── users.csv
 |       ├── scrapy.cfg
-|       ├── clean_scrapy.py
 |       └── schema.md
 ├── E5/
 ├── E6/
@@ -76,8 +95,6 @@
 |   ├── provider.tf
 |   ├── (test.py)
 |   └── variables.tf 
-├── (sources/)
-|   ├── (events.csv)
 ├── .gitignore
 ├── (musicbrainz.org.json)
 ├── poetry.lock
