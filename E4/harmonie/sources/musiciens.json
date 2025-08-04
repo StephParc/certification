@@ -1,0 +1,47 @@
+{
+    "musiciens":[
+        {
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "date_naissance":"01/01/1970",
+            "date_entree_hbm": 2000,
+            "date_federation": 1995,
+            "adresse": {
+                "numero": 2,
+                "rue": "allée des pinsons",
+                "cp": 59820,
+                "ville": "Gravelines"
+            },
+            "telephone": "0328230000",
+            "portable": "0600000000",
+            "email": "jean.dupont@fai.com",
+            "instruments": [
+                {"id_instrument": 1, "rang":1},
+                {"id_instrument": 2, "rang":2}
+            ],
+            "statut": "actif"
+        },
+        {
+            "nom": "Martin",
+            "prenom": "Marie",
+            "date_naissance":"01/01/2000",
+            "date_entree_hbm": 2020,
+            "adresse": {
+                "numero": 25,
+                "rue": "chemin des mésanges",
+                "cp": 59140,
+                "ville": "Dunkerque"
+            },
+            "telephone": "0328230000",
+            "portable": "0700000000",
+            "email": "marie.martin@fai.com",
+            "instruments": [
+                {"id_instrument": 3, "rang":1},
+                {"id_instrument": 2, "rang":2},
+                {"id_instrument": 4, "rang":3}
+            ],
+            "statut": "inactif",
+            "date_depart": "07/2025"
+        }
+    ] 
+}

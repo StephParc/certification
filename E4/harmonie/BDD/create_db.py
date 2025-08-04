@@ -234,6 +234,6 @@ scrapy_path = "../harmonie/musicshop_new.csv"
 user_path = "../sources/users.csv"
 
 # Importation des données CSV dans la base de données
-insert_event_to_db(event_path)
+# insert_event_to_db(event_path)
 insert_scrapy_to_db(scrapy_path)
-insert_users_to_db(user_path)
+# insert_users_to_db(user_path)

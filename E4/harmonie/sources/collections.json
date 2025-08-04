@@ -1,0 +1,273 @@
+{
+    "musiciens":[
+        {
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "date_naissance":"01/01/1970",
+            "date_entree_hbm": 2000,
+            "date_federation": 1995,
+            "adresse": {
+                "numero": 2,
+                "rue": "allée des pinsons",
+                "cp": 59820,
+                "ville": "Gravelines"
+            },
+            "telephone": "0328230000",
+            "portable": "0600000000",
+            "email": "jean.dupont@fai.com",
+            "instruments": [
+                {"id_instrument": 1, "rang":1},
+                {"id_instrument": 2, "rang":2}
+            ],
+            "statut": "actif"
+        },
+        {
+            "nom": "Martin",
+            "prenom": "Marie",
+            "date_naissance":"01/01/2000",
+            "date_entree_hbm": 2020,
+            "adresse": {
+                "numero": 25,
+                "rue": "chemin des mésanges",
+                "cp": 59140,
+                "ville": "Dunkerque"
+            },
+            "telephone": "0328230000",
+            "portable": "0700000000",
+            "email": "marie.martin@fai.com",
+            "instruments": [
+                {"id_instrument": 3, "rang":1},
+                {"id_instrument": 2, "rang":2},
+                {"id_instrument": 4, "rang":3}
+            ],
+            "statut": "inactif",
+            "date_depart": "07/2025"
+        }
+    ],
+    "instruments":[
+        {
+            "famille": "flûtes",
+            "voix": "piccolo"
+        },
+        {
+            "famille": "flûtes",
+            "voix": "solo"
+        },
+        {
+            "famille": "flûtes",
+            "voix": "fl1"
+        },
+        {
+            "famille": "flûtes",
+            "voix": "fl2"
+        },
+        {
+            "famille": "flûtes",
+            "voix": "alto"
+        },
+        {
+            "famille": "hautbois",
+            "voix": "hautbois1"
+        },
+        {
+            "famille": "houtbois",
+            "voix": "hautbois2"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "mib"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "solo"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "sib1"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "sib2"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "sib3"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "alto"
+        },
+        {
+            "famille": "clarinettes",
+            "voix": "basse"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "soprano"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "solo"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "alto1"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "alto2"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "tenor1"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "tenor2"
+        },
+        {
+            "famille": "saxophones",
+            "voix": "baryton"
+        },
+        {
+            "famille": "cors",
+            "voix": "cor1"
+        },
+        {
+            "famille": "cors",
+            "voix": "cor2"
+        },
+        {
+            "famille": "cors",
+            "voix": "cor3"
+        },
+        {
+            "famille": "cors",
+            "voix": "cor4"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "solo"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "trompette1"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "trompette2"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "trompette3"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "cornet1"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "cornet2"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "cornet3"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "buggle"
+        },
+        {
+            "famille": "trompettes",
+            "voix": "alto"
+        },
+        {
+            "famille": "trombones",
+            "voix": "solo"
+        },
+        {
+            "famille": "trombones",
+            "voix": "trombone1"
+        },
+        {
+            "famille": "trombones",
+            "voix": "trombone2"
+        },
+        {
+            "famille": "trombones",
+            "voix": "basse"
+        },
+        {
+            "famille": "tubas",
+            "voix": "solo"
+        },
+         {
+            "famille": "tubas",
+            "voix": "euphonium1",
+            "tonalité": "sib",
+            "clef": "sol"
+        },
+         {
+            "famille": "tubas",
+            "voix": "tuba1"
+        },
+        {
+            "famille": "percussions",
+            "voix": "tambour"
+        },
+        {
+            "famille": "percussions",
+            "voix": "batterie"
+        },
+        {
+            "famille": "percussions",
+            "voix": "timbales"
+        },
+        {
+            "famille": "percussions",
+            "voix": "vibraphone"
+        },
+        {
+            "famille": "percussions",
+            "voix": "xylophone"
+        },
+        {
+            "famille": "percussions",
+            "voix": "glock"
+        },
+        {
+            "famille": "percussions",
+            "voix": "congas"
+        },
+        {
+            "famille": "percussions",
+            "voix": "percu1"
+        },
+        {
+            "famille": "percussions",
+            "voix": "percu2"
+        },
+        {
+            "famille": "autre",
+            "voix": "piano"
+        },
+        {
+            "famille": "autre",
+            "voix": "violon"
+        },
+        {
+            "famille": "autre",
+            "voix": "chant"
+        }
+    ],
+    "partitions":[
+        {
+            "hbm_id": 1,
+            "titre": "Call of the clans",
+            "nomenclature": [
+                {"instrument_id":"instrument_id", "priorite":1},
+                {"instrument_id":"intrusment_id", "priorite":0}
+            ]
+        }
+    ] 
+}

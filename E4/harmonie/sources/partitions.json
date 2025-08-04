@@ -1,0 +1,12 @@
+{
+    "partitions":[
+        {
+            "hbm_id": 1,
+            "titre": "Call of the clans",
+            "nomenclature": [
+                {"instrument_id":"instrument_id", "priorite":1},
+                {"instrument_id":"intrusment_id", "priorite":0}
+            ]
+        }
+    ]
+}

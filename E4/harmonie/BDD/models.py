@@ -158,6 +158,7 @@ class User(Base):
     hashed_password:    Mapped[str] = mapped_column(String(), nullable=False)
     email:              Mapped[str] = mapped_column(String(), nullable=True)
     permissions:        Mapped[str] = mapped_column(String(), nullable=True)
+    last_connection:    Mapped[date]= mapped_column(Date(), nullable=True)
 
     def __repr__(self):
         return f"User(user_id={self.user_id!r}, username={self.username}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"

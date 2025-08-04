@@ -62,11 +62,11 @@ def get_api_externe(identity):
 ## Exemples pour tester l'API
 
 # print(get_api_externe("ravel"))
-# print(get_api_externe("Satoshi Yagisawa"))
+print(get_api_externe("Satoshi Yagisawa"))
 # print(get_api_externe("MIMI"))
 # print(get_api_externe("ijdzoij"))
 # print(get_api_externe("erik satie"))
 # print(get_api_externe("nirvana"))
 # print(get_api_externe(None))
 # print(get_api_externe(""))
-    
+# print(get_api_externe("thierry deleruyelle"))   
