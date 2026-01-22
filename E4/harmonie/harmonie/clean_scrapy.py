@@ -38,7 +38,7 @@ with open(output_file3, mode='w', newline='', encoding='utf-8') as outfile:
 # Enregistrer les nouveautés
 df_filtered.to_csv(output_file3, index=False)
 
-# Complèter les nouveautés 
+# Compléter les nouveautés 
 df_combined = pd.concat([df_filtered, df2], ignore_index=True)
 df_combined.to_csv(output_file2, index=False)
 

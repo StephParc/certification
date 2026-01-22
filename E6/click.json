@@ -1,0 +1,10 @@
+{
+"event_id": "str(uuid.uuid4())",
+"session_id": "str(uuid.uuid4())",
+"user_id": "str(uuid.uuid4())| None" ,
+"url": "url",
+"event_type": "random.choice(['view_page', 'add_to_cart', 'checkout_start'])",
+"user_agent": "fake.user_agent()",
+"ip_address": "fake.ipv4()",
+"timestamp": "now"
+}

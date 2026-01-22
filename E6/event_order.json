@@ -1,0 +1,34 @@
+{
+    "event_id": "str(uuid.uuid4())",
+    "order_id": "str(uuid.uuid4())",
+    "customer": {
+        "id": "str(uuid.uuid4())",
+        "name": "fake.name()",
+        "email": "fake.email()",
+        "address": "fake.street_address()",
+        "city": "fake.city()",
+        "country": "fake.country()"
+    },
+    "items": [
+        {
+        "product_id": "str(uuid.uuid4())",
+        "name": "fake.catch_phrase()",
+        "category": "random.choice(['Electronics', 'Home', 'Clothing', 'Books', 'Beauty'])",
+        "description": "fake.sentence()",
+        "unit_price": "round(random.uniform(5, 300), 2)",
+        "quantity": "random.randint(1, 3)"
+        },
+        {
+        "product_id": "str(uuid.uuid4())",
+        "name": "fake.catch_phrase()",
+        "category": "random.choice(['Electronics', 'Home', 'Clothing', 'Books', 'Beauty'])",
+        "description": "fake.sentence()",
+        "unit_price": "round(random.uniform(5, 300), 2)",
+        "quantity": "random.randint(1, 3)"
+        }
+    ],
+    "total_amount": "round(total_amount, 2)",
+    "currency": "USD",
+    "status": "PLACED",
+    "timestamp": "now"
+}
