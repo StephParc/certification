@@ -50,3 +50,11 @@ site/
 .venv/
 
 E4/registre-traitement-simplifie.ods
+
+E7/upload_test.py
+
+E7/data_lake/
+*.log
+
+__pycache__/
+**/.~lock.*

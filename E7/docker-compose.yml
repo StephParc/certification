@@ -1,0 +1,29 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: hbm_minio
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console
+    environment:
+      MINIO_ROOT_USER: admin_hbm
+      MINIO_ROOT_PASSWORD: hbm_password_2024
+    volumes:
+      # On mappe un dossier local pour que les données persistent
+      - ./data_datalake:/data 
+    command: server /data --console-address ":9001"
+
+  # Le "robot" qui prépare tes zones de données
+  setup-minio:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 admin_hbm hbm_password_2024;
+      /usr/bin/mc mb --ignore-existing myminio/zone-brute;
+      /usr/bin/mc mb --ignore-existing myminio/zone-propre;
+      /usr/bin/mc mb --ignore-existing myminio/zone-enrichie;
+      exit 0;
+      "
