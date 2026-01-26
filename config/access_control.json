@@ -1,0 +1,46 @@
+{
+    "organisation": "Garage Data Lake Certification",
+    "groups": {
+        "super_user":{
+            "members": ["Stephanie"],
+            "keys": ["admin-key"],
+            "permissions": ["READ", "WRITE", "OWNER"],
+            "target_buckets": ["zone-config", "zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
+        },
+        "ingestion_service":{
+            "members": ["scraper", "cleaner"],
+            "keys": ["ingestion-service-key"],
+            "permissions": [
+                {               
+                    "level": "READ",
+                    "target_buckets": ["zone-config", "zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
+                },
+                {
+                    "level": "WRITE",
+                    "target_buckets": ["zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
+                }
+            ]
+        },
+        "data_analysts":{
+            "members": ["Stephanie", "alpha", "beta", "gamma"],
+            "keys": ["analyst-key"],
+            "permissions": [
+                {               
+                    "level": "READ",
+                    "target_buckets": ["zone-config", "zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
+                },
+                {
+                    "level": "WRITE",
+                    "target_buckets": ["zone-tests"]
+                }
+            ]
+        },
+        "monitoring":{
+            "members": ["Stephanie", "catalogue"],
+            "keys": ["monitoring-key"],
+            "permissions": ["READ"],
+            "target_buckets": ["zone-config", "zone-brutes", "zone-propres", "zone-enrichies"]
+        }
+    }
+
+}
