@@ -10,16 +10,8 @@
         "ingestion_service":{
             "members": ["scraper", "cleaner"],
             "keys": ["ingestion-service-key"],
-            "permissions": [
-                {               
-                    "level": "READ",
-                    "target_buckets": ["zone-config", "zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
-                },
-                {
-                    "level": "WRITE",
-                    "target_buckets": ["zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
-                }
-            ]
+            "permissions": ["READ", "WRITE"],
+            "target_buckets": ["zone-config", "zone-tests", "zone-brutes", "zone-propres", "zone-enrichies"]
         },
         "data_analysts":{
             "members": ["Stephanie", "alpha", "beta", "gamma"],

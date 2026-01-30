@@ -1,4 +1,4 @@
-```mermaid
+date```mermaid
 ---
 title: Schéma BDD
 ---

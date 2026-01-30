@@ -16,20 +16,21 @@ from utils.logger_config import trace_action, setup_logger
 # env_path = os.path.join(os.path.dirname(__file__),'../.env')
 # load_dotenv(dotenv_path=env_path)
 
-logger = setup_logger("E7-Catalogue")
+logger_name = "E7-Catalogue"
+logger = setup_logger(logger_name)
 
 # Chargement du .env situé dans le dossier parent
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR.parent / ".env")
 
-@trace_action
+@trace_action(logger_name)
 def catalogue_BDD():
     try:
         conn = psycopg2.connect(
             host=os.getenv('DBHOST'),
             database=os.getenv('DBNAME'),
-            user=os.getenv('DBUSER_RO'),
-            password=os.getenv('PASSWORD_RO'),
+            user=os.getenv('DBUSER_RW'),
+            password=os.getenv('PASSWORD_RW'),
             options="-c client_encoding=utf8"
         )
         
@@ -107,7 +108,7 @@ def catalogue_BDD():
         logger.error(f"Erreur lors du catalogage BDD : {error_msg}")
         return []
 
-@trace_action
+@trace_action(logger_name)
 def catalogue_DL():
     s3 = boto3.client(
         's3',
@@ -127,12 +128,19 @@ def catalogue_DL():
             if 'Contents' in response:
                 for obj in response['Contents']:
                     key = obj['Key']
-                    name = key.split('/')[-1] if not key.endswith('/') else key
+                    if not key.endswith('/'):
+                        parts = key.split('/')
+                        name = parts[-1]   
+                        file_root = "/".join(parts[:-1])
+                        file_root = f"{file_root}/" 
+                    else:
+                        name = None
+                        file_root = key
                     
                     catalog_s3.append({
                         "bucket": bucket_name,
                         "file_name": name,
-                        "path": key,
+                        "path": file_root,
                         "format": os.path.splitext(key)[1].replace('.', '') or ("folder" if key.endswith('/') else "unknown"),
                         "size_ko": round(obj['Size'] / 1024, 2),
                         "last_modified": obj['LastModified'].isoformat(),
@@ -153,7 +161,7 @@ def catalogue_DL():
             
     return catalog_s3
 
-@trace_action
+@trace_action(logger_name)
 def catalogue_Mongo():
     try:
         client = MongoClient(os.getenv("MONGO_DATABASE_URL"))
@@ -176,7 +184,7 @@ def catalogue_Mongo():
         return []
     return mongo_meta
 
-@trace_action
+@trace_action(logger_name)
 def catalogue_export():
     """Fonction maîtresse qui assemble et sauvegarde"""
     

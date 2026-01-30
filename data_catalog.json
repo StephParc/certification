@@ -1,5 +1,5 @@
 {
-    "export_date": "2026-01-27T19:25:24.417226",
+    "export_date": "2026-01-29T15:23:30.932841",
     "relational_db": [
         {
             "nom_base": "hbm",
@@ -9,7 +9,7 @@
             "nom_colonne": "auteur_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK | FK",
             "colonne_description": null
         },
         {
@@ -20,7 +20,7 @@
             "nom_colonne": "partition_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK | FK",
             "colonne_description": null
         },
         {
@@ -31,7 +31,7 @@
             "nom_colonne": "role",
             "type_data": "varchar",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": null
         },
         {
@@ -42,7 +42,7 @@
             "nom_colonne": "evenement_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK | FK",
             "colonne_description": null
         },
         {
@@ -53,7 +53,7 @@
             "nom_colonne": "partition_hbm_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK | FK",
             "colonne_description": null
         },
         {
@@ -64,7 +64,7 @@
             "nom_colonne": "auteur_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": "id de l'auteur dans la table auteur"
         },
         {
@@ -130,7 +130,7 @@
             "nom_colonne": "evenement_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": null
         },
         {
@@ -196,7 +196,7 @@
             "nom_colonne": "partition_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": null
         },
         {
@@ -361,7 +361,7 @@
             "nom_colonne": "partition_hbm_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": null
         },
         {
@@ -372,7 +372,7 @@
             "nom_colonne": "partition_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "FK | UNIQUE",
             "colonne_description": null
         },
         {
@@ -449,7 +449,7 @@
             "nom_colonne": "user_id",
             "type_data": "int4",
             "nullable": "NO",
-            "contraintes": null,
+            "contraintes": "PK",
             "colonne_description": null
         },
         {
@@ -522,7 +522,7 @@
     "datalake": [
         {
             "bucket": "zone-brutes",
-            "file_name": "E4/",
+            "file_name": null,
             "path": "E4/",
             "format": "folder",
             "size_ko": 0.0,
@@ -533,7 +533,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "collections.json",
-            "path": "E4/collections.json",
+            "path": "E4/",
             "format": "json",
             "size_ko": 6.46,
             "last_modified": "2026-01-26T16:56:12.271000+00:00",
@@ -543,7 +543,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "musicshop_all.csv",
-            "path": "E4/musicshop_all.csv",
+            "path": "E4/",
             "format": "csv",
             "size_ko": 19479.55,
             "last_modified": "2026-01-26T16:56:33.196000+00:00",
@@ -553,7 +553,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "musicshop_last.csv",
-            "path": "E4/musicshop_last.csv",
+            "path": "E4/",
             "format": "csv",
             "size_ko": 165.57,
             "last_modified": "2026-01-26T16:56:33.640000+00:00",
@@ -563,7 +563,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "musicshop_new.csv",
-            "path": "E4/musicshop_new.csv",
+            "path": "E4/",
             "format": "csv",
             "size_ko": 46.67,
             "last_modified": "2026-01-26T16:56:33.796000+00:00",
@@ -572,7 +572,7 @@
         },
         {
             "bucket": "zone-brutes",
-            "file_name": "E5/",
+            "file_name": null,
             "path": "E5/",
             "format": "folder",
             "size_ko": 0.0,
@@ -583,7 +583,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-12-infoconcert.csv",
-            "path": "E5/2026-01-12-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 2.07,
             "last_modified": "2026-01-26T16:54:46.839000+00:00",
@@ -593,7 +593,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-13-infoconcert.csv",
-            "path": "E5/2026-01-13-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 5.46,
             "last_modified": "2026-01-26T16:54:46.891000+00:00",
@@ -603,7 +603,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-15-infoconcert.csv",
-            "path": "E5/2026-01-15-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 5.14,
             "last_modified": "2026-01-26T16:54:46.976000+00:00",
@@ -613,7 +613,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-16-infoconcert.csv",
-            "path": "E5/2026-01-16-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 21.44,
             "last_modified": "2026-01-26T16:54:47.016000+00:00",
@@ -623,7 +623,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-17-infoconcert.csv",
-            "path": "E5/2026-01-17-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 27.95,
             "last_modified": "2026-01-26T16:54:47.072000+00:00",
@@ -633,7 +633,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-18-infoconcert.csv",
-            "path": "E5/2026-01-18-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 7.04,
             "last_modified": "2026-01-26T16:54:47.156000+00:00",
@@ -643,7 +643,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-19-infoconcert.csv",
-            "path": "E5/2026-01-19-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 3.12,
             "last_modified": "2026-01-26T16:54:47.195000+00:00",
@@ -653,7 +653,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-20-infoconcert.csv",
-            "path": "E5/2026-01-20-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 11.2,
             "last_modified": "2026-01-26T16:54:47.303000+00:00",
@@ -663,7 +663,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-21-infoconcert.csv",
-            "path": "E5/2026-01-21-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 13.17,
             "last_modified": "2026-01-26T16:54:47.350000+00:00",
@@ -673,7 +673,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-22-infoconcert.csv",
-            "path": "E5/2026-01-22-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 18.65,
             "last_modified": "2026-01-26T16:54:47.509000+00:00",
@@ -683,7 +683,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-23-infoconcert.csv",
-            "path": "E5/2026-01-23-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 33.67,
             "last_modified": "2026-01-26T16:54:47.535000+00:00",
@@ -693,7 +693,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-24-infoconcert.csv",
-            "path": "E5/2026-01-24-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 43.49,
             "last_modified": "2026-01-26T16:54:47.599000+00:00",
@@ -703,7 +703,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-25-infoconcert.csv",
-            "path": "E5/2026-01-25-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 17.61,
             "last_modified": "2026-01-26T16:54:47.627000+00:00",
@@ -713,7 +713,7 @@
         {
             "bucket": "zone-brutes",
             "file_name": "2026-01-26-infoconcert.csv",
-            "path": "E5/2026-01-26-infoconcert.csv",
+            "path": "E5/",
             "format": "csv",
             "size_ko": 4.87,
             "last_modified": "2026-01-26T16:54:47.652000+00:00",
@@ -722,7 +722,7 @@
         },
         {
             "bucket": "zone-brutes",
-            "file_name": "E6/",
+            "file_name": null,
             "path": "E6/",
             "format": "folder",
             "size_ko": 0.0,
@@ -747,11 +747,21 @@
         {
             "bucket": "zone-config",
             "file_name": "access_control.json",
-            "path": "access_control.json",
+            "path": "/",
             "format": "json",
             "size_ko": 1.64,
             "last_modified": "2026-01-26T15:09:03.035000+00:00",
             "etag": "f141357b6ffceb9d7da8ae8afbb6162a",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-config",
+            "file_name": "data_catalog_v1.json",
+            "path": "backups/",
+            "format": "json",
+            "size_ko": 24.87,
+            "last_modified": "2026-01-27T21:10:29.046000+00:00",
+            "etag": "00ff5437f6c915bf9f2dad03bcedfeee",
             "is_folder": false
         }
     ],

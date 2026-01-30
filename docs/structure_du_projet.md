@@ -94,8 +94,14 @@
 |   ├── main.tf
 |   ├── provider.tf
 |   ├── (test.py)
-|   └── variables.tf 
+|   └── variables.tf
+├── utils
+|   ├── logger_config.py
+|   └── S3_utils.py 
 ├── .gitignore
+├── app_catalog.py
+├── certification.log
+├── data_catalog.json   
 ├── (musicbrainz.org.json)
 ├── poetry.lock
 ├── pyproject.toml
