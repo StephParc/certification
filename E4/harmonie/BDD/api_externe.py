@@ -5,6 +5,7 @@ import sys
 import os
 import time
 from requests.exceptions import RequestException, Timeout
+from datetime import datetime
 
 from utils.S3_utils import upload_file, get_s3_client
 
@@ -17,9 +18,10 @@ def log_rejection_auteur(identity, reason):
     try:
         with open(REJET_AUTEURS_FILE, "a", newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
+            timenow = datetime.now()
             if not file_exists:
-                writer.writerow(["identity_recherchee", "raison_rejet"])
-            writer.writerow([identity, reason])
+                writer.writerow(["identity_recherchee", "raison_rejet", "time_rejet"])
+            writer.writerow([identity, reason, timenow])
     except Exception as e:
         print(f"Erreur lors de l'écriture du rejet : {e}")
 

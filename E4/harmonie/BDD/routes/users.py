@@ -32,8 +32,11 @@ def create_utilisateur(user:UserPass, session:Session=Depends(get_session_sql)):
 @router.delete("/{user_id}")
 def del_user(id:int, session:Session=Depends(get_session_sql)):
     result = delete_user(session,id)
-    session.commit()
-    return result
+    if "succès" in result.lower():
+        session.commit()
+        return {"status": "success", "message": result}
+    
+    return {"status": "error", "message": result}
 
 # @router.patch("/{username}")
 # def update_user_by_user(user:UserPublic, session:Session=Depends(get_session_sql)):

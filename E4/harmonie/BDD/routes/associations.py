@@ -29,8 +29,11 @@ def create_ass_auteur_partition(asso:AuteurPartition, role:Role, session:Session
 @router.delete("/auteur_partition")
 def del_ass_auteur_partition(auteur_id:int, partition_id: int, role: Role, session:Session=Depends(get_session_sql)):
     result = delete_asso_auteur_partition(session, partition_id, auteur_id, role)
-    session.commit()
-    return result
+    if "succès" in result.lower():
+        session.commit()
+        return {"status": "success", "message": result}
+    
+    return {"status": "error", "message": result}
 
 @router.get("/partition_evenement", response_model=list[PartitionEvent])
 def get_ass_partition_evenement_all(session:Session=Depends(get_session_sql)):
@@ -46,5 +49,8 @@ def create_ass_partition_evenement(asso:PartitionEvent, session:Session=Depends(
 @router.delete("/partition_evenement")
 def del_ass_partition_evenement(partition_hbm_id:int, event_id: int, session:Session=Depends(get_session_sql)):
     result = delete_asso_partition_event(session, partition_hbm_id, event_id)
-    session.commit()
-    return result
+    if "succès" in result.lower():
+        session.commit()
+        return {"status": "success", "message": result}
+    
+    return {"status": "error", "message": result}

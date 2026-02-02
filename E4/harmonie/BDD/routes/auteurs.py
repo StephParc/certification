@@ -19,8 +19,8 @@ def get_auteur_all(session:Session=Depends(get_session_sql)):
     return read_auteur_all(session)
     
 @router.get("/{auteur_id}", response_model=list[AuteurId])
-def get_auteur_by_id(id:int, session:Session=Depends(get_session_sql)):
-    return read_auteur_by_id(session, id)
+def get_auteur_by_id(auteur_id:int, session:Session=Depends(get_session_sql)):
+    return read_auteur_by_id(session, auteur_id)
 
 @router.post("/")
 def create_autor(auteur:Auteur, session:Session=Depends(get_session_sql)):
@@ -30,10 +30,12 @@ def create_autor(auteur:Auteur, session:Session=Depends(get_session_sql)):
     return autor
 
 @router.delete("/{auteur_id}")
-def del_auteur(id:int, session:Session=Depends(get_session_sql)):
-    result = delete_auteur(session,id)
-    session.commit()
-    return result
+def del_auteur(auteur_id:int, session:Session=Depends(get_session_sql)):
+    result = delete_auteur(session,auteur_id)
+    if "succès" in result.lower():
+        session.commit()
+        return {"statut": "success", "message": result}
+    return {"status": "error", "message": result}
 
 # @router.put("/{event_id}")
 # def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):

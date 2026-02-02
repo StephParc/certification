@@ -43,10 +43,14 @@ def create_evenement(event:Event, session:Session=Depends(get_session_sql)):
     return evenement
 
 @router.delete("/{event_id}")
-def del_evenement(id:int, session:Session=Depends(get_session_sql)):
-    result = delete_event(session,id)
-    session.commit()
-    return result
+def del_evenement(event_id:int, session:Session=Depends(get_session_sql)):
+    result = delete_event(session,event_id)
+    if "succès" in result.lower():
+        session.commit()
+        return {"status": "success", "message": result}
+    
+    # Sinon, le rollback a déjà été fait dans le CRUD en cas d'erreur
+    return {"status": "error", "message": result}
 
 @router.put("/{event_id}")
 def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):

@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
 from datetime import date, datetime
+
 from E4.harmonie.BDD.database import get_session_sql, get_engine
 
 class Base(DeclarativeBase):
@@ -164,7 +165,7 @@ class User(Base):
         return f"User(user_id={self.user_id!r}, username={self.username}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
 
 
-if __name__ == "__main__":
-    engine = get_engine()
-    Base.metadata.create_all(bind=engine)
-    print("BDD créée")
+# if __name__ == "__main__":
+#     engine = get_engine()
+#     Base.metadata.create_all(bind=engine)
+#     print("BDD créée")
