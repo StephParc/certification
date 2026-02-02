@@ -1,6 +1,6 @@
 # api_hbm.py
 from fastapi import FastAPI
-from routes import evenements, users, authentication, associations, auteurs, partitions, partitions_hbm
+from E4.harmonie.BDD.routes import evenements, users, authentication, associations, auteurs, partitions, partitions_hbm
 
 app = FastAPI()
 

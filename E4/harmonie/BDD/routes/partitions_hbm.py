@@ -1,10 +1,11 @@
 # partitions_hbm.py
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
-from crud import create_part_hbm_from_partition, read_partition_possessed_all, read_partition_possessed, read_partition_hbm_by_id, delete_partition_hbm
-from schemas import PartitionHBM, PartitionHbmID
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import create_part_hbm_from_partition, read_partition_possessed_all, read_partition_possessed, read_partition_hbm_by_id, delete_partition_hbm
+from E4.harmonie.BDD.schemas import PartitionHBM, PartitionHbmID
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/partitions_hbm",

@@ -1,11 +1,12 @@
 # crud.py
-from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User
-from schemas import UserPublic, UserAdmin, UserPass
-from auth import get_password_hash
-from database import get_session_sql, sql_connect
-from api_externe import get_api_externe
 from sqlalchemy.orm import noload
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
+
+from E4.harmonie.BDD.models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User
+from E4.harmonie.BDD.schemas import UserPublic, UserAdmin, UserPass
+from E4.harmonie.BDD.auth import get_password_hash
+from E4.harmonie.BDD.database import get_session_sql, sql_connect
+from E4.harmonie.BDD.api_externe import get_api_externe
 
 ## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
 # Session = sql_connect()
@@ -102,10 +103,8 @@ def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None
     # Requête de vérification d"existence
     existing_auteur = session.query(Auteur).filter_by(
                     nom = nom_test,
-                    prenom = prenom_test,
-                    pays = pays_test,
-                    IPI = IPI_test,
-                    ISNI = ISNI_test).first()
+                    prenom = prenom_test
+                    ).first()
     
     # Sélection ou création de l'auteur
     if existing_auteur :

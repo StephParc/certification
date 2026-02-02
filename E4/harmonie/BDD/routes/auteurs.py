@@ -1,10 +1,11 @@
 # auteurs.py
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
-from crud import create_auteur, read_auteur_all,read_auteur_by_id, delete_auteur
-from schemas import Auteur, AuteurId
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import create_auteur, read_auteur_all,read_auteur_by_id, delete_auteur
+from E4.harmonie.BDD.schemas import Auteur, AuteurId
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/auteurs",

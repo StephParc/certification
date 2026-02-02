@@ -6,8 +6,6 @@ import os
 import time
 from requests.exceptions import RequestException, Timeout
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../')))
-
 from utils.S3_utils import upload_file, get_s3_client
 
 # Fichier de rejet pour les auteurs (MusicBrainz)

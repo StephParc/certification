@@ -1,11 +1,12 @@
 # partitions.py
 from fastapi import APIRouter, Depends, Security, Query
 from sqlalchemy.orm import  Session
-from crud import read_partition_by_id, read_partition_by_event_id, read_partition_by_event_date, read_partition_by_event_year, read_partition_by_id_complete, read_partition_by_composer, read_partition_by_arranger, read_partition_by_artist,read_partition_by_author, read_partition_by_creation_date, read_partition_by_grade, read_partition_by_genre, read_partition_all
-from crud import create_part, delete_partition
-from schemas import Partition, PartitionID, PartitionHbmID
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import read_partition_by_id, read_partition_by_event_id, read_partition_by_event_date, read_partition_by_event_year, read_partition_by_id_complete, read_partition_by_composer, read_partition_by_arranger, read_partition_by_artist,read_partition_by_author, read_partition_by_creation_date, read_partition_by_grade, read_partition_by_genre, read_partition_all
+from E4.harmonie.BDD.crud import create_part, delete_partition
+from E4.harmonie.BDD.schemas import Partition, PartitionID, PartitionHbmID
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/partitions",

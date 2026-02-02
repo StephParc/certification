@@ -1,11 +1,12 @@
 # associations.py
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
-from crud import create_asso_auteur_partition,read_asso_auteur_partition_all, delete_asso_auteur_partition
-from crud import create_asso_hbm_event, read_asso_partition_event_all, delete_asso_partition_event
-from schemas import Role, AuteurPartition, AssoAuteurPartition, PartitionEvent
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import create_asso_auteur_partition,read_asso_auteur_partition_all, delete_asso_auteur_partition
+from E4.harmonie.BDD.crud import create_asso_hbm_event, read_asso_partition_event_all, delete_asso_partition_event
+from E4.harmonie.BDD.schemas import Role, AuteurPartition, AssoAuteurPartition, PartitionEvent
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/associations",

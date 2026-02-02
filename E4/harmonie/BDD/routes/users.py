@@ -1,10 +1,11 @@
 # users.py
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
-from crud import create_user, read_user_by_id, read_user_by_username, update_user_sample, update_user_complete, delete_user
-from schemas import UserAdmin, UserPass, UserPublic
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import create_user, read_user_by_id, read_user_by_username, update_user_sample, update_user_complete, delete_user
+from E4.harmonie.BDD.schemas import UserAdmin, UserPass, UserPublic
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/users",

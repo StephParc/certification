@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
 from datetime import date, datetime
-from database import get_session_sql, get_engine
+from E4.harmonie.BDD.database import get_session_sql, get_engine
 
 class Base(DeclarativeBase):
     pass

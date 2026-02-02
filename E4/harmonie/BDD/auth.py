@@ -6,11 +6,13 @@ from fastapi import Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 import jwt
 from jwt.exceptions import InvalidTokenError
-from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from models import User
-from schemas import TokenData, UserPass
-from database import get_session_sql, sql_connect
 from pydantic import ValidationError
+
+from E4.harmonie.BDD.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from E4.harmonie.BDD.models import User
+from E4.harmonie.BDD.schemas import TokenData, UserPass
+from E4.harmonie.BDD.database import get_session_sql, sql_connect
+
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated= "auto")
 

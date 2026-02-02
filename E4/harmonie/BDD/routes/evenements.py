@@ -1,11 +1,12 @@
 # evenements.py
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import  Session
-from crud import read_event_by_id, read_event_by_date, read_event_by_year, read_event_by_type, read_event_by_partition, read_event_all
-from crud import create_event, delete_event, update_event
-from schemas import Event, EventId , TypeEvent
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import read_event_by_id, read_event_by_date, read_event_by_year, read_event_by_type, read_event_by_partition, read_event_all
+from E4.harmonie.BDD.crud import create_event, delete_event, update_event
+from E4.harmonie.BDD.schemas import Event, EventId , TypeEvent
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/event",

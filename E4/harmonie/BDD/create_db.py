@@ -1,9 +1,10 @@
 # create_db.py
-from database import get_session_sql, sql_connect
 from datetime import date, datetime
 import csv
-from crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin
-from api_externe import get_api_externe
+
+from E4.harmonie.BDD.database import get_session_sql, sql_connect
+from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin
+from E4.harmonie.BDD.api_externe import get_api_externe
 
 # session = get_session_sql()
 SessionLocal= sql_connect()
