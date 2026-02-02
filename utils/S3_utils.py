@@ -1,8 +1,10 @@
+# S3_utils.py
 import os
-import logging
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 import mimetypes
+import pandas as pd
 from dotenv import load_dotenv
 from utils.logger_config import trace_action, setup_logger
 
@@ -48,6 +50,7 @@ def upload_file(local_path, bucket, s3_path=None, metadata=None):
 
     try:
         s3.upload_file(local_path, bucket, s3_path, ExtraArgs=extra_args)
+        logger.info(f"✅ Fichier {local_path} uploadé vers {bucket}/{s3_path}")
         return True
     except Exception as e:
         logger.error(f"❌ Erreur lors de l'upload de {local_path} : {e}")
@@ -74,6 +77,21 @@ def download_file(bucket, s3_path, local_path):
         logger.error(f"❌ Erreur lors du téléchargement de {s3_path} : {e}")
         return False
 
+@trace_action
+def read_csv_from_datalake(bucket, s3_path):
+    """
+    Lit un fichier CSV depuis le datalake et retourne un DataFrame Pandas.
+    file_key: le chemin du fichier dans le bucket (ex: 'raw/partitions.csv')
+    """
+    s3 = get_s3_client()
+    try:
+        response = s3.get_object(Bucket=bucket, Key=s3_path)
+        df = pd.read_csv(response['Body'])
+        logger.info(f"✅ CSV {s3_path} lu avec succès depuis le bucket {bucket}")
+        return df
+    except Exception as e:
+        logger.error(f"❌ Erreur lors de la lecture du CSV {s3_path} : {e}")
+        return None
 
 if __name__ == "__main__":
     # Test du download

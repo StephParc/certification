@@ -20,13 +20,13 @@ class Event(BaseModel):
     affiche: str | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class EventId(Event):
     evenement_id: int | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class Auteur(BaseModel):
     nom : str | None = None
@@ -36,7 +36,7 @@ class Auteur(BaseModel):
     ISNI : str | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class AuteurId(Auteur):
     auteur_id : int | None = None
@@ -58,7 +58,7 @@ class Partition(BaseModel):
     url : str | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class PartitionID(Partition):
     partition_id : int | None = None
@@ -92,7 +92,7 @@ class PartitionEvent(BaseModel):
     partition_hbm_id : int | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 # class Combo(BaseModel):
 #     partition: List[PartitionID]
@@ -104,7 +104,7 @@ class UserPublic(BaseModel):
     email: str | None = None
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class UserPass(UserPublic):
     password: str
@@ -116,7 +116,7 @@ class UserAdmin(UserPublic):
     scopes: list[str] | None = []
 
     class Config:
-        orm_mode=True
+        from_attributes=True
 
 class TokenData(BaseModel):
     username: str | None = None

@@ -65,4 +65,5 @@ def get_current_user(security_scopes: SecurityScopes, token: str = Depends(oauth
             )
     return user
 
-print("hashed_password: ", get_password_hash("password"))
+if __name__ == "__main__":
+    print("hashed_password: ", get_password_hash("password"))

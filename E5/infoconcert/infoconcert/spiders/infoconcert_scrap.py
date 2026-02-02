@@ -47,9 +47,6 @@ class InfoconcertScrapSpider(scrapy.Spider):
         if url_page_suivante and condition_page_utile:
             yield response.follow(url_page_suivante, callback=self.parse)
         
-# //div[@class='panel panel-default date-line date-line-concert']
-        # //div[@class='bg-white padding']|//div[@class='concert-row padding'][contains(text(),'Actuellement')]
-
 
     def parse_concert(self, response):
         now = date.today().strftime("%Y-%m-%d")

@@ -1,3 +1,4 @@
+#clean_scrapy.propert
 import csv
 import pandas as pd
 from datetime import date

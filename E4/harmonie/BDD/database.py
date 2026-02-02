@@ -2,10 +2,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
-from dotenv import load_dotenv
+from config import dbhost, dbname, dbuser_rw, password_rw
+# from dotenv import load_dotenv
 
-env_path = os.path.join(os.path.dirname(__file__),'.env')
-load_dotenv(dotenv_path=env_path)
+# env_path = os.path.join(os.path.dirname(__file__),'.env')
+# load_dotenv(dotenv_path=env_path)
 
 def get_engine():
     ## Pour une BDD SQLite: 
@@ -13,11 +14,11 @@ def get_engine():
     # engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
 
     # Pour une BDD PostgreSQL:
-    dbhost = os.getenv('DBHOST', 'localhost')
-    dbname = os.getenv('DBNAME', 'mydatabase')
-    dbuser = os.getenv('DBUSER', 'myuser')
-    password = os.getenv('PASSWORD', 'mypassword')
-    SQL_DATABASE_URL = f"postgresql://{dbuser}:{password}@{dbhost}:5432/{dbname}"
+    # dbhost = os.getenv('DBHOST', 'localhost')
+    # dbname = os.getenv('DBNAME', 'mydatabase')
+    # dbuser = os.getenv('DBUSER', 'myuser')
+    # password = os.getenv('PASSWORD', 'mypassword')
+    SQL_DATABASE_URL = f"postgresql://{dbuser_rw}:{password_rw}@{dbhost}:5432/{dbname}"
 
     engine = create_engine(SQL_DATABASE_URL, echo=True)
     return engine
