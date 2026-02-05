@@ -48,14 +48,14 @@ def get_current_user(security_scopes: SecurityScopes, token: str = Depends(oauth
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
+        pseudo = payload.get("sub")
+        if pseudo is None:
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
-        token_data = TokenData(scopes=token_scopes, username=username)
+        token_data = TokenData(scopes=token_scopes, pseudo=pseudo)
     except (InvalidTokenError, ValidationError):
         raise credentials_exception
-    user = session.query(User).filter_by(username = token_data.username).first()
+    user = session.query(User).filter_by(pseudo = token_data.pseudo).first()
     if user is None:
         raise credentials_exception
     for scope in security_scopes.scopes:

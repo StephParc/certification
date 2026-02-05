@@ -1,8 +1,10 @@
 # models.py . Contient les modèles SQLAlchemy des tables
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, Table, MetaData
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, text, ForeignKey, Table, MetaData
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
 from datetime import date, datetime
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 
 from E4.harmonie.BDD.database import get_session_sql, get_engine
 
@@ -45,6 +47,8 @@ class Partition(Base):
     __tablename__ = "partition"
 
     partition_id:   Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
+    partition_uuid: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
+                                        server_default=text("uuid_generate_v4()"))
     titre:          Mapped[str]     = mapped_column(String(), nullable=False)
     sous_titre:     Mapped[str]     = mapped_column(String(), nullable=True)
     edition:        Mapped[str]     = mapped_column(String(), nullable=True)
@@ -94,8 +98,10 @@ class AssAuteurPartition(Base):
 class PartitionHBM(Base):
     __tablename__ = "partition_hbm"
 
-    partition_hbm_id:Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
-    partition_id:   Mapped[int]     = mapped_column(ForeignKey('partition.partition_id'), nullable=False, unique=True)
+    partition_hbm_id:Mapped[int]    = mapped_column(primary_key=True, autoincrement=True)
+    hbm_uuid: Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True),unique=True, nullable=False, 
+                                        server_default=text("uuid_generate_v4()"))
+    partition_id:   Mapped[int]     = mapped_column(ForeignKey('partition.partition_id'), nullable=True, unique=True)
     distribution:   Mapped[date]    = mapped_column(Date(), nullable=True)
     rendue:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
     archive:        Mapped[int]     = mapped_column(Integer(), nullable=True)
@@ -150,11 +156,25 @@ class AssEvenementHbm(Base):
     def __repr__(self) -> str:
         return f"AssEvenement(evenement_id={self.evenement_id!r}, partition_hbm_id={self.partition_hbm_id!r})"
     
+class Instrument(Base):
+    __tablename__ = "instrument"
+
+    instrument_id:  Mapped[int]         = mapped_column(primary_key=True, autoincrement=True)
+    instrument_uuid: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
+                                            server_default=text("uuid_generate_v4()"))
+    famille:        Mapped[str]         = mapped_column(String(50), nullable=False)
+    nom:            Mapped[str]         = mapped_column(String(100), nullable=False, unique=True)
+
+    def __repr__(self) -> str:
+        return f"Instrument(id={self.instrument_id}, nom={self.nom})"
+
 class User(Base):
     __tablename__ = "utilisateur"
 
     user_id:            Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username:           Mapped[str] = mapped_column(String(), nullable=False)
+    user_uuid:    Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True),unique=True,nullable=False, 
+                                        server_default=text("uuid_generate_v4()"))
+    pseudo:           Mapped[str] = mapped_column(String(), nullable=False)
     fullname:           Mapped[str] = mapped_column(String(), nullable=True)
     hashed_password:    Mapped[str] = mapped_column(String(), nullable=False)
     email:              Mapped[str] = mapped_column(String(), nullable=True)

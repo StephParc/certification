@@ -73,7 +73,7 @@ def insert_event_to_db(file_path):
                 lieu = row.get('lieu')
                 type_evenement = row.get('type_event')
                 affiche = row.get('affiche')
-                create_event(session, date_evenement, nom_evenement, lieu, type_evenement, affiche)    
+                create_event(session, date_evenement=date_evenement, nom_evenement=nom_evenement, lieu=lieu, type_evenement=type_evenement, affiche=affiche)    
  
         # Commit des changements
         session.commit()
@@ -153,7 +153,7 @@ def insert_scrapy_to_db(file_path):
                     data_part["annee_sortie"] = int(row['annee_sortie']) if row['annee_sortie'] else None
 
                     etape = "Création partition"
-                    part = create_part(session, titre=titre, **data_part)
+                    part = create_part(session, **data_part)
                     part_id = part.partition_id
 
                     mapping_auteurs = {
@@ -230,12 +230,10 @@ def insert_users_to_db(file_path):
             csv_reader = csv.DictReader(file)
             # Parcours des lignes du fichier CSV
             for row in csv_reader:
-                username = row.get('username')
-                fullname = row.get('fullname')
-                hashed_password = row.get('hashed_password')
-                email = row.get('email')
-                permissions = row.get('permissions')
-                create_user_admin(session, username, fullname, hashed_password, email, permissions)    
+                data_user = row.copy()
+                pseudo = data_user.pop('pseudo')
+                
+                create_user_admin(session, pseudo=pseudo, **data_user)    
  
         # Commit des changements
         session.commit()
@@ -250,8 +248,12 @@ def insert_users_to_db(file_path):
 
 if __name__ == "__main__":
     init_db()
-    scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
-    insert_scrapy_to_db(scrapy_file)
+    # user_flie = Path("E4/harmonie/sources/users.csv")
+    # insert_users_to_db(user_flie)
+    # scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
+    # insert_scrapy_to_db(scrapy_file)
+    event_file = Path("E4/harmonie/sources/events.csv")
+    insert_event_to_db(event_file)
 
 # Chemins vers les fichiers CSV
 # promt au niveau de BDD/

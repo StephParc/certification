@@ -1,8 +1,19 @@
 # schema.py . Contient les modèles Pydantic.
 from datetime import date
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, List
 from enum import Enum
+import uuid
+
+class InstrumentBase(BaseModel):
+    famille: str | None = None
+    nom: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class Instrument(InstrumentBase):
+    instrument_id: int
+    instrument_uuid: uuid.UUID
 
 # pour aller plus loin
 class TypeEvent(str, Enum):
@@ -19,14 +30,12 @@ class Event(BaseModel):
     type_evenement: str | None = None
     affiche: str | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventId(Event):
     evenement_id: int | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class Auteur(BaseModel):
     nom : str | None = None
@@ -35,8 +44,7 @@ class Auteur(BaseModel):
     IPI : str | None = None
     ISNI : str | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class AuteurId(Auteur):
     auteur_id : int | None = None
@@ -57,11 +65,11 @@ class Partition(BaseModel):
     description : str | None = None
     url : str | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class PartitionID(Partition):
     partition_id : int | None = None
+    partition_uuid: uuid.UUID | None = None
 
 class Role(str, Enum):
     compositeur = "compositeur"
@@ -85,26 +93,26 @@ class PartitionHBM(BaseModel):
     sonnerie: bool | None = False
 
 class PartitionHbmID(PartitionHBM):
-    partition_hbm_id : int 
+    partition_hbm_id : int | None = None
+    hbm_uuid: uuid.UUID | None = None
 
 class PartitionEvent(BaseModel):
     evenement_id : int | None = None
     partition_hbm_id : int | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 # class Combo(BaseModel):
 #     partition: List[PartitionID]
 #     auteur: Dict["auteur":List[Auteur], "role": AssoAuteurPartition]
 
 class UserPublic(BaseModel):
-    username: str | None = None
+    pseudo: str | None = None
     fullname: str | None = None
     email: str | None = None
+    user_uuid: uuid.UUID | None = None
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPass(UserPublic):
     password: str
@@ -112,12 +120,11 @@ class UserPass(UserPublic):
 class UserAdmin(UserPublic):
     user_id: int | None = None
     permissions: str | None = None
-    hashed_password: str | None =None
+    # hashed_password: str | None =None
     scopes: list[str] | None = []
 
-    class Config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
 class TokenData(BaseModel):
-    username: str | None = None
+    pseudo: str | None = None
     scopes: list[str] = []

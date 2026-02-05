@@ -60,3 +60,5 @@ __pycache__/
 **/.~lock.*
 
 *garage.toml
+
+test_conn.py

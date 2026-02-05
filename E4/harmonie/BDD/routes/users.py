@@ -18,13 +18,13 @@ router = APIRouter(
 def get_user(user_id:int, session:Session=Depends(get_session_sql), dependancies=Security(get_current_user,scopes=["read_only"])):
     return read_user_by_id(session, user_id)
 
-@router.get("/by_username/{username}", response_model=UserPublic)
-def get_user_public(username:str, session:Session=Depends(get_session_sql)):
-    return read_user_by_username(session, username)
+@router.get("/by_pseudo/{pseudo}", response_model=UserPublic)
+def get_user_public(pseudo:str, session:Session=Depends(get_session_sql)):
+    return read_user_by_username(session, username=pseudo)
    
 @router.post("/", response_model=UserPublic)
 def create_utilisateur(user:UserPass, session:Session=Depends(get_session_sql)):
-    user = create_user(session, user.username, user.password, user.fullname, user.email)
+    user = create_user(session, user.pseudo, user.password, user.fullname, user.email)
     session.commit()
     session.refresh(user)
     return user

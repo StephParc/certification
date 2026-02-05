@@ -7,6 +7,7 @@ from E4.harmonie.BDD.schemas import UserPublic, UserAdmin, UserPass
 from E4.harmonie.BDD.auth import get_password_hash
 from E4.harmonie.BDD.database import get_session_sql, sql_connect
 from E4.harmonie.BDD.api_externe import get_api_externe
+from utils.logger_config import setup_logger, trace_action
 
 ## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
 # Session = sql_connect()
@@ -16,77 +17,103 @@ from E4.harmonie.BDD.api_externe import get_api_externe
 # session.close()
 
 # ******** CREATE / POST ********
-def create_event(session, date_evenement, nom_evenement, **kwargs):
+    
+def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
     # date_evenement = datetime.strptime(date_evenement, "%d-%m-%Y").date()
-    allowed_keys = {c.name for c in Evenement.__table__.columns}
-    safe_data = {k: v for k, v in kwargs.items() if k in allowed_keys}
-
-    # Requête de vérification d"existence
-    existing_event = session.query(Evenement).filter_by(
-                    date_evenement=date_evenement,
-                    nom_evenement=nom_evenement).first()
+    # 1. Vérif simple
+    existing = session.query(Evenement).filter_by(
+        date_evenement=date_evenement, 
+        nom_evenement=nom_evenement
+    ).first()
     
-    # Création d'un nouvel Evenement
-    if existing_event:
-        return existing_event
+    if existing:
+        return existing
     
+    # 2. Création manuelle (on écrit chaque champ)
     evenement = Evenement(
-                date_evenement = date_evenement,
-                nom_evenement = nom_evenement,
-                **safe_data
-                )
+        date_evenement=date_evenement,
+        nom_evenement=nom_evenement,
+        lieu=lieu,
+        type_evenement=type_evenement,
+        affiche=affiche
+    )
     session.add(evenement)
     session.flush()
     return evenement          
 
-def create_part(session, titre, **kwargs):
-    allowed_keys = {c.name for c in Partition.__table__.columns}
-    safe_data = {k: v for k, v in kwargs.items() if k in allowed_keys}
+def create_part(session, titre, sous_titre=None, edition=None, collection=None,
+                instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
+                ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
 
     # Requête de vérification d"existence
     existing_partition = session.query(Partition).filter_by(
                     titre = titre,
-                    ref_editeur = safe_data.get("ref_editeur")
+                    ref_editeur = ref_editeur
                     ).first()
                 
     # Sélection ou création de la partition
     if existing_partition:
         return existing_partition
     
-    partition = Partition(titre=titre,**kwargs)
+    partition = Partition(
+                titre           = titre,
+                sous_titre      = sous_titre,
+                edition         = edition,
+                collection      = collection,
+                instrumentation = instrumentation,
+                niveau          = niveau,
+                genre           = genre,
+                style           = style,
+                annee_sortie    = annee_sortie,
+                ISMN            = ISMN,
+                ref_editeur     = ref_editeur, 
+                duree           = duree,
+                description     = description,
+                url             = url)
     session.add(partition)
     session.flush()  
     return partition
 
-def create_auteur(session, nom=None, prenom=None, **kwargs):
-    allowed_keys = {c.name for c in Auteur.__table__.columns}
-    safe_data = {k: v for k, v in kwargs.items() if k in allowed_keys}
-
-    # Requête de vérification d"existence
-    existing_auteur = session.query(Auteur).filter_by(
-                    nom = nom,
-                    prenom = prenom
-                    ).first()
+logger_name = "E4 - API"
+logger = setup_logger(logger_name)
+@trace_action(logger_name)
+def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None):
     
-    # Sélection ou création de l'auteur
-    if existing_auteur :
+    search_parts = [p for p in [nom, prenom] if p]
+    auteur_identity = " ".join(search_parts).strip()
+    logger.info(f"auteur_identity: {auteur_identity}")
+    auteur_api = get_api_externe(auteur_identity)
+    logger.info(f"auteur_api: {auteur_api}")
+
+    if auteur_api:
+        final_nom = auteur_api.get("Nom")
+        final_prenom = auteur_api.get("Prénom")
+        final_pays = auteur_api.get("Pays")
+        final_ipi = auteur_api.get("IPI")
+        final_isni = auteur_api.get("ISNI")
+    else:
+        final_nom = nom
+        final_prenom = prenom
+        final_pays = pays
+        final_ipi = IPI
+        final_isni = ISNI
+    logger.info(f"final_identity: 1-{final_nom} 2-{final_prenom} 3-{final_pays} 4- {final_ipi} 5-{final_isni}")
+
+    existing_auteur = session.query(Auteur).filter_by(
+        nom=final_nom,
+        prenom=final_prenom
+    ).first()
+    
+    if existing_auteur:
         return existing_auteur
 
-    auteur_identity = f"{nom} {prenom}".strip()
-    auteur_api = get_api_externe(auteur_identity)
-
-    if auteur_api is None:
-        # On crée l'auteur avec ce qu'on a reçu en argument de la fonction
-        auteur = Auteur(nom=nom, prenom=prenom,**safe_data)
-    else:
-        # Si l'API répond, on privilégie ses données (souvent plus propres)
-        auteur = Auteur(
-            nom=auteur_api.get("Nom", nom),
-            prenom=auteur_api.get("Prénom", prenom),
-            pays=auteur_api.get("Pays", safe_data.get("pays")),
-            IPI=auteur_api.get("IPI", safe_data.get("IPI")),
-            ISNI=auteur_api.get("ISNI", safe_data.get("ISNI"))
-        )
+    auteur = Auteur(
+        nom=final_nom,
+        prenom=final_prenom,
+        pays=final_pays,
+        IPI=final_ipi,
+        ISNI=final_isni
+    )
 
     session.add(auteur)
     session.flush()
@@ -121,25 +148,21 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
 
 
 # A revoir
-def create_part_hbm_from_partition(session, partition_id, distribution=None, rendue=None, 
+def create_part_hbm_from_partition(session, partition_id=None, distribution=None, rendue=None, 
                 archive=None, concert=True, defile=False, sonnerie=False):
-    # Définition des variables de la requête pour vérifier l'existence
-
-    existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id)
-
-    if existing_hbm is None:
-        pass
-    else:
-        hbm = PartitionHBM(
-            partition_id = partition_id,
-            distribution = distribution,
-            rendue = rendue,
-            archive = archive,
-            concert = concert,
-            defile = defile,
-            sonnerie = sonnerie)
-        session.add(hbm)
-        session.flush()
+    if partition_id:
+        existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id).first()
+        if existing_hbm :
+            return existing_hbm
+        hbm = PartitionHBM(partition_id = partition_id,
+                distribution = distribution,
+                rendue = rendue,
+                archive = archive,
+                concert = concert,
+                defile = defile,
+                sonnerie = sonnerie)
+    session.add(hbm)
+    session.flush()
     return hbm
 
 
@@ -185,61 +208,48 @@ def create_asso_hbm_event(session, hbm_id, evenement_id):
             session.flush()
             return asso
 
-def create_user(session, username, password, fullname=None, email=None):
+def create_user(session, pseudo, password, fullname=None, email=None):
     # Fonction de hachage du mot de passe
-    password = get_password_hash(password)
+    password_hashed = get_password_hash(password)
     
     # Requête de vérification d"existence
-    existing_user = session.query(User).filter_by(
-                    username = username,
-                    hashed_password = password,
-                    fullname = fullname,
-                    email = email).first()
+    existing_user = session.query(User).filter_by(pseudo = pseudo).first()
+    if existing_user:
+        return "Cet utilisateur existe déjà"
 
     # Création d'un nouvel utilisateur
-    if existing_user is None:
-        user = User(
-                username = username,
+    user = User(
+                pseudo = pseudo,
                 fullname = fullname,
                 email = email,
                 hashed_password = password
-                )
-    else:
-        return "Cet utilisateur existe déjà"
+    )
     
     session.add(user)
-    session.commit()
+    session.flush()
     return user
 
-def create_user_admin(session, username, fullname, hashed_password, email, permissions):
-     # Requête de vérification d"existence
-    username_test = username
-    fullname_test = fullname
-    hashed_password_test = hashed_password
-    email_test = email
-    permissions_test = permissions
-
-    existing_user = session.query(User).filter_by(
-                    username = username_test,
-                    fullname = fullname_test,
-                    hashed_password =hashed_password_test,
-                    email = email_test,
-                    permissions = permissions_test).first()
-
-    # Création d'un nouvel utilisateur
-    if existing_user is None:
-        user = User(
-                username = username_test,
-                fullname = fullname_test,
-                email = email_test,
-                hashed_password = hashed_password_test,
-                permissions = permissions_test
-                )
-    else:
-        return print("Cet utilisateur existe déjà")
+def create_user_admin(session, pseudo, fullname, hashed_password, email, permissions):
+    # 1. Vérification d'existence
+    existing_user = session.query(User).filter_by(pseudo=pseudo).first()
+    if existing_user:
+        # Il vaut mieux retourner l'objet existant ou None plutôt qu'un message str
+        # pour ne pas faire planter les scripts qui attendent un objet User
+        return existing_user
     
+
+
+
+    # 3. Création de l'utilisateur avec l'UUID généré par Postgres
+    user = User(
+        pseudo=pseudo, 
+        fullname = fullname,
+        email = email,
+        hashed_password = hashed_password,
+        permissions = permissions)
+
     session.add(user)
-    session.commit()
+    session.flush() # Pour récupérer le user_uuid immédiatement si besoin
     return user
 
 # ******** DELETE / DELETE ********
@@ -254,7 +264,7 @@ def delete_event(session, event_id):
             session.flush()
             message = f"Succès : L'événement {target_id} a été supprimé."
         else:
-            message = "Échec : L'événement n'existe pas."
+            message = f"Échec : L'événement n'existe pas."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
