@@ -360,7 +360,7 @@ def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
             session.flush()
             message = f"Succès : L'association pour la partition {partition_id} a été supprimée."
         else:
-            message = "Échec : Aucune correspondance trouvée pour cette association."
+            message = f"Échec : Aucune correspondance trouvée pour cette association."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -386,7 +386,7 @@ def delete_asso_partition_event(session, partition_hbm_id, event_id):
             session.flush()
             message = f"Succès : L'association entre la partition HBM {partition_hbm_id} et l'événement {event_id} a été supprimée."
         else:
-            message = "Échec : Aucune correspondance trouvée pour cette association."
+            message = f"Échec : Aucune correspondance trouvée pour cette association."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
@@ -402,8 +402,10 @@ def delete_user(session, user_id):
             u_id = existing_user.user_id
             session.delete(existing_user)
             session.flush()
+            print(f"Succès : L'utilisateur {u_id} a été supprimé.")
             message = f"Succès : L'utilisateur {u_id} a été supprimé."
         else:
+            print(f"Échec : L'utilisateur avec l'ID {user_id} n'existe pas.")
             message = f"Échec : L'utilisateur avec l'ID {user_id} n'existe pas."
 
     except Exception as e:
@@ -787,6 +789,13 @@ def update_user_sample(session, username, fullname, password, email):
 def update_user_complete(session, user_id, username, fullname, email, permissions):
     pass
 
+if __name__ == "__main__":
+    # from E4.harmonie.BDD.database import sql_connect
+    SessionLocal = sql_connect()
+    session = SessionLocal()
+    delete_user(session,7)
+    session.commit()
+    session.close()
 # with open("database.py") as m:
 #     code = m.read()
 # exec(code)

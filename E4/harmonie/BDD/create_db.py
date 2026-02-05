@@ -144,16 +144,26 @@ def insert_scrapy_to_db(file_path):
                 try:
                     etape = "Parsing des données"
                     # déclarations des variables
-                    titre = row.get('titre').upper()
-                    if not titre: continue
-
-                    data_part = row.copy()
-                    data_part["titre"] = titre
-                    data_part["niveau"] = float(row['niveau']) if row['niveau'] else None
-                    data_part["annee_sortie"] = int(row['annee_sortie']) if row['annee_sortie'] else None
+                    titre=row.get('titre').upper() if row.get('titre') else None
+                    sous_titre=row.get('sous_titre')
+                    edition=row.get('edition')
+                    collection=row.get('collection')
+                    instrumentation=row.get('instrumentation')
+                    niveau=float(row['niveau']) if row.get('niveau') else None
+                    genre=row.get('genre')
+                    style=row.get('style')
+                    annee_sortie=int(row['annee_sortie']) if row.get('annee_sortie') else None
+                    ISMN=row.get('ISMN')
+                    ref_editeur=row.get('ref_editeur')
+                    duree=row.get('duree')
+                    description=row.get('description')
+                    url=row.get('url')
 
                     etape = "Création partition"
-                    part = create_part(session, **data_part)
+                    part = create_part(session, titre=titre,sous_titre=sous_titre, edition=edition,
+                                       collection=collection,instrumentation=instrumentation, niveau=niveau,
+                                       genre=genre, style=style, annee_sortie=annee_sortie, ISMN=ISMN,
+                                       ref_editeur=ref_editeur, duree=duree, description=description, url=url)
                     part_id = part.partition_id
 
                     mapping_auteurs = {
@@ -230,10 +240,12 @@ def insert_users_to_db(file_path):
             csv_reader = csv.DictReader(file)
             # Parcours des lignes du fichier CSV
             for row in csv_reader:
-                data_user = row.copy()
-                pseudo = data_user.pop('pseudo')
-                
-                create_user_admin(session, pseudo=pseudo, **data_user)    
+                pseudo = row.get('pseudo')
+                fullname = row.get('fullname')
+                hashed_password = row.get('hashed_password')
+                email = row.get('email')
+                permissions = row.get('permissions')
+                create_user_admin(session, pseudo=pseudo, fullname=fullname, hashed_password=hashed_password, email=email, permissions=permissions)    
  
         # Commit des changements
         session.commit()
@@ -248,10 +260,10 @@ def insert_users_to_db(file_path):
 
 if __name__ == "__main__":
     init_db()
-    # user_flie = Path("E4/harmonie/sources/users.csv")
-    # insert_users_to_db(user_flie)
-    # scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
-    # insert_scrapy_to_db(scrapy_file)
+    user_flie = Path("E4/harmonie/sources/users.csv")
+    insert_users_to_db(user_flie)
+    scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
+    insert_scrapy_to_db(scrapy_file)
     event_file = Path("E4/harmonie/sources/events.csv")
     insert_event_to_db(event_file)
 

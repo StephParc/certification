@@ -6,6 +6,7 @@ import os
 import time
 from requests.exceptions import RequestException, Timeout
 from datetime import datetime
+import difflib
 
 from utils.S3_utils import upload_file, get_s3_client
 
@@ -24,6 +25,20 @@ def log_rejection_auteur(identity, reason):
             writer.writerow([identity, reason, timenow])
     except Exception as e:
         print(f"Erreur lors de l'écriture du rejet : {e}")
+
+def is_fuzzy_match(words_source, words_target, threshold=0.7):
+    """
+    Vérifie si chaque mot de la source a un équivalent proche dans la cible.
+    """
+    if not words_source: return False
+    matches = 0
+    for w_src in words_source:
+        # On cherche si w_src ressemble à au moins un mot de la cible
+        if any(difflib.SequenceMatcher(None, w_src, w_tgt).ratio() >= threshold 
+               for w_tgt in words_target):
+            matches += 1
+    # On considère que c'est un match si tous les mots recherchés sont trouvés (approximativement)
+    return matches == len(words_source)
 
 def get_api_externe(identity):
     """
@@ -81,7 +96,13 @@ def get_api_externe(identity):
             words_mb_name = set(mb_name.split())
             words_mb_sort = set(mb_sort_name_clean.split())
 
-            if words_identity == words_mb_name or words_identity == words_mb_sort:
+            if is_fuzzy_match(words_identity, words_mb_name) or \
+               is_fuzzy_match(words_identity, words_mb_sort):
+                
+                current_score = 0
+                # On ajoute une pondération basée sur la similarité réelle pour départager les homonymes
+                similarity = difflib.SequenceMatcher(None, clean_identity_str.lower(), mb_name).ratio()
+                current_score += int(similarity * 10)
                 current_score = 0
                 if "," in mb_sort_name_raw: current_score += 10  
                 if a.get("isnis"): current_score += 5        
@@ -140,7 +161,7 @@ if __name__ == "__main__":
     print("Test Jan van der Roost", get_api_externe("Jan van der Roost"))
     print("Test ijdzoij", get_api_externe("ijdzoij"))
     print("Test Nirvana", get_api_externe("nirvana"))
-    print("Test Erik Satie", get_api_externe("erik satie"))
+    print("Test Erik Satie", get_api_externe("eric satie"))
     print("Test Ravel", get_api_externe("ravel"))
     print("Test None:", get_api_externe(None))
     print("Test vide", get_api_externe(""))
