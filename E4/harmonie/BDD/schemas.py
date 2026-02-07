@@ -5,13 +5,14 @@ from typing import Optional, List
 from enum import Enum
 import uuid
 
-class InstrumentBase(BaseModel):
-    famille: str | None = None
+class Instrument(BaseModel):
     nom: str | None = None
+    famille: str | None = None
+    sous_famille: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
-class Instrument(InstrumentBase):
+class InstrumentId(Instrument):
     instrument_id: int
     instrument_uuid: uuid.UUID
 

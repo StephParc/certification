@@ -2,7 +2,7 @@
 from sqlalchemy.orm import noload
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
 
-from E4.harmonie.BDD.models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User
+from E4.harmonie.BDD.models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User, Instrument
 from E4.harmonie.BDD.schemas import UserPublic, UserAdmin, UserPass
 from E4.harmonie.BDD.auth import get_password_hash
 from E4.harmonie.BDD.database import get_session_sql, sql_connect
@@ -74,16 +74,11 @@ def create_part(session, titre, sous_titre=None, edition=None, collection=None,
     session.flush()  
     return partition
 
-logger_name = "E4 - API"
-logger = setup_logger(logger_name)
-@trace_action(logger_name)
 def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None):
     
     search_parts = [p for p in [nom, prenom] if p]
     auteur_identity = " ".join(search_parts).strip()
-    logger.info(f"auteur_identity: {auteur_identity}")
     auteur_api = get_api_externe(auteur_identity)
-    logger.info(f"auteur_api: {auteur_api}")
 
     if auteur_api:
         final_nom = auteur_api.get("Nom")
@@ -97,7 +92,6 @@ def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None
         final_pays = pays
         final_ipi = IPI
         final_isni = ISNI
-    logger.info(f"final_identity: 1-{final_nom} 2-{final_prenom} 3-{final_pays} 4- {final_ipi} 5-{final_isni}")
 
     existing_auteur = session.query(Auteur).filter_by(
         nom=final_nom,
@@ -251,6 +245,16 @@ def create_user_admin(session, pseudo, fullname, hashed_password, email, permiss
     session.add(user)
     session.flush() # Pour récupérer le user_uuid immédiatement si besoin
     return user
+
+def create_instrument(session, nom, famille, sous_famille=None):
+    existing_instrument = session.query(Instrument).filter_by(nom=nom).first()
+    if existing_instrument:
+        return existing_instrument
+    
+    instrument = Instrument(nom=nom, famille=famille, sous_famille=sous_famille)
+    session.add(instrument)
+    session.flush()
+    return instrument
 
 # ******** DELETE / DELETE ********
 def delete_event(session, event_id):
@@ -415,6 +419,25 @@ def delete_user(session, user_id):
         message = f"Erreur lors de la suppression de l'utilisateur : {str(e)}"
 
         return message
+    
+def delete_instrument(session, instrument_id):
+    instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
+    if not instrument:
+        return "Instrument introuvable"
+    
+    # Ici, on pourrait ajouter une vérification : est-il lié à une partition HBM ?
+    # Pour l'instant, on reste simple :
+    try:
+        instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
+        if not instrument:
+            return "Instrument introuvable"
+        else:
+            session.delete(instrument)
+            message = f"Succès : Instrument '{instrument.nom}' supprimé."
+    except Exception as e:
+        session.rollback()
+        message = f"Erreur lors de la suppression : {e}"
+    return message
 
 # ******** READ / GET ********
 def read_event_by_id(session, event_id):
@@ -743,6 +766,9 @@ def read_asso_partition_event_all(session):
 
 def read_asso_auteur_partition_all(session):
     return session.query(AssAuteurPartition).all()
+
+def read_instrument_all(session):
+    return session.query(Instrument).all()
 
 # ******** UPDATE / PUT ********
 # A FINIR

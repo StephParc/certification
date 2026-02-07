@@ -162,8 +162,9 @@ class Instrument(Base):
     instrument_id:  Mapped[int]         = mapped_column(primary_key=True, autoincrement=True)
     instrument_uuid: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
                                             server_default=text("uuid_generate_v4()"))
-    famille:        Mapped[str]         = mapped_column(String(50), nullable=False)
     nom:            Mapped[str]         = mapped_column(String(100), nullable=False, unique=True)
+    famille:        Mapped[str]         = mapped_column(String(50), nullable=False)
+    sous_famille:   Mapped[str]         = mapped_column(String(50), nullable=False)
 
     def __repr__(self) -> str:
         return f"Instrument(id={self.instrument_id}, nom={self.nom})"

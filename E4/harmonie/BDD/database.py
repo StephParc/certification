@@ -2,8 +2,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
+from pymongo import MongoClient
 
-from E4.harmonie.BDD.config import dbhost, dbname, dbuser_rw, password_rw
+from E4.harmonie.BDD.config import DBHOST, DBNAME, DBUSER_RW, PASSWORD_RW, MONGO_DATABASE_URL, MONGO_DBNAME
 # from dotenv import load_dotenv
 
 # env_path = os.path.join(os.path.dirname(__file__),'.env')
@@ -19,7 +20,7 @@ def get_engine():
     # dbname = os.getenv('DBNAME', 'mydatabase')
     # dbuser = os.getenv('DBUSER', 'myuser')
     # password = os.getenv('PASSWORD', 'mypassword')
-    SQL_DATABASE_URL = f"postgresql://{dbuser_rw}:{password_rw}@{dbhost}:5432/{dbname}"
+    SQL_DATABASE_URL = f"postgresql://{DBUSER_RW}:{PASSWORD_RW}@{DBHOST}:5432/{DBNAME}"
 
     engine = create_engine(SQL_DATABASE_URL, echo=True)
     return engine
@@ -35,3 +36,10 @@ def get_session_sql():
         yield session
     finally:
         session.close()
+
+def get_mongo_client():
+    return MongoClient(MONGO_DATABASE_URL)
+
+def get_mongo_db():
+    client = get_mongo_client()
+    return client[MONGO_DBNAME]

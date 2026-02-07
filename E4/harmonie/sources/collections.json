@@ -1,4 +1,100 @@
 {
+    "regles_substitution": [
+        {
+            "sous_famille": "flûtes",
+            "ordre": ["Flûte", "Flûte 1", "Flûte solo", "Flûte 2"]
+        },
+        {
+            "sous_famille": "hautbois",
+            "ordre": ["Hautbois", "Hautbois 1", "Hautbois solo", "Hautbois 2"]
+        },
+        {
+            "sous_famille": "clarinettes",
+            "ordre": ["Clarinette sib", "Clarinette sib 1","Clarinette sib solo", "Clarinette sib 2", "Clarinette sib 3"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone alto", "Saxophone alto 1", "Saxophone alto solo", "Saxophone alto 2"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone tenor", "Saxophone tenor 1", "Saxophone tenor solo", "Saxophone tenor 2"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Trompette", "Trompette 1","Trompette solo", "Trompette 2", "Trompette 3"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Cornet", "Cornet 1","Cornet solo", "Cornet 2", "Cornet 3"]
+        },
+        {
+            "sous_famille": "cors",
+            "ordre": ["Cor", "Cor 1", "Cor solo", "Cor 2"]
+        },
+        {
+            "sous_famille": "trombones",
+            "ordre": ["Trombone", "Trombone 1", "Trombone solo", "Trombone 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Euphonium", "Euphonium 1", "Euphonium solo", "Euphonium 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Tuba", "Tuba 1", "Tuba solo", "Tuba 2"]
+        },
+        {
+            "sous_famille": "percussions",
+            "ordre": ["Percussions", "Percussions 1", "Percussions 2", "Percussions 3"]
+        }
+    ],
+    "instruments":[
+        {
+            "nom_sql": "Flûte",
+            "synonymes": ["Flute", "Fl", "Grande flûte", "Flöte"]
+        },
+        {
+            "nom_sql": "Flûte 1",
+            "synonymes": ["Flute 1", "Fl1", "Grande flûte 1", "Flöte 1"]
+        },
+        {
+            "nom_sql": "Clarinette Mib",
+            "synonymes": ["Eb Clarinet", "Klarinette Mib", "Petite clarinette"]
+        },
+        {
+            "nom_sql": "Percussions",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 1",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 2",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+          {
+            "nom_sql": "Percussions 3",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        }
+    ],
     "musiciens":[
         {
             "nom": "Dupont",
@@ -15,11 +111,29 @@
             "telephone": "0328230000",
             "portable": "0600000000",
             "email": "jean.dupont@fai.com",
-            "instruments": [
-                {"id_instrument": 1, "rang":1},
-                {"id_instrument": 2, "rang":2}
+            "poste_nominal": "Clarinette mib",
+            "competences": [
+                {
+                    "instrument": "Clarinette mib", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Buffet Crampon 1546451"
+                },
+                {
+                    "instrument": "Clarinette sib 1", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Selmer Signature personnelle"
+                },
+                {
+                    "instrument": "Percussions", 
+                    "niveau":"Cycle 2",
+                    "polyvalence_poids": 2,
+                    "details": ["Claviers", "Peaux", "Accessoires"]
+                }
             ],
-            "statut": "actif"
+            "statut": "actif",
+            "accord_donnees_perso": true
         },
         {
             "nom": "Martin",
@@ -35,239 +149,59 @@
             "telephone": "0328230000",
             "portable": "0700000000",
             "email": "marie.martin@fai.com",
-            "instruments": [
-                {"id_instrument": 3, "rang":1},
-                {"id_instrument": 2, "rang":2},
-                {"id_instrument": 4, "rang":3}
+            "poste_nominal": "Saxophone baryton",
+            "competences": [
+                {
+                    "instrument": "Saxophone baryton", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 10,
+                    "reference": "Yamaha 564511"
+                },
+                {
+                    "instrument": "Saxophone soprano", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 5,
+                    "reference": "Selmer serie II 1546451"
+                }
             ],
             "statut": "inactif",
-            "date_depart": "07/2025"
-        }
-    ],
-    "instruments":[
-        {
-            "famille": "flûtes",
-            "voix": "piccolo"
-        },
-        {
-            "famille": "flûtes",
-            "voix": "solo"
-        },
-        {
-            "famille": "flûtes",
-            "voix": "fl1"
-        },
-        {
-            "famille": "flûtes",
-            "voix": "fl2"
-        },
-        {
-            "famille": "flûtes",
-            "voix": "alto"
-        },
-        {
-            "famille": "hautbois",
-            "voix": "hautbois1"
-        },
-        {
-            "famille": "houtbois",
-            "voix": "hautbois2"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "mib"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "solo"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "sib1"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "sib2"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "sib3"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "alto"
-        },
-        {
-            "famille": "clarinettes",
-            "voix": "basse"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "soprano"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "solo"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "alto1"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "alto2"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "tenor1"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "tenor2"
-        },
-        {
-            "famille": "saxophones",
-            "voix": "baryton"
-        },
-        {
-            "famille": "cors",
-            "voix": "cor1"
-        },
-        {
-            "famille": "cors",
-            "voix": "cor2"
-        },
-        {
-            "famille": "cors",
-            "voix": "cor3"
-        },
-        {
-            "famille": "cors",
-            "voix": "cor4"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "solo"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "trompette1"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "trompette2"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "trompette3"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "cornet1"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "cornet2"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "cornet3"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "buggle"
-        },
-        {
-            "famille": "trompettes",
-            "voix": "alto"
-        },
-        {
-            "famille": "trombones",
-            "voix": "solo"
-        },
-        {
-            "famille": "trombones",
-            "voix": "trombone1"
-        },
-        {
-            "famille": "trombones",
-            "voix": "trombone2"
-        },
-        {
-            "famille": "trombones",
-            "voix": "basse"
-        },
-        {
-            "famille": "tubas",
-            "voix": "solo"
-        },
-         {
-            "famille": "tubas",
-            "voix": "euphonium1",
-            "tonalité": "sib",
-            "clef": "sol"
-        },
-         {
-            "famille": "tubas",
-            "voix": "tuba1"
-        },
-        {
-            "famille": "percussions",
-            "voix": "tambour"
-        },
-        {
-            "famille": "percussions",
-            "voix": "batterie"
-        },
-        {
-            "famille": "percussions",
-            "voix": "timbales"
-        },
-        {
-            "famille": "percussions",
-            "voix": "vibraphone"
-        },
-        {
-            "famille": "percussions",
-            "voix": "xylophone"
-        },
-        {
-            "famille": "percussions",
-            "voix": "glock"
-        },
-        {
-            "famille": "percussions",
-            "voix": "congas"
-        },
-        {
-            "famille": "percussions",
-            "voix": "percu1"
-        },
-        {
-            "famille": "percussions",
-            "voix": "percu2"
-        },
-        {
-            "famille": "autre",
-            "voix": "piano"
-        },
-        {
-            "famille": "autre",
-            "voix": "violon"
-        },
-        {
-            "famille": "autre",
-            "voix": "chant"
+            "date_depart": "07/2025",
+            "accord_donnees_perso": false
         }
     ],
     "partitions":[
         {
-            "hbm_id": 1,
+            "hbm_uuid": "",
             "titre": "Call of the clans",
+            "compositeur": "Kevin Houben",
             "nomenclature": [
-                {"instrument_id":"instrument_id", "priorite":1},
-                {"instrument_id":"intrusment_id", "priorite":0}
+                {"instrument":"Piccolo", "priorite":10},
+                {"instrument":"Flûte 1", "priorite":10},
+                {"instrument":"Flûte 2", "priorite":5},
+                {"instrument":"Clarinette mib", "priorite":10},
+                {"instrument":"Clarinette sib 1", "priorite":10},
+                {"instrument":"Clarinette sib 2", "priorite":5},
+                {"instrument":"Clarinette sib 3", "priorite":1},
+                {"instrument":"Clarinette basse", "priorite":10},
+                {"instrument":"Saxophone alto", "priorite":10},
+                {"instrument":"Saxophone tenor", "priorite":10},
+                {"instrument":"Saxophone baryton", "priorite":1}
+            ],
+            "audios":["concert printemps.mp3"],
+            "numérisation":[
+                {
+                    "instrument":"Clarinette basse",
+                    "fichier":"Call of cl basse.pdf"
+                },
+                {
+                    "instrument":"Hautbois",
+                    "fichier":"Call of hautbois.pdf"
+                },
+                {
+                    "instrument":"Flûte 1",
+                    "fichier":"Call of fl1.pdf"
+                }
             ]
         }
-    ] 
+    ]
 }

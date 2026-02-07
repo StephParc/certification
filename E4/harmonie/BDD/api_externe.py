@@ -62,7 +62,7 @@ def get_api_externe(identity):
     """
     
     headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0"
+    "User-Agent": "HBM_HarmonieManager/1.0 ( ste.parcollet@gmail.com )"
     }
 
     if not identity or str(identity).strip().lower() == "none":
@@ -103,7 +103,6 @@ def get_api_externe(identity):
                 # On ajoute une pondération basée sur la similarité réelle pour départager les homonymes
                 similarity = difflib.SequenceMatcher(None, clean_identity_str.lower(), mb_name).ratio()
                 current_score += int(similarity * 10)
-                current_score = 0
                 if "," in mb_sort_name_raw: current_score += 10  
                 if a.get("isnis"): current_score += 5        
                 if a.get("ipis"): current_score += 5         
@@ -153,6 +152,9 @@ def get_api_externe(identity):
     except Exception as e:
         log_rejection_auteur(clean_identity_str, f"Erreur inattendue : {str(e)}")
         return None
+    
+    finally:
+        time.sleep(1.0)
 
 ## Exemples pour tester l'API
 if __name__ == "__main__":

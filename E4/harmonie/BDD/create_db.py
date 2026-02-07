@@ -5,7 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 from E4.harmonie.BDD.database import get_session_sql, sql_connect, get_engine
-from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin
+from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin, create_instrument
 from E4.harmonie.BDD.api_externe import get_api_externe
 from E4.harmonie.BDD.models import Base
 from utils.logger_config import setup_logger, trace_action
@@ -257,15 +257,38 @@ def insert_users_to_db(file_path):
         # Fermeture de la session
         session.close()
 
+# Insertion du csv instruments dans BDD, uniquement à des fins de démonstration
+@trace_action(logger_name)
+def insert_instruments_to_db(file_path):
+    SessionLocal = sql_connect()
+    session = SessionLocal()
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                nom = row.get('nom').strip()
+                famille = row.get('famille').strip()
+                sous_famille = row.get('sous_famille').strip() # Récupération
+                create_instrument(session, nom=nom,famille=famille,sous_famille=sous_famille)
+                    
+        session.commit()
+        logger.info(f"Import des instruments réussi (nom/famille/sous_famille)")
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Erreur lors de l'importation des instruments : {e}")
+    finally:
+        session.close()
 
 if __name__ == "__main__":
     init_db()
-    user_flie = Path("E4/harmonie/sources/users.csv")
-    insert_users_to_db(user_flie)
-    scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
+    # user_file = Path("E4/harmonie/sources/users.csv")
+    # insert_users_to_db(user_file)
+    scrapy_file = Path("E4/harmonie/harmonie/musicshop_last.csv")
     insert_scrapy_to_db(scrapy_file)
-    event_file = Path("E4/harmonie/sources/events.csv")
-    insert_event_to_db(event_file)
+    # event_file = Path("E4/harmonie/sources/events.csv")
+    # insert_event_to_db(event_file)
+    # instru_file = Path("E4/harmonie/sources/instruments.csv")
+    # insert_instruments_to_db(instru_file)
 
 # Chemins vers les fichiers CSV
 # promt au niveau de BDD/

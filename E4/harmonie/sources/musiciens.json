@@ -15,11 +15,29 @@
             "telephone": "0328230000",
             "portable": "0600000000",
             "email": "jean.dupont@fai.com",
-            "instruments": [
-                {"id_instrument": 1, "rang":1},
-                {"id_instrument": 2, "rang":2}
+            "poste_nominal": "Clarinette mib",
+            "competences": [
+                {
+                    "instrument": "Clarinette mib", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Buffet Crampon 1546451"
+                },
+                {
+                    "instrument": "Clarinette sib 1", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Selmer Signature personnelle"
+                },
+                {
+                    "instrument": "Percussions", 
+                    "niveau":"Cycle 2",
+                    "polyvalence_poids": 2,
+                    "details": ["Claviers", "Peaux", "Accessoires"]
+                }
             ],
-            "statut": "actif"
+            "statut": "actif",
+            "accord_donnees_perso": true
         },
         {
             "nom": "Martin",
@@ -35,13 +53,24 @@
             "telephone": "0328230000",
             "portable": "0700000000",
             "email": "marie.martin@fai.com",
-            "instruments": [
-                {"id_instrument": 3, "rang":1},
-                {"id_instrument": 2, "rang":2},
-                {"id_instrument": 4, "rang":3}
+            "poste_nominal": "Saxophone baryton",
+            "competences": [
+                {
+                    "instrument": "Saxophone baryton", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 10,
+                    "reference": "Yamaha 564511"
+                },
+                {
+                    "instrument": "Saxophone soprano", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 5,
+                    "reference": "Selmer serie II 1546451"
+                }
             ],
             "statut": "inactif",
-            "date_depart": "07/2025"
+            "date_depart": "07/2025",
+            "accord_donnees_perso": false
         }
     ] 
 }

@@ -4,14 +4,15 @@ import os
 from pymongo import MongoClient
 
 from E4.harmonie.BDD.config import MONGO_DATABASE_URL, MONGO_DBNAME
+from E4.harmonie.BDD.database import get_mongo_client, get_mongo_db
 from utils.logger_config import setup_logger, trace_action
 
 logger_name = "E4 - MongoDB"
 logger = setup_logger(logger_name)
 
-def get_mongo_client():
-    """Crée et retourne le client MongoDB."""
-    return MongoClient(MONGO_DATABASE_URL)
+# def get_mongo_client():
+#     """Crée et retourne le client MongoDB."""
+#     return MongoClient(MONGO_DATABASE_URL)
 
 @trace_action(logger_name)
 def reset_database():
@@ -23,8 +24,9 @@ def reset_database():
 @trace_action(logger_name)
 def import_from_json(file_path):
     """Importe les données d'un fichier JSON dans les collections correspondantes."""
-    client = get_mongo_client()
-    db = client[MONGO_DBNAME]
+    db = get_mongo_db()
+    # client = get_mongo_client()
+    # db = client[MONGO_DBNAME]
     
     if not os.path.exists(file_path):
         logger.error(f"Erreur : Le fichier {file_path} est introuvable.")

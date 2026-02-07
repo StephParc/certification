@@ -1,0 +1,52 @@
+{
+    "regles_substitution": [
+        {
+            "sous_famille": "flûtes",
+            "ordre": ["Flûte", "Flûte 1", "Flûte solo", "Flûte 2"]
+        },
+        {
+            "sous_famille": "hautbois",
+            "ordre": ["Hautbois", "Hautbois 1", "Hautbois solo", "Hautbois 2"]
+        },
+        {
+            "sous_famille": "clarinettes",
+            "ordre": ["Clarinette sib", "Clarinette sib 1","Clarinette sib solo", "Clarinette sib 2", "Clarinette sib 3"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone alto", "Saxophone alto 1", "Saxophone alto solo", "Saxophone alto 2"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone tenor", "Saxophone tenor 1", "Saxophone tenor solo", "Saxophone tenor 2"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Trompette", "Trompette 1","Trompette solo", "Trompette 2", "Trompette 3"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Cornet", "Cornet 1","Cornet solo", "Cornet 2", "Cornet 3"]
+        },
+        {
+            "sous_famille": "cors",
+            "ordre": ["Cor", "Cor 1", "Cor solo", "Cor 2"]
+        },
+        {
+            "sous_famille": "trombones",
+            "ordre": ["Trombone", "Trombone 1", "Trombone solo", "Trombone 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Euphonium", "Euphonium 1", "Euphonium solo", "Euphonium 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Tuba", "Tuba 1", "Tuba solo", "Tuba 2"]
+        },
+        {
+            "sous_famille": "percussions",
+            "ordre": ["Percussions", "Percussions 1", "Percussions 2", "Percussions 3"]
+        }
+    ]
+}
