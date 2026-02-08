@@ -8,6 +8,7 @@ from E4.harmonie.BDD.auth import get_password_hash
 from E4.harmonie.BDD.database import get_session_sql, sql_connect
 from E4.harmonie.BDD.api_externe import get_api_externe
 from utils.logger_config import setup_logger, trace_action
+from utils.clean_functions import normalize_name
 
 ## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
 # Session = sql_connect()
@@ -74,36 +75,46 @@ def create_part(session, titre, sous_titre=None, edition=None, collection=None,
     session.flush()  
     return partition
 
-def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None):
+def create_auteur(session, nom=None, prenom=None, identite=None, pays=None, IPI=None, ISNI=None):
     
-    search_parts = [p for p in [nom, prenom] if p]
-    auteur_identity = " ".join(search_parts).strip()
-    auteur_api = get_api_externe(auteur_identity)
+    search_id = normalize_name(nom, prenom)
+    search_id_inv = normalize_name(prenom, nom)
+
+    existing_brut = session.query(Auteur).filter(
+        or_(
+            Auteur.identite == search_id,
+            Auteur.identite == search_id_inv
+            )
+        ).first()
+    if existing_brut:
+        return existing_brut
+    
+    auteur_api = get_api_externe(search_id)
 
     if auteur_api:
         final_nom = auteur_api.get("Nom")
         final_prenom = auteur_api.get("Prénom")
+        final_identite = normalize_name(final_nom, final_prenom)
+
+        existing_clean = session.query(Auteur).filter_by(identite=final_identite).first()
+        if existing_clean:
+            return existing_clean
+
         final_pays = auteur_api.get("Pays")
         final_ipi = auteur_api.get("IPI")
         final_isni = auteur_api.get("ISNI")
     else:
         final_nom = nom
         final_prenom = prenom
+        final_identite = normalize_name(nom=final_nom, prenom=final_prenom)
         final_pays = pays
         final_ipi = IPI
         final_isni = ISNI
 
-    existing_auteur = session.query(Auteur).filter_by(
-        nom=final_nom,
-        prenom=final_prenom
-    ).first()
-    
-    if existing_auteur:
-        return existing_auteur
-
     auteur = Auteur(
         nom=final_nom,
         prenom=final_prenom,
+        identite=final_identite,
         pays=final_pays,
         IPI=final_ipi,
         ISNI=final_isni
@@ -819,7 +830,8 @@ if __name__ == "__main__":
     # from E4.harmonie.BDD.database import sql_connect
     SessionLocal = sql_connect()
     session = SessionLocal()
-    delete_user(session,7)
+    create_auteur(session, nom="Zola", prenom="Emile")
+    # delete_user(session,7)
     session.commit()
     session.close()
 # with open("database.py") as m:

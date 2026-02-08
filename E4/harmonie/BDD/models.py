@@ -30,6 +30,7 @@ class Auteur(Base):
     # identity:   Mapped[str] = mapped_column(String(), nullable=True)
     nom:        Mapped[str] = mapped_column(String(), nullable=True)
     prenom:     Mapped[str] = mapped_column(String(), nullable=True)
+    identite:   Mapped[str] = mapped_column(String(), nullable=True)
     pays:       Mapped[str] = mapped_column(String(), nullable=True)
     IPI:        Mapped[str] = mapped_column(String(), nullable=True)
     ISNI:       Mapped[str] = mapped_column(String(), nullable=True)

@@ -13,10 +13,10 @@ app.include_router(partitions.router)
 app.include_router(partitions_hbm.router)
 app.include_router(associations.router)
 app.include_router(instruments.router)
-app.include_router(instruments_dico.router)
+# app.include_router(instruments_dico.router)
 app.include_router(musiciens.router)
-app.include_router(partitions_details.router)
-app.include_router(regles_substitution.router)
+# app.include_router(partitions_details.router)
+# app.include_router(regles_substitution.router)
 
 @app.get("/")
 async def root():

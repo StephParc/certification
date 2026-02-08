@@ -41,6 +41,7 @@ class EventId(Event):
 class Auteur(BaseModel):
     nom : str | None = None
     prenom: str | None = None
+    # identite: str | None = None
     pays: str | None = None
     IPI : str | None = None
     ISNI : str | None = None

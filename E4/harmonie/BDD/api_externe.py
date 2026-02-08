@@ -8,10 +8,18 @@ from requests.exceptions import RequestException, Timeout
 from datetime import datetime
 import difflib
 
+from utils.logger_config import setup_logger, trace_action
 from utils.S3_utils import upload_file, get_s3_client
+
+loggger_name = "E4 - API Musicbrainz"
+logger = setup_logger(loggger_name)
 
 # Fichier de rejet pour les auteurs (MusicBrainz)
 REJET_AUTEURS_FILE = "rejets_auteurs_api.csv"
+
+class MusicBrainzAPIError(Exception):
+    """Exception levée pour les erreurs critiques de l'API MusicBrainz (503, Timeout)."""
+    pass
 
 def log_rejection_auteur(identity, reason):
     """Enregistre l'échec de récupération de l'auteur."""
@@ -40,7 +48,8 @@ def is_fuzzy_match(words_source, words_target, threshold=0.7):
     # On considère que c'est un match si tous les mots recherchés sont trouvés (approximativement)
     return matches == len(words_source)
 
-def get_api_externe(identity):
+@trace_action(loggger_name)
+def get_api_externe(identity, retries=2):
     """
     Retrieve artist information from the MusicBrainz API based on the provided identity.
 
@@ -74,87 +83,96 @@ def get_api_externe(identity):
 
     url = f"https://musicbrainz.org/ws/2/artist/?query={identity}&fmt=json"
     
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        artists = data.get("artists", [])
-
-        if not artists:
-            log_rejection_auteur(clean_identity_str, "Aucun résultat trouvé sur MusicBrainz")
-            return None
-
-        # recherche de la meilleure correspondance
-        selected_artist = None
-        best_score = -1
-
-        for a in artists[:3]:
-            mb_name = a.get("name", "").lower()
-            mb_sort_name_raw = a.get("sort-name", "").lower()
-            mb_sort_name_clean = mb_sort_name_raw.replace(",", "")
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code in [429, 503]:
+                if attempt < retries:
+                    logger.warning(f" MusicBrainz saturé. (Code {response.status_code}). Tentative {attempt+1}/{retries} pour '{clean_identity_str}'")
+                    time.sleep(5)
+                    continue
+                else:
+                    raise MusicBrainzAPIError("Service indisponible après plusieurs tentatives.")
             
-            words_mb_name = set(mb_name.split())
-            words_mb_sort = set(mb_sort_name_clean.split())
+            response.raise_for_status()
+            data = response.json()
+            artists = data.get("artists", [])
 
-            if is_fuzzy_match(words_identity, words_mb_name) or \
-               is_fuzzy_match(words_identity, words_mb_sort):
+            if not artists:
+                log_rejection_auteur(clean_identity_str, "Aucun résultat trouvé sur MusicBrainz")
+                return None
+
+            # recherche de la meilleure correspondance
+            selected_artist = None
+            best_score = -1
+
+            for a in artists[:3]:
+                mb_name = a.get("name", "").lower()
+                mb_sort_name_raw = a.get("sort-name", "").lower()
+                mb_sort_name_clean = mb_sort_name_raw.replace(",", "")
                 
-                current_score = 0
-                # On ajoute une pondération basée sur la similarité réelle pour départager les homonymes
-                similarity = difflib.SequenceMatcher(None, clean_identity_str.lower(), mb_name).ratio()
-                current_score += int(similarity * 10)
-                if "," in mb_sort_name_raw: current_score += 10  
-                if a.get("isnis"): current_score += 5        
-                if a.get("ipis"): current_score += 5         
-                if a.get("area"): current_score += 2         
+                words_mb_name = set(mb_name.split())
+                words_mb_sort = set(mb_sort_name_clean.split())
 
-                if current_score > best_score:
-                    best_score = current_score
-                    selected_artist = a
-        
-        if not selected_artist:
-            log_rejection_auteur(clean_identity_str, "Nom trouvé mais correspondance incertaine (homonymes)")
-            return None
+                if is_fuzzy_match(words_identity, words_mb_name) or \
+                is_fuzzy_match(words_identity, words_mb_sort):
+                    
+                    current_score = 0
+                    # On ajoute une pondération basée sur la similarité réelle pour départager les homonymes
+                    similarity = difflib.SequenceMatcher(None, clean_identity_str.lower(), mb_name).ratio()
+                    current_score += int(similarity * 10)
+                    if "," in mb_sort_name_raw: current_score += 10  
+                    if a.get("isnis"): current_score += 5        
+                    if a.get("ipis"): current_score += 5         
+                    if a.get("area"): current_score += 2         
 
-        sort_name = selected_artist.get("sort-name", "")
-        if "," in sort_name:
-            # On sépare tout pour voir combien on a de morceaux
-            parts = [p.strip() for p in sort_name.split(",")]
+                    if current_score > best_score:
+                        best_score = current_score
+                        selected_artist = a
             
-            if len(parts) == 3:
-                # Cas "Nom, Particule, Prénom" (ex: Roost, van der, Jan)
-                nom = f"{parts[1]} {parts[0]}" # "van der" + " " + "Roost"
-                prenom = parts[2]              # "Jan"
-            elif len(parts) == 2:
-                # Cas "Nom, Prénom" (ex: Deleruyelle, Thierry)
-                nom = parts[0]
-                prenom = parts[1]
+            if not selected_artist:
+                log_rejection_auteur(clean_identity_str, "Nom trouvé mais correspondance incertaine (homonymes)")
+                return None
+
+            sort_name = selected_artist.get("sort-name", "")
+            if "," in sort_name:
+                # On sépare tout pour voir combien on a de morceaux
+                parts = [p.strip() for p in sort_name.split(",")]
+                
+                if len(parts) == 3:
+                    # Cas "Nom, Particule, Prénom" (ex: Roost, van der, Jan)
+                    nom = f"{parts[1]} {parts[0]}" # "van der" + " " + "Roost"
+                    prenom = parts[2]              # "Jan"
+                elif len(parts) == 2:
+                    # Cas "Nom, Prénom" (ex: Deleruyelle, Thierry)
+                    nom = parts[0]
+                    prenom = parts[1]
+                else:
+                    # Cas complexe (plus de 3 parties), on prend le dernier comme prénom
+                    prenom = parts[-1]
+                    nom = " ".join(parts[:-1])
             else:
-                # Cas complexe (plus de 3 parties), on prend le dernier comme prénom
-                prenom = parts[-1]
-                nom = " ".join(parts[:-1])
-        else:
-            # Pas de virgule (ex: Nirvana)
-            nom = sort_name.strip()
-            prenom = None
+                # Pas de virgule (ex: Nirvana)
+                nom = sort_name.strip()
+                prenom = None
 
-        return {
-            "Nom": nom,
-            "Prénom": prenom,
-            "Pays": selected_artist.get("area", {}).get("name", None),
-            "IPI": ",".join(selected_artist.get("ipis")) if selected_artist.get("ipis") else None,
-            "ISNI": ",".join(selected_artist.get("isnis")) if selected_artist.get("isnis") else None
-        }
+            return {
+                "Nom": nom,
+                "Prénom": prenom,
+                "Pays": selected_artist.get("area", {}).get("name", None),
+                "IPI": ",".join(selected_artist.get("ipis")) if selected_artist.get("ipis") else None,
+                "ISNI": ",".join(selected_artist.get("isnis")) if selected_artist.get("isnis") else None
+            }
 
-    except (RequestException, Timeout) as e:
-        log_rejection_auteur(clean_identity_str, f"Erreur réseau/API : {str(e)}")
-        return None
-    except Exception as e:
-        log_rejection_auteur(clean_identity_str, f"Erreur inattendue : {str(e)}")
-        return None
-    
-    finally:
-        time.sleep(1.0)
+        except (RequestException, Timeout) as e:
+            if attempt < retries:
+                logger.warning(f"Erreur réseau pour '{clean_identity_str}': {e}. Nouvelle tentative...")
+                time.sleep(2)
+                continue
+            raise MusicBrainzAPIError(f"Erreur réseau persistante : {e}")
+
+        finally:
+            time.sleep(1.0)
 
 ## Exemples pour tester l'API
 if __name__ == "__main__":

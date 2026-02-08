@@ -24,7 +24,7 @@ def get_auteur_by_id(auteur_id:int, session:Session=Depends(get_session_sql)):
 
 @router.post("/")
 def create_autor(auteur:Auteur, session:Session=Depends(get_session_sql)):
-    autor=create_auteur(session, auteur.nom, auteur.prenom, auteur.pays, auteur.IPI, auteur.ISNI)
+    autor=create_auteur(session, nom=auteur.nom, prenom=auteur.prenom, pays=auteur.pays, IPI=auteur.IPI, ISNI=auteur.ISNI)
     session.commit()
     session.refresh(autor)
     return autor
