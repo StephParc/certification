@@ -10,29 +10,30 @@ import difflib
 
 from utils.logger_config import setup_logger, trace_action
 from utils.S3_utils import upload_file, get_s3_client
+from utils.utils_functions import write_rejection_log
+from E4.harmonie.BDD.config import REJET_AUTEURS_PATH
 
-loggger_name = "E4 - API Musicbrainz"
-logger = setup_logger(loggger_name)
+logger_name = "E4 - API Musicbrainz"
+logger = setup_logger(logger_name)
 
-# Fichier de rejet pour les auteurs (MusicBrainz)
-REJET_AUTEURS_FILE = "rejets_auteurs_api.csv"
+REJET_HEADERS = ["identity_recherchee", "raison_rejet", "time_rejet"]
 
 class MusicBrainzAPIError(Exception):
     """Exception levée pour les erreurs critiques de l'API MusicBrainz (503, Timeout)."""
     pass
 
-def log_rejection_auteur(identity, reason):
-    """Enregistre l'échec de récupération de l'auteur."""
-    file_exists = os.path.isfile(REJET_AUTEURS_FILE)
-    try:
-        with open(REJET_AUTEURS_FILE, "a", newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            timenow = datetime.now()
-            if not file_exists:
-                writer.writerow(["identity_recherchee", "raison_rejet", "time_rejet"])
-            writer.writerow([identity, reason, timenow])
-    except Exception as e:
-        print(f"Erreur lors de l'écriture du rejet : {e}")
+# def log_rejection_auteur(identity, reason):
+#     """Enregistre l'échec de récupération de l'auteur."""
+#     file_exists = os.path.isfile(REJET_AUTEURS_FILE)
+#     try:
+#         with open(REJET_AUTEURS_FILE, "a", newline='', encoding='utf-8') as f:
+#             writer = csv.writer(f)
+#             timenow = datetime.now()
+#             if not file_exists:
+#                 writer.writerow(["identity_recherchee", "raison_rejet", "time_rejet"])
+#             writer.writerow([identity, reason, timenow])
+#     except Exception as e:
+#         print(f"Erreur lors de l'écriture du rejet : {e}")
 
 def is_fuzzy_match(words_source, words_target, threshold=0.7):
     """
@@ -75,7 +76,11 @@ def get_api_externe(identity, retries=2):
     }
 
     if not identity or str(identity).strip().lower() == "none":
-        log_rejection_auteur("None/Vide", "Identité absente dans le fichier source")
+        write_rejection_log(
+            REJET_AUTEURS_PATH, 
+            REJET_HEADERS, 
+            ["None/Vide", "Identité absente dans le fichier source", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+        )
         return None
     
     clean_identity_str = identity.strip()
@@ -99,7 +104,11 @@ def get_api_externe(identity, retries=2):
             artists = data.get("artists", [])
 
             if not artists:
-                log_rejection_auteur(clean_identity_str, "Aucun résultat trouvé sur MusicBrainz")
+                write_rejection_log(
+                    REJET_AUTEURS_PATH, 
+                    REJET_HEADERS, 
+                    [clean_identity_str, "Aucun résultat trouvé sur MusicBrainz", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+                )
                 return None
 
             # recherche de la meilleure correspondance
@@ -131,7 +140,11 @@ def get_api_externe(identity, retries=2):
                         selected_artist = a
             
             if not selected_artist:
-                log_rejection_auteur(clean_identity_str, "Nom trouvé mais correspondance incertaine (homonymes)")
+                write_rejection_log(
+                    REJET_AUTEURS_PATH, 
+                    REJET_HEADERS, 
+                    [clean_identity_str, "Nom trouvé mais correspondance incertaine (homonymes)", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+                )
                 return None
 
             sort_name = selected_artist.get("sort-name", "")

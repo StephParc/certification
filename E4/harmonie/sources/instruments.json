@@ -1,5 +1,5 @@
 {
-    "instruments":[
+    "COL_instruments":[
         {
             "nom_sql": "Flûte",
             "synonymes": ["Flute", "Fl", "Grande flûte", "Flöte"]
@@ -9,7 +9,7 @@
             "synonymes": ["Flute 1", "Fl1", "Grande flûte 1", "Flöte 1"]
         },
         {
-            "nom_sql": "Clarinette Mib",
+            "nom_sql": "Clarinette mib",
             "synonymes": ["Eb Clarinet", "Klarinette Mib", "Petite clarinette"]
         },
         {

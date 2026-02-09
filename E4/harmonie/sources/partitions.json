@@ -1,7 +1,6 @@
 {
-    "partitions":[
+    "COL_partitions":[
         {
-            "hbm_uuid": "",
             "titre": "Call of the clans",
             "compositeur": "Kevin Houben",
             "nomenclature": [

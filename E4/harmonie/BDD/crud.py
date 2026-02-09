@@ -8,7 +8,7 @@ from E4.harmonie.BDD.auth import get_password_hash
 from E4.harmonie.BDD.database import get_session_sql, sql_connect
 from E4.harmonie.BDD.api_externe import get_api_externe
 from utils.logger_config import setup_logger, trace_action
-from utils.clean_functions import normalize_name
+from utils.utils_functions import normalize_name
 
 ## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
 # Session = sql_connect()
@@ -46,9 +46,10 @@ def create_part(session, titre, sous_titre=None, edition=None, collection=None,
                 instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
                 ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
 
+    titre_clean = titre.upper() if titre else ""
     # Requête de vérification d"existence
     existing_partition = session.query(Partition).filter_by(
-                    titre = titre,
+                    titre = titre_clean,
                     ref_editeur = ref_editeur
                     ).first()
                 
@@ -57,7 +58,7 @@ def create_part(session, titre, sous_titre=None, edition=None, collection=None,
         return existing_partition
     
     partition = Partition(
-                titre           = titre,
+                titre           = titre_clean,
                 sous_titre      = sous_titre,
                 edition         = edition,
                 collection      = collection,
@@ -125,16 +126,11 @@ def create_auteur(session, nom=None, prenom=None, identite=None, pays=None, IPI=
     return auteur
 
 def create_asso_auteur_partition(session, partition_id, auteur_id, role):
-    # Définition des variables de la requête pour vérifier l'existence
-    partition_id_test = partition_id
-    auteur_id_test = auteur_id 
-    role_test = role  
-
     # Requête de vérification d"existence
     existing_asso = session.query(AssAuteurPartition).filter_by(
-                partition_id = partition_id_test,
-                auteur_id = auteur_id_test,
-                role = role_test
+                partition_id = partition_id,
+                auteur_id = auteur_id,
+                role = role
                 ).first()
     
     if existing_asso:
@@ -143,9 +139,9 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
     # Création de l'association auteur/partition
 
     asso = AssAuteurPartition(
-            partition_id = partition_id_test,
-            auteur_id = auteur_id_test,
-            role = role_test
+            partition_id = partition_id,
+            auteur_id = auteur_id,
+            role = role
             )
     session.add(asso)
     session.flush()
@@ -215,7 +211,7 @@ def create_asso_hbm_event(session, hbm_id, evenement_id):
 
 def create_user(session, pseudo, password, fullname=None, email=None):
     # Fonction de hachage du mot de passe
-    password_hashed = get_password_hash(password)
+    hashed_password = get_password_hash(password)
     
     # Requête de vérification d"existence
     existing_user = session.query(User).filter_by(pseudo = pseudo).first()
@@ -227,7 +223,7 @@ def create_user(session, pseudo, password, fullname=None, email=None):
                 pseudo = pseudo,
                 fullname = fullname,
                 email = email,
-                hashed_password = password
+                hashed_password = hashed_password
     )
     
     session.add(user)
@@ -241,9 +237,6 @@ def create_user_admin(session, pseudo, fullname, hashed_password, email, permiss
         # Il vaut mieux retourner l'objet existant ou None plutôt qu'un message str
         # pour ne pas faire planter les scripts qui attendent un objet User
         return existing_user
-    
-
-
 
     # 3. Création de l'utilisateur avec l'UUID généré par Postgres
     user = User(
@@ -753,8 +746,8 @@ def read_user_by_id(session, user_id):
     user = result.first()
     return user
 
-def read_user_by_username(session, username):
-    stmt = select(User.username, User.fullname, User.email).where(User.username==username)
+def read_user_by_pseudo(session, pseudo):
+    stmt = select(User.pseudo, User.fullname, User.email).where(User.pseudo==pseudo)
     result = session.execute(stmt)
     user = result.first()
     return user

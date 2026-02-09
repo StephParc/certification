@@ -8,14 +8,16 @@ from E4.harmonie.BDD.database import get_session_sql, sql_connect, get_engine
 from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin, create_instrument
 from E4.harmonie.BDD.api_externe import get_api_externe
 from E4.harmonie.BDD.models import Base
+from E4.harmonie.BDD.config import REJET_IMPORT_PATH
 from utils.logger_config import setup_logger, trace_action
+from utils.utils_functions import write_rejection_log
 
 logger_name = "E4 - Insertion BDD"
 logger = setup_logger(logger_name)
 
-timenow = datetime.now()
-file_name = f"{str(timenow)} - rejets_import_scrapy.csv"
-REJET_IMPORT_FILE = Path(__file__).parent / file_name
+# timenow = datetime.now()
+# file_name = f"{str(timenow)} - rejets_import_scrapy.csv"
+# REJET_IMPORT_FILE = Path(__file__).parent / file_name
 
 # # session = get_session_sql()
 # SessionLocal= sql_connect()
@@ -85,19 +87,19 @@ def insert_event_to_db(file_path):
         # Fermeture de la session
         session.close()
 
-@trace_action(logger_name)
-def log_rejection_import(row_data, error_msg):
-    file_exists = REJET_IMPORT_FILE.exists()
-    try:
-        with open(REJET_IMPORT_FILE, "a", newline='', encoding='utf-8') as f:
-            fieldnames = list(row_data.keys()) + ["erreur_import"]
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if not file_exists:
-                writer.writeheader()
-            row_data["erreur_import"] = error_msg
-            writer.writerow(row_data)
-    except Exception as e:
-        logger.error(f"Impossible d'écrire dans le fichier de rejet: {e}")
+# @trace_action(logger_name)
+# def log_rejection_import(row_data, error_msg):
+#     file_exists = REJET_IMPORT_FILE.exists()
+#     try:
+#         with open(REJET_IMPORT_FILE, "a", newline='', encoding='utf-8') as f:
+#             fieldnames = list(row_data.keys()) + ["erreur_import"]
+#             writer = csv.DictWriter(f, fieldnames=fieldnames)
+#             if not file_exists:
+#                 writer.writeheader()
+#             row_data["erreur_import"] = error_msg
+#             writer.writerow(row_data)
+#     except Exception as e:
+#         logger.error(f"Impossible d'écrire dans le fichier de rejet: {e}")
 
 @trace_action(logger_name)
 def insert_scrapy_to_db(file_path):
@@ -129,12 +131,15 @@ def insert_scrapy_to_db(file_path):
           `create_auteur`, `get_api_externe`, and `create_asso_auteur_partition` to handle the insertion
           and association of data within the database.
     """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    current_rejet_file = REJET_IMPORT_PATH.with_name(f"{timestamp}_{REJET_IMPORT_PATH.name}")
+
     SessionLocal= sql_connect()
     session = SessionLocal()
     try:
         # Ouverture du fichier CSV
         with open(file_path, mode='r', encoding='utf-8') as file:
-            csv_reader = csv.DictReader(file)
+            csv_reader = csv.DictReader(file, delimiter=';')
             count_ok = 0
             count_err = 0
 
@@ -194,9 +199,13 @@ def insert_scrapy_to_db(file_path):
                     session.rollback()
                     count_err += 1
                     error_detail = f"[{etape}] - {str(e)}"
-                    log_rejection_import(row, error_detail)
+                    # log_rejection_import(row, error_detail)
+                    headers = list(row.keys()) + ["erreur_import"]
+                    row_data = list(row.values()) + [error_detail]
+                    write_rejection_log(str(current_rejet_file), headers, row_data)
+                    logger.warning(f"Ligne rejetée vers {current_rejet_file.name}")
 
-                    logger.warning(f"Ligne rejetée : {titre} | Raison: {error_detail}")
+                    # logger.warning(f"Ligne rejetée : {titre} | Raison: {error_detail}")
 
             logger.info(f"Importation terminée. Succès: {count_ok}, Echecs: {count_err}")
     

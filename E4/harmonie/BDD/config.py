@@ -11,6 +11,8 @@ if ENV_PATH.exists():
 else:
     print("ℹ️ Info : .env non trouvé, utilisation des variables d'environnement système.")
 
+LOGS_BASE_PATH = BASE_DIR / os.getenv("LOGS_ROOT_DIR", "logs/rejets")
+
 SQL_DATABASE_URL = os.getenv("SQL_DATABASE_URL")
 MONGO_DATABASE_URL = os.getenv("MONGO_DATABASE_URL")
 MONGO_DBNAME = os.getenv("MONGO_DBNAME")
@@ -23,6 +25,11 @@ DBUSER_RW = os.getenv("DBUSER_RW")
 PASSWORD_RW = os.getenv("PASSWORD_RW")
 DBUSER_RO = os.getenv("DBUSER_RO")
 PASSWORD_RO = os.getenv("PASSWORD_RO")
+REJET_AUTEURS_PATH = LOGS_BASE_PATH / "api_musicbrainz/rejets_auteurs.csv"
+REJET_IMPORT_PATH = LOGS_BASE_PATH / "imports_global/rejets_scrapy.csv"
+REJET_INSTRUMENTS_PATH = LOGS_BASE_PATH / "sync/instruments_a_completer.csv"
+USER_LOG_PATH = LOGS_BASE_PATH / "sync/credentials_temp.csv"
+RECONCILIATION_PARTITIONS_PATH = LOGS_BASE_PATH / "sync/partitions_a_reconcilier.csv"
 
 if not SQL_DATABASE_URL:
     raise ImportError("❌ Erreur critique : SQL_DATABASE_URL est introuvable.")

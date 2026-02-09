@@ -24,7 +24,7 @@ metadata = MetaData()
 
 
 class Auteur(Base):
-    __tablename__ = "auteur"
+    __tablename__ = "TB_auteur"
 
     auteur_id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     # identity:   Mapped[str] = mapped_column(String(), nullable=True)
@@ -37,7 +37,7 @@ class Auteur(Base):
 
     rel_partition_auteur: Mapped[List['Partition']]= relationship(
         'Partition', 
-        secondary='ass_auteur_partition', 
+        secondary='TB_ass_auteur_partition', 
         back_populates='rel_auteur_partition', 
         lazy='joined')
 
@@ -45,7 +45,7 @@ class Auteur(Base):
         return f"Auteur(auteur_id={self.auteur_id!r}, nom={self.nom!r}, prenom={self.prenom!r}, pays={self.pays!r}, IPI={self.IPI!r}, ISNI={self.ISNI!r})"
 
 class Partition(Base):
-    __tablename__ = "partition"
+    __tablename__ = "TB_partition"
 
     partition_id:   Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
     partition_uuid: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
@@ -68,7 +68,7 @@ class Partition(Base):
 
     rel_auteur_partition: Mapped[List['Auteur']] = relationship(
         'Auteur', 
-        secondary='ass_auteur_partition', 
+        secondary='TB_ass_auteur_partition', 
         back_populates='rel_partition_auteur',
         lazy='joined')
     rel_hbm_partition: Mapped[Optional['PartitionHBM']]= relationship(
@@ -87,22 +87,22 @@ duree={self.duree!r}, description={self.description!r}, url={self.url!r})"
 
 # Version1
 class AssAuteurPartition(Base):
-    __tablename__ = 'ass_auteur_partition'
+    __tablename__ = 'TB_ass_auteur_partition'
     
-    auteur_id:  Mapped[int] = mapped_column(ForeignKey('auteur.auteur_id'), primary_key=True)
-    partition_id: Mapped[int] = mapped_column(ForeignKey('partition.partition_id'), primary_key=True)
+    auteur_id:  Mapped[int] = mapped_column(ForeignKey('TB_auteur.auteur_id'), primary_key=True)
+    partition_id: Mapped[int] = mapped_column(ForeignKey('TB_partition.partition_id'), primary_key=True)
     role: Mapped[str] = mapped_column(String(), primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"AssAuteurPartition(auteur_id={self.auteur_id!r}, partition_id={self.partition_id!r}, role={self.role!r}"
 
 class PartitionHBM(Base):
-    __tablename__ = "partition_hbm"
+    __tablename__ = "TB_partition_hbm"
 
     partition_hbm_id:Mapped[int]    = mapped_column(primary_key=True, autoincrement=True)
     hbm_uuid: Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True),unique=True, nullable=False, 
                                         server_default=text("uuid_generate_v4()"))
-    partition_id:   Mapped[int]     = mapped_column(ForeignKey('partition.partition_id'), nullable=True, unique=True)
+    partition_id:   Mapped[int]     = mapped_column(ForeignKey('TB_partition.partition_id'), nullable=True, unique=True)
     distribution:   Mapped[date]    = mapped_column(Date(), nullable=True)
     rendue:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
     archive:        Mapped[int]     = mapped_column(Integer(), nullable=True)
@@ -116,7 +116,7 @@ class PartitionHBM(Base):
         lazy='joined')
     rel_evenement_hbm: Mapped[List['Evenement']] = relationship(
         'Evenement', 
-        secondary='ass_evenement_hbm', 
+        secondary='TB_ass_evenement_hbm', 
         back_populates='rel_hbm_evenement',
         lazy='joined')
     
@@ -126,7 +126,7 @@ distribution={self.distribution!r}, rendue={self.rendue!r}, archive={self.archiv
 concert={self.concert!r}, defile={self.defile!r}, sonnerie={self.sonnerie!r})"
 
 class Evenement(Base):
-    __tablename__ = "evenement"
+    __tablename__ = "TB_evenement"
 
     evenement_id:   Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
     date_evenement: Mapped[date]    = mapped_column(Date(), nullable=False)
@@ -137,7 +137,7 @@ class Evenement(Base):
 
     rel_hbm_evenement: Mapped[List['PartitionHBM']] = relationship(
         'PartitionHBM', 
-        secondary='ass_evenement_hbm', 
+        secondary='TB_ass_evenement_hbm', 
         back_populates='rel_evenement_hbm',
         lazy='joined')
     
@@ -146,10 +146,10 @@ class Evenement(Base):
 
 # Version1
 class AssEvenementHbm(Base):
-    __tablename__ = 'ass_evenement_hbm'
+    __tablename__ = 'TB_ass_evenement_hbm'
 
-    evenement_id:       Mapped[int] = mapped_column(ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True)
-    partition_hbm_id:   Mapped[int] = mapped_column(ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True)
+    evenement_id:       Mapped[int] = mapped_column(ForeignKey('TB_evenement.evenement_id', ondelete='CASCADE'), primary_key=True)
+    partition_hbm_id:   Mapped[int] = mapped_column(ForeignKey('TB_partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True)
 
     def __repr__(self):
         return super().__repr__()
@@ -158,25 +158,25 @@ class AssEvenementHbm(Base):
         return f"AssEvenement(evenement_id={self.evenement_id!r}, partition_hbm_id={self.partition_hbm_id!r})"
     
 class Instrument(Base):
-    __tablename__ = "instrument"
+    __tablename__ = "TB_instrument"
 
     instrument_id:  Mapped[int]         = mapped_column(primary_key=True, autoincrement=True)
     instrument_uuid: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
                                             server_default=text("uuid_generate_v4()"))
     nom:            Mapped[str]         = mapped_column(String(100), nullable=False, unique=True)
-    famille:        Mapped[str]         = mapped_column(String(50), nullable=False)
-    sous_famille:   Mapped[str]         = mapped_column(String(50), nullable=False)
+    famille:        Mapped[str]         = mapped_column(String(50), nullable=True)
+    sous_famille:   Mapped[str]         = mapped_column(String(50), nullable=True)
 
     def __repr__(self) -> str:
         return f"Instrument(id={self.instrument_id}, nom={self.nom})"
 
 class User(Base):
-    __tablename__ = "utilisateur"
+    __tablename__ = "TB_utilisateur"
 
     user_id:            Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_uuid:    Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True),unique=True,nullable=False, 
                                         server_default=text("uuid_generate_v4()"))
-    pseudo:           Mapped[str] = mapped_column(String(), nullable=False)
+    pseudo:             Mapped[str] = mapped_column(String(), unique=True, nullable=False)
     fullname:           Mapped[str] = mapped_column(String(), nullable=True)
     hashed_password:    Mapped[str] = mapped_column(String(), nullable=False)
     email:              Mapped[str] = mapped_column(String(), nullable=True)
@@ -184,7 +184,7 @@ class User(Base):
     last_connection:    Mapped[date]= mapped_column(Date(), nullable=True)
 
     def __repr__(self):
-        return f"User(user_id={self.user_id!r}, username={self.username}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
+        return f"User(user_id={self.user_id!r}, username={self.pseudo}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
 
 
 # if __name__ == "__main__":
