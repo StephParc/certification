@@ -9,7 +9,7 @@ ENV_PATH = BASE_DIR / ".env"
 if ENV_PATH.exists():
     load_dotenv(dotenv_path=ENV_PATH)
 else:
-    print("ℹ️ Info : .env non trouvé, utilisation des variables d'environnement système.")
+    print("Info : .env non trouvé, utilisation des variables d'environnement système.")
 
 LOGS_BASE_PATH = BASE_DIR / os.getenv("LOGS_ROOT_DIR", "logs/rejets")
 
@@ -32,4 +32,4 @@ USER_LOG_PATH = LOGS_BASE_PATH / "sync/credentials_temp.csv"
 RECONCILIATION_PARTITIONS_PATH = LOGS_BASE_PATH / "sync/partitions_a_reconcilier.csv"
 
 if not SQL_DATABASE_URL:
-    raise ImportError("❌ Erreur critique : SQL_DATABASE_URL est introuvable.")
+    raise ImportError("Erreur critique : SQL_DATABASE_URL est introuvable.")

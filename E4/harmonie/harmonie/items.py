@@ -5,10 +5,7 @@
 
 import scrapy
 
-
 class HarmonieItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
     titre           = scrapy.Field()
     sous_titre      = scrapy.Field()
     compositeur     = scrapy.Field()

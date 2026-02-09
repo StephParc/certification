@@ -13,21 +13,10 @@ class Base(DeclarativeBase):
 
 metadata = MetaData()
 
-# AssAuteurPartition = Table('ass_auteur_partition', Base.metadata,
-#     Column('auteur_id', Integer,  ForeignKey('auteur.auteur_id'), primary_key=True),
-#     Column('partition_id', Integer, ForeignKey('partition.partition_id'), primary_key=True),
-#     Column('role', String, primary_key=True, nullable=False))
-
-# AssEvenementHbm = Table('ass_evenement_hbm', Base.metadata,
-#     Column('evenement_id', Integer, ForeignKey('evenement.evenement_id', ondelete='CASCADE'), primary_key=True),
-#     Column('partition_hbm_id', Integer, ForeignKey('partition_hbm.partition_hbm_id', ondelete='CASCADE'), primary_key=True))
-
-
 class Auteur(Base):
     __tablename__ = "TB_auteur"
 
     auteur_id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    # identity:   Mapped[str] = mapped_column(String(), nullable=True)
     nom:        Mapped[str] = mapped_column(String(), nullable=True)
     prenom:     Mapped[str] = mapped_column(String(), nullable=True)
     identite:   Mapped[str] = mapped_column(String(), nullable=True)
@@ -63,8 +52,7 @@ class Partition(Base):
     ref_editeur:    Mapped[str]     = mapped_column(String(), nullable=True)
     duree:          Mapped[str]     = mapped_column(String(), nullable=True)
     description:    Mapped[str]     = mapped_column(String(), nullable=True)
-    url:            Mapped[str]     = mapped_column(String(), nullable=True)
-    # hbm:            Mapped[bool]    = mapped_column(Boolean(), nullable=True)     
+    url:            Mapped[str]     = mapped_column(String(), nullable=True) 
 
     rel_auteur_partition: Mapped[List['Auteur']] = relationship(
         'Auteur', 
@@ -85,7 +73,6 @@ niveau={self.niveau!r}, genre={self.genre!r}, style={self.style!r}, \
 annee_sortie={self.annee_sortie!r}, ISMN={self.ISMN!r}, ref_editeur={self.ref_editeur!r}, \
 duree={self.duree!r}, description={self.description!r}, url={self.url!r})"
 
-# Version1
 class AssAuteurPartition(Base):
     __tablename__ = 'TB_ass_auteur_partition'
     
@@ -144,7 +131,6 @@ class Evenement(Base):
     def __repr__(self):
         return f"Evenement(evenement_id={self.evenement_id!r}, date_evenement={self.date_evenement}, nom_evenement={self.nom_evenement!r}, lieu={self.lieu!r}, type_evenement={self.type_evenement!r}, affiche={self.affiche!r})"
 
-# Version1
 class AssEvenementHbm(Base):
     __tablename__ = 'TB_ass_evenement_hbm'
 
@@ -185,7 +171,6 @@ class User(Base):
 
     def __repr__(self):
         return f"User(user_id={self.user_id!r}, username={self.pseudo}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
-
 
 # if __name__ == "__main__":
 #     engine = get_engine()

@@ -35,15 +35,3 @@ def del_evenement(id:int, session:Session=Depends(get_session_sql)):
     result = delete_partition_hbm(session,id)
     session.commit()
     return result
-
-# @router.put("/{event_id}")
-# def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
-#     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
-#     session.commit()
-#     return result
-
-# @router.patch("/{event_id}")
-# def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
-#     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
-#     session.commit()
-#     return result

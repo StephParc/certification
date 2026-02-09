@@ -16,7 +16,6 @@ def get_full_partition_details(hbm_uuid: str, session: Session = Depends(get_ses
     """
     Fusionne les données SQL (Inventaire/Catalogue) et MongoDB (Nomenclature/Fichiers).
     """
-    # 1. Vérification SQL
     hbm_entry = session.query(PartitionHBM).filter(PartitionHBM.hbm_uuid == hbm_uuid).first()
     if not hbm_entry:
         raise HTTPException(status_code=404, detail="UUID SQL introuvable")
@@ -28,12 +27,11 @@ def get_full_partition_details(hbm_uuid: str, session: Session = Depends(get_ses
         .all()
     )
 
-    # 2. Récupération Mongo
     mongo_data = get_partition_by_uuid(hbm_uuid)
 
     return {
-        "catalogue": hbm_entry.rel_partition_hbm, # SQLAlchemy injecte l'objet lié
-        "inventaire": hbm_entry,                 # L'objet hbm_entry lui-même
-        "auteurs": auteurs_query,                # Liste de tuples (identite, role)
+        "catalogue": hbm_entry.rel_partition_hbm, 
+        "inventaire": hbm_entry,                
+        "auteurs": auteurs_query,               
         "technique": mongo_data
     }

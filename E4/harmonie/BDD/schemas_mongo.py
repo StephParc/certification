@@ -11,7 +11,6 @@ class CompetenceSchema(BaseModel):
     niveau: str | None = None
     polyvalence_poids: int | None = None
     details: List[str] | None = Field(default_factory=list)
-    # instrument_uuid: uuid.UUID | None = None # Optionnel : lien vers TB_instrument
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,7 +28,7 @@ class MusicianCreate(MusicianBase):
 
 class MusicianID(MusicianBase):
     id: PyObjectId | None = Field(default=None, alias="_id")
-    user_uuid: uuid.UUID | None = None # Le pont vers TB_users
+    user_uuid: uuid.UUID | None = None
     pseudo: str | None = None
 
     model_config = ConfigDict(
@@ -61,7 +60,7 @@ class SubstitutionSchemaID(SubstitutionSchema):
 
 class NomenclatureItem(BaseModel):
     instrument: str
-    priorite: int = 10 # Valeur par défaut basée sur ton JSON
+    priorite: int = 10 # Valeur par défaut
 
 class DigitalizationItem(BaseModel):
     instrument: str
@@ -76,10 +75,9 @@ class PartitionMongoBase(BaseModel):
     rendue: bool = False
     numero_archive: int | None = None
     audios: list[str] | None = Field(default_factory=list)
-    # Pydantic supporte les caractères accentués, mais on reste vigilant
+    # Garantie pour les caractères accentués
     numérisation: list[DigitalizationItem] | None = Field(default_factory=list)
     
-    # Le lien vers SQL (injecté par la synchro)
     hbm_uuid: str | uuid.UUID | None = None 
 
 class PartitionMongoCreate(PartitionMongoBase):
@@ -91,8 +89,8 @@ class PartitionMongoID(PartitionMongoBase):
 
 class AuthorResponse(BaseModel):
     """Utilisé pour afficher l'auteur et son rôle spécifique dans une partition"""
-    identite: str | None = None # Champ désormais en base SQL
-    role: str # Provient de la table d'association
+    identite: str | None = None
+    role: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -108,8 +106,8 @@ class FullPartitionDetailsResponse(BaseModel):
     C'est ici que la magie opère : on compose avec les schémas existants.
     SQLPartDetails est remplacé par l'utilisation directe de PartitionID et PartitionHbmID.
     """
-    catalogue: PartitionID #
-    inventaire: PartitionHbmID #
+    catalogue: PartitionID 
+    inventaire: PartitionHbmID
     auteurs: list[AuthorResponse] = []
     technique: PartitionMongoID | None = None
 

@@ -17,19 +17,16 @@ def list_musicians(current_user = Depends(get_current_user)):
     is_admin = current_user.permissions == "full_admin"
     requester_uuid = str(current_user.user_uuid)
     
-    # On utilise la logique de filtrage Mongo
     musicians = get_visible_musicians(requester_uuid, is_admin)
     return musicians
 
 @router.get("/{target_uuid}", response_model=MusicianID)
 def get_musician(target_uuid: str, current_user = Depends(get_current_user)):
-    # 1. Récupération du document
     musician = get_one_document("COL_musiciens", {"user_uuid": target_uuid})
     
     if not musician:
         raise HTTPException(status_code=404, detail="Musicien non trouvé")
 
-    # 2. Vérification des droits
     is_admin = current_user.permissions == "full_admin"
     is_own_profile = str(current_user.user_uuid) == target_uuid
     has_consented = musician.get("accord_donnees_perso", False)
@@ -38,8 +35,6 @@ def get_musician(target_uuid: str, current_user = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Accès refusé (RGPD)")
 
     return musician
-
-# musiciens.py (Ajout)
 
 @router.put("/me", response_model=bool)
 def update_my_profile(data: MusicianBase, current_user = Depends(get_current_user)):

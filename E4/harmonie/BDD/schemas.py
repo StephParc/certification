@@ -104,10 +104,6 @@ class PartitionEvent(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# class Combo(BaseModel):
-#     partition: List[PartitionID]
-#     auteur: Dict["auteur":List[Auteur], "role": AssoAuteurPartition]
-
 class UserPublic(BaseModel):
     pseudo: str | None = None
     fullname: str | None = None

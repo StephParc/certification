@@ -10,18 +10,10 @@ from E4.harmonie.BDD.api_externe import get_api_externe
 from utils.logger_config import setup_logger, trace_action
 from utils.utils_functions import normalize_name
 
-## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
-# Session = sql_connect()
-# session = Session()
-## selon les opérations
-# session.commit()
-# session.close()
-
 # ******** CREATE / POST ********
     
 def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
     # date_evenement = datetime.strptime(date_evenement, "%d-%m-%Y").date()
-    # 1. Vérif simple
     existing = session.query(Evenement).filter_by(
         date_evenement=date_evenement, 
         nom_evenement=nom_evenement
@@ -30,7 +22,6 @@ def create_event(session, date_evenement, nom_evenement, lieu=None, type_eveneme
     if existing:
         return existing
     
-    # 2. Création manuelle (on écrit chaque champ)
     evenement = Evenement(
         date_evenement=date_evenement,
         nom_evenement=nom_evenement,
@@ -107,7 +98,7 @@ def create_auteur(session, nom=None, prenom=None, identite=None, pays=None, IPI=
     else:
         final_nom = nom
         final_prenom = prenom
-        final_identite = normalize_name(nom=final_nom, prenom=final_prenom)
+        final_identite = search_id
         final_pays = pays
         final_ipi = IPI
         final_isni = ISNI
@@ -137,7 +128,6 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
         return existing_asso
     
     # Création de l'association auteur/partition
-
     asso = AssAuteurPartition(
             partition_id = partition_id,
             auteur_id = auteur_id,
@@ -231,14 +221,12 @@ def create_user(session, pseudo, password, fullname=None, email=None):
     return user
 
 def create_user_admin(session, pseudo, fullname, hashed_password, email, permissions):
-    # 1. Vérification d'existence
+    # Vérification d'existence
     existing_user = session.query(User).filter_by(pseudo=pseudo).first()
     if existing_user:
-        # Il vaut mieux retourner l'objet existant ou None plutôt qu'un message str
-        # pour ne pas faire planter les scripts qui attendent un objet User
         return existing_user
 
-    # 3. Création de l'utilisateur avec l'UUID généré par Postgres
+    # Création de l'utilisateur avec l'UUID généré par Postgres
     user = User(
         pseudo=pseudo, 
         fullname = fullname,
@@ -247,7 +235,7 @@ def create_user_admin(session, pseudo, fullname, hashed_password, email, permiss
         permissions = permissions)
 
     session.add(user)
-    session.flush() # Pour récupérer le user_uuid immédiatement si besoin
+    session.flush()
     return user
 
 def create_instrument(session, nom, famille, sous_famille=None):
@@ -428,9 +416,7 @@ def delete_instrument(session, instrument_id):
     instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
     if not instrument:
         return "Instrument introuvable"
-    
-    # Ici, on pourrait ajouter une vérification : est-il lié à une partition HBM ?
-    # Pour l'instant, on reste simple :
+
     try:
         instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
         if not instrument:
@@ -602,13 +588,7 @@ def read_partition_by_creation_date(session, creation_date):
 
 def read_partition_by_grade(session, grade):
     # l'option noload permet de ne pas charger les relations avec les autres tables
-    # les champs sont retournés null
-    # stmt = select(Partition).options(noload('*'))\
-    #     .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
-    #     .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
-    #     .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
-    #     .where(Partition.niveau==grade)
-    
+    # les champs sont retournés null  
     stmt = select(Partition.partition_id, Partition.titre, Partition.sous_titre,Partition.edition, Partition.collection, \
                 Partition.instrumentation, Partition.niveau, Partition.genre, \
                 Partition.style, Partition.annee_sortie, Partition.ISMN, Partition.ref_editeur,\
@@ -738,7 +718,6 @@ def read_auteur_by_role(session, role):
     session.close()
     return auteur
 
-
 # user complet pour admin
 def read_user_by_id(session, user_id):
     stmt = select(User).where(User.user_id==user_id)
@@ -827,49 +806,3 @@ if __name__ == "__main__":
     # delete_user(session,7)
     session.commit()
     session.close()
-# with open("database.py") as m:
-#     code = m.read()
-# exec(code)
-# session=SessionLocal()
-# print(read_event_by_id(session, 10))
-# print(read_event_by_year(session, 2025))
-# print(read_event_by_partition(session, 1))
-# print(read_partition_by_event_id(session, 8))
-# print(read_partition_by_event_date(session, '2025-04-27'))
-# print(read_partition_by_event_year(session, 2025))
-# print(read_auteur_by_id(session, 7))
-# print(read_auteur_by_name(session, 'on'))
-# print(read_auteur_by_role(session, 'arrangeur'))
-# print(read_partition_by_id(session, 1))
-# print(read_partition_by_author(session, 1, name='on'))
-# print(read_partition_by_creation_date(session, None))
-# print(read_partition_by_grade(session, None))
-# print(read_partition_by_type(session, 'jazz'))
-# print(read_partition_possessed(session))
-# print(read_partition_hbm_by_id(session, 1))
-# print(read_partition_hbm_by_composer(session, None, 'cahn'))
-# print(read_partition_possessed_by_type(session, 'concert'))
-# create_auteur(session, "Mozart", "Wolfgang")
-# delete_auteur(session, 10)
-# create_partition_hbm_from_partition(session, 3)
-# session.commit()
-# create_partition_hbm_from_partition(session, 4)
-# session.commit()
-# create_asso_hbm_event(session, 1,8)
-# session.commit()
-# create_asso_hbm_event(session, 2, 2)
-# session.commit()
-# delete_asso_partition_event(session, 4, 2)
-# session.commit()
-# delete_event(session, 2)
-# session.commit()
-# create_event(session,datetime.strptime("03-10-2025", "%d-%m-%Y").date(),"semaine découverte", "auditorium CACFM", "concert","" )
-# update_event(session, 32, datetime.strptime("03-10-2025", "%d-%m-%Y").date(), "modif", "ailleurs", "défilé","mon_affiche.jpg")
-# session.commit()
-# session.close()
-
-# Session = sql_connect()
-# session = Session()
-# print(read_partition_by_creation_date(session, 2024))
-# # session.commit()
-# session.close()

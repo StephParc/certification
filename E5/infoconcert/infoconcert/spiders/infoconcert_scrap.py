@@ -39,14 +39,8 @@ class InfoconcertScrapSpider(scrapy.Spider):
         
         condition_page_utile = response.xpath("//div[@class='panel panel-default date-line date-line-concert']").get()
    
-        # if page_actuelle == []:
-        #     page_suivante = 2
-        # else:
-        #     page_suivante = int(page_actuelle[0]) + 1
-        # url_page_suivante = response.xpath(f"//a[@class='page'][contains(text(),'{str(page_suivante)}')]/@href").get()
         if url_page_suivante and condition_page_utile:
-            yield response.follow(url_page_suivante, callback=self.parse)
-        
+            yield response.follow(url_page_suivante, callback=self.parse)     
 
     def parse_concert(self, response):
         now = date.today().strftime("%Y-%m-%d")

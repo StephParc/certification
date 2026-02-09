@@ -66,8 +66,7 @@ def get_visible_musicians(requester_uuid: str, is_admin: bool):
 
 def get_partition_by_uuid(hbm_uuid: str):
     """Récupère la nomenclature Mongo via l'identifiant SQL."""
-    db = get_mongo_db() #
-    # On cherche le document lié
+    db = get_mongo_db()
     return db["COL_partitions"].find_one({"hbm_uuid": hbm_uuid})
 
 # ******** UPDATE / PUT ********
@@ -93,7 +92,6 @@ def link_partition_hbm_to_mongo(mongo_id: str, hbm_uuid: str):
     db_mongo = get_mongo_db()
     
     try:
-        # On utilise update_one avec l'opérateur $set pour ne pas écraser le reste du doc
         # On convertit le mongo_id (string) en ObjectId pour MongoDB
         result = db_mongo["COL_partitions"].update_one(
             {"_id": ObjectId(mongo_id)},

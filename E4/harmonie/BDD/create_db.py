@@ -15,19 +15,6 @@ from utils.utils_functions import write_rejection_log
 logger_name = "E4 - Insertion BDD"
 logger = setup_logger(logger_name)
 
-# timenow = datetime.now()
-# file_name = f"{str(timenow)} - rejets_import_scrapy.csv"
-# REJET_IMPORT_FILE = Path(__file__).parent / file_name
-
-# # session = get_session_sql()
-# SessionLocal= sql_connect()
-# session = SessionLocal()
-
-# # Exécution du script princpal models.py      
-# with open("models.py") as m:
-#     code = m.read()
-# exec(code)
-
 @trace_action(logger_name)
 def init_db():
     try:
@@ -87,20 +74,6 @@ def insert_event_to_db(file_path):
         # Fermeture de la session
         session.close()
 
-# @trace_action(logger_name)
-# def log_rejection_import(row_data, error_msg):
-#     file_exists = REJET_IMPORT_FILE.exists()
-#     try:
-#         with open(REJET_IMPORT_FILE, "a", newline='', encoding='utf-8') as f:
-#             fieldnames = list(row_data.keys()) + ["erreur_import"]
-#             writer = csv.DictWriter(f, fieldnames=fieldnames)
-#             if not file_exists:
-#                 writer.writeheader()
-#             row_data["erreur_import"] = error_msg
-#             writer.writerow(row_data)
-#     except Exception as e:
-#         logger.error(f"Impossible d'écrire dans le fichier de rejet: {e}")
-
 @trace_action(logger_name)
 def insert_scrapy_to_db(file_path):
     """
@@ -148,7 +121,7 @@ def insert_scrapy_to_db(file_path):
                 etape = "Initialisation"
                 try:
                     etape = "Parsing des données"
-                    # déclarations des variables
+
                     titre=row.get('titre').upper() if row.get('titre') else None
                     sous_titre=row.get('sous_titre')
                     edition=row.get('edition')
@@ -199,20 +172,17 @@ def insert_scrapy_to_db(file_path):
                     session.rollback()
                     count_err += 1
                     error_detail = f"[{etape}] - {str(e)}"
-                    # log_rejection_import(row, error_detail)
+
                     headers = list(row.keys()) + ["erreur_import"]
                     row_data = list(row.values()) + [error_detail]
                     write_rejection_log(str(current_rejet_file), headers, row_data)
                     logger.warning(f"Ligne rejetée vers {current_rejet_file.name}")
-
-                    # logger.warning(f"Ligne rejetée : {titre} | Raison: {error_detail}")
 
             logger.info(f"Importation terminée. Succès: {count_ok}, Echecs: {count_err}")
     
     except Exception as e:
         logger.error(f"Erreur à l'ouverture du fichier: {e}")
     finally:
-        # Fermeture de la session
         session.close()  
     
 # Insertion du csv users dans BDD, uniquement à des fins de démonstration
@@ -263,7 +233,6 @@ def insert_users_to_db(file_path):
         session.rollback()
         logger.error(f"Erreur lors de l'importation des données : {e}")
     finally:
-        # Fermeture de la session
         session.close()
 
 # Insertion du csv instruments dans BDD, uniquement à des fins de démonstration
@@ -277,7 +246,7 @@ def insert_instruments_to_db(file_path):
             for row in csv_reader:
                 nom = row.get('nom').strip()
                 famille = row.get('famille').strip()
-                sous_famille = row.get('sous_famille').strip() # Récupération
+                sous_famille = row.get('sous_famille').strip()
                 create_instrument(session, nom=nom,famille=famille,sous_famille=sous_famille)
                     
         session.commit()
@@ -300,14 +269,3 @@ if __name__ == "__main__":
     # insert_event_to_db(event_file)
     # instru_file = Path("E4/harmonie/sources/instruments.csv")
     # insert_instruments_to_db(instru_file)
-
-# Chemins vers les fichiers CSV
-# promt au niveau de BDD/
-# event_path = "../sources/events.csv"
-# scrapy_path = "../harmonie/musicshop_new.csv"
-# user_path = "../sources/users.csv"
-
-# Importation des données CSV dans la base de données
-# insert_event_to_db(event_path)
-# insert_scrapy_to_db(scrapy_path)
-# insert_users_to_db(user_path)

@@ -11,13 +11,6 @@ router = APIRouter(
 
 COLLECTION = "COL_instruments"
 
-# router = APIRouter(
-#     prefix="/instruments",
-#     tags=["Instruments"],
-#     dependencies=[Depends(get_current_user)],
-#     responses={404: {"description":"Not found"}},
-# )
-
 @router.post("/", response_model=str)
 def create_instrument(data: InstrumentSchema, current_user = Depends(get_current_user)):
     """Création sans ID dans le corps de la requête."""

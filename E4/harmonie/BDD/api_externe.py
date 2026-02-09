@@ -22,19 +22,6 @@ class MusicBrainzAPIError(Exception):
     """Exception levée pour les erreurs critiques de l'API MusicBrainz (503, Timeout)."""
     pass
 
-# def log_rejection_auteur(identity, reason):
-#     """Enregistre l'échec de récupération de l'auteur."""
-#     file_exists = os.path.isfile(REJET_AUTEURS_FILE)
-#     try:
-#         with open(REJET_AUTEURS_FILE, "a", newline='', encoding='utf-8') as f:
-#             writer = csv.writer(f)
-#             timenow = datetime.now()
-#             if not file_exists:
-#                 writer.writerow(["identity_recherchee", "raison_rejet", "time_rejet"])
-#             writer.writerow([identity, reason, timenow])
-#     except Exception as e:
-#         print(f"Erreur lors de l'écriture du rejet : {e}")
-
 def is_fuzzy_match(words_source, words_target, threshold=0.7):
     """
     Vérifie si chaque mot de la source a un équivalent proche dans la cible.
@@ -149,7 +136,6 @@ def get_api_externe(identity, retries=2):
 
             sort_name = selected_artist.get("sort-name", "")
             if "," in sort_name:
-                # On sépare tout pour voir combien on a de morceaux
                 parts = [p.strip() for p in sort_name.split(",")]
                 
                 if len(parts) == 3:

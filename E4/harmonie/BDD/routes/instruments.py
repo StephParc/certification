@@ -18,13 +18,8 @@ router = APIRouter(
 def get_instrument_all(session:Session=Depends(get_session_sql)):
     return read_instrument_all(session)
     
-# @router.get("/{auteur_id}", response_model=list[AuteurId])
-# def get_auteur_by_id(auteur_id:int, session:Session=Depends(get_session_sql)):
-#     return read_auteur_by_id(session, auteur_id)
-
 @router.post("/", response_model=InstrumentId)
 def post_instrument(instrument: Instrument, session: Session = Depends(get_session_sql)):
-    # On utilise ton CRUD explicite
     db_inst = create_instrument(session, nom=instrument.nom, famille=instrument.famille, sous_famille=instrument.sous_famille)
     session.commit()
     session.refresh(db_inst)
