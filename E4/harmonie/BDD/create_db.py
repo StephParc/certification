@@ -139,7 +139,7 @@ def insert_scrapy_to_db(file_path):
     try:
         # Ouverture du fichier CSV
         with open(file_path, mode='r', encoding='utf-8') as file:
-            csv_reader = csv.DictReader(file, delimiter=';')
+            csv_reader = csv.DictReader(file)
             count_ok = 0
             count_err = 0
 
@@ -290,16 +290,16 @@ def insert_instruments_to_db(file_path):
 
 if __name__ == "__main__":
     init_db()
-    user_file = Path("E4/harmonie/sources/users.csv")
-    insert_users_to_db(user_file)
+    # user_file = Path("E4/harmonie/sources/users.csv")
+    # insert_users_to_db(user_file)
     # scrapy_file = Path("E4/harmonie/harmonie/musicshop_last.csv")
     # insert_scrapy_to_db(scrapy_file)
     scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
     insert_scrapy_to_db(scrapy_file)
-    event_file = Path("E4/harmonie/sources/events.csv")
-    insert_event_to_db(event_file)
-    instru_file = Path("E4/harmonie/sources/instruments.csv")
-    insert_instruments_to_db(instru_file)
+    # event_file = Path("E4/harmonie/sources/events.csv")
+    # insert_event_to_db(event_file)
+    # instru_file = Path("E4/harmonie/sources/instruments.csv")
+    # insert_instruments_to_db(instru_file)
 
 # Chemins vers les fichiers CSV
 # promt au niveau de BDD/

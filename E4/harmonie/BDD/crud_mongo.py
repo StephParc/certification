@@ -64,6 +64,12 @@ def get_visible_musicians(requester_uuid: str, is_admin: bool):
     cursor = db["COL_musiciens"].find(query)
     return list(cursor)
 
+def get_partition_by_uuid(hbm_uuid: str):
+    """Récupère la nomenclature Mongo via l'identifiant SQL."""
+    db = get_mongo_db() #
+    # On cherche le document lié
+    return db["COL_partitions"].find_one({"hbm_uuid": hbm_uuid})
+
 # ******** UPDATE / PUT ********
 @trace_action(logger_name)
 def update_one_document(collection_name: str, filter_query: dict, update_data: dict):

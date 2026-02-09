@@ -1,28 +1,58 @@
 # musiciens.py
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from E4.harmonie.BDD import crud_mongo
+from E4.harmonie.BDD.crud_mongo import get_one_document,get_visible_musicians,update_one_document
 from E4.harmonie.BDD.auth import get_current_user
-from E4.harmonie.BDD.schemas_mongo import MusicianMongoSchema
+from E4.harmonie.BDD.schemas_mongo import MusicianID, MusicianBase
 
 router = APIRouter(prefix="/musiciens", tags=["Musiciens"])
 
-@router.get("/", response_model=List[MusicianMongoSchema])
-async def list_musicians(current_user = Depends(get_current_user)):
+@router.get("/", response_model=List[MusicianID])
+def list_musicians(current_user = Depends(get_current_user)):
     """
     Liste les musiciens selon les droits :
     - Admin : Voit tout.
     - Musicien : Voit ceux qui ont accepté + lui-même.
     """
-    is_admin = current_user.permissions == "admin"
+    is_admin = current_user.permissions == "full_admin"
     requester_uuid = str(current_user.user_uuid)
     
     # On utilise la logique de filtrage Mongo
-    musicians = crud_mongo.get_visible_musicians(requester_uuid, is_admin)
+    musicians = get_visible_musicians(requester_uuid, is_admin)
     return musicians
 
-@router.get("/{target_uuid}", response_model=MusicianMongoSchema)
-async def get_musician(target_uuid: str, current_user = Depends(get_current_user)):
-    # Logique de récupération et check de sécurité (voir message précédent)
-    # ...
+@router.get("/{target_uuid}", response_model=MusicianID)
+def get_musician(target_uuid: str, current_user = Depends(get_current_user)):
+    # 1. Récupération du document
+    musician = get_one_document("COL_musiciens", {"user_uuid": target_uuid})
+    
+    if not musician:
+        raise HTTPException(status_code=404, detail="Musicien non trouvé")
+
+    # 2. Vérification des droits
+    is_admin = current_user.permissions == "full_admin"
+    is_own_profile = str(current_user.user_uuid) == target_uuid
+    has_consented = musician.get("accord_donnees_perso", False)
+
+    if not (is_admin or is_own_profile or has_consented):
+        raise HTTPException(status_code=403, detail="Accès refusé (RGPD)")
+
     return musician
+
+# musiciens.py (Ajout)
+
+@router.put("/me", response_model=bool)
+def update_my_profile(data: MusicianBase, current_user = Depends(get_current_user)):
+    """Permet à un musicien de mettre à jour ses propres données."""
+    requester_uuid = str(current_user.user_uuid) #
+    
+    # On utilise model_dump(exclude_unset=True) pour ne modifier que les champs envoyés
+    success = update_one_document(
+        "COL_musiciens", 
+        {"user_uuid": requester_uuid}, 
+        data.model_dump(exclude_unset=True)
+    )
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Profil non trouvé")
+    return success

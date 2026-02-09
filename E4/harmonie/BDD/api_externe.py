@@ -49,7 +49,7 @@ def is_fuzzy_match(words_source, words_target, threshold=0.7):
     # On considère que c'est un match si tous les mots recherchés sont trouvés (approximativement)
     return matches == len(words_source)
 
-@trace_action(loggger_name)
+@trace_action(logger_name)
 def get_api_externe(identity, retries=2):
     """
     Retrieve artist information from the MusicBrainz API based on the provided identity.

@@ -150,7 +150,7 @@ def create_asso_auteur_partition(session, partition_id, auteur_id, role):
 
 # A revoir
 def create_part_hbm_from_partition(session, partition_id=None, distribution=None, rendue=None, 
-                archive=None, concert=True, defile=False, sonnerie=False):
+                numerisation=None, concert=True, defile=False, sonnerie=False):
     if partition_id:
         existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id).first()
         if existing_hbm :
@@ -158,7 +158,7 @@ def create_part_hbm_from_partition(session, partition_id=None, distribution=None
         hbm = PartitionHBM(partition_id = partition_id,
                 distribution = distribution,
                 rendue = rendue,
-                archive = archive,
+                numerisation = numerisation,
                 concert = concert,
                 defile = defile,
                 sonnerie = sonnerie)
@@ -169,11 +169,11 @@ def create_part_hbm_from_partition(session, partition_id=None, distribution=None
 
 ######## A FAIRE OU PAS (procédure création par étapes: partition, auteur(s), asso, partition_hbm) ########
 # def create_hbm_from_scratch(session, partition_id, distribution=None, rendue=None, 
-#                archive=None, concert=True, defile=False, sonnerie=False):
+#                numerisation=None, concert=True, defile=False, sonnerie=False):
 #     partition_id_test = partition_id
 #     distribution_test = distribution
 #     rendue_test = rendue
-#     archive_test = archive
+#     numerisation_test = numerisation
 #     concert_test = concert
 #     defile_test = defile
 #     sonnerie_test = sonnerie
@@ -188,7 +188,7 @@ def create_part_hbm_from_partition(session, partition_id=None, distribution=None
 #             partition_id = partition_id_test,
 #             distribution = distribution_test,
 #             rendue = rendue_test,
-#             archive = archive_test,
+#             numerisation = numerisation_test,
 #             concert = concert_test,
 #             defile = defile_test,
 #             sonnerie = sonnerie_test)
@@ -813,10 +813,10 @@ def update_partition(session, partition_id):
 def update_auteur(session, author_id):
     pass
 
-def update_user_sample(session, username, fullname, password, email):
+def update_user_sample(session, pseudo, fullname, password, email):
     pass
 
-def update_user_complete(session, user_id, username, fullname, email, permissions):
+def update_user_complete(session, user_id, pseudo, fullname, email, permissions):
     pass
 
 if __name__ == "__main__":

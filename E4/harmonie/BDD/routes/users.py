@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
 
-from E4.harmonie.BDD.crud import create_user, read_user_by_id, read_user_by_username, update_user_sample, update_user_complete, delete_user
+from E4.harmonie.BDD.crud import create_user, read_user_by_id, read_user_by_pseudo, update_user_sample, update_user_complete, delete_user
 from E4.harmonie.BDD.schemas import UserAdmin, UserPass, UserPublic
 from E4.harmonie.BDD.auth import get_current_user
 from E4.harmonie.BDD.database import get_session_sql
@@ -20,7 +20,7 @@ def get_user(user_id:int, session:Session=Depends(get_session_sql), dependancies
 
 @router.get("/by_pseudo/{pseudo}", response_model=UserPublic)
 def get_user_public(pseudo:str, session:Session=Depends(get_session_sql)):
-    return read_user_by_username(session, username=pseudo)
+    return read_user_by_pseudo(session, username=pseudo)
    
 @router.post("/", response_model=UserPublic)
 def create_utilisateur(user:UserPass, session:Session=Depends(get_session_sql)):

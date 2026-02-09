@@ -105,7 +105,7 @@ class PartitionHBM(Base):
     partition_id:   Mapped[int]     = mapped_column(ForeignKey('TB_partition.partition_id'), nullable=True, unique=True)
     distribution:   Mapped[date]    = mapped_column(Date(), nullable=True)
     rendue:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
-    archive:        Mapped[int]     = mapped_column(Integer(), nullable=True)
+    numerisation:   Mapped[bool]    = mapped_column(Boolean(), nullable=True)
     concert:        Mapped[bool]    = mapped_column(Boolean(), nullable=True)
     defile:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
     sonnerie:       Mapped[bool]    = mapped_column(Boolean(), nullable=True)
@@ -122,7 +122,7 @@ class PartitionHBM(Base):
     
     def __repr__(self):
         return f"PartitionHBM(partition_hbm_id={self.partition_hbm_id!r}, partition_id={self.partition_id!r}, \
-distribution={self.distribution!r}, rendue={self.rendue!r}, archive={self.archive!r}, \
+distribution={self.distribution!r}, rendue={self.rendue!r}, numerisation={self.numerisation!r}, \
 concert={self.concert!r}, defile={self.defile!r}, sonnerie={self.sonnerie!r})"
 
 class Evenement(Base):

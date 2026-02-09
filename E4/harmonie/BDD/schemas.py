@@ -89,7 +89,7 @@ class PartitionHBM(BaseModel):
     partition_id: int | None = None
     distribution: date | None = None
     rendue: bool | None = False
-    archive: int | None = None
+    numerisation: bool | None = None
     concert: bool | None = True
     defile: bool | None = False 
     sonnerie: bool | None = False

@@ -16,6 +16,10 @@
                 {"instrument":"Saxophone tenor", "priorite":10},
                 {"instrument":"Saxophone baryton", "priorite":1}
             ],
+            "prestation":["concert","défilé","autre prestation"],
+            "date_distribution": "30-01-2026",
+            "rendue": false,
+            "numero_archive": null,
             "audios":["concert printemps.mp3"],
             "numérisation":[
                 {
