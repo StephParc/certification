@@ -8,7 +8,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from utils.logger_config import trace_action, setup_logger
 
-logger = setup_logger("S3-Utils")
+logger_name = "E7 - Communications S3"
+logger = setup_logger(logger_name)
 
 load_dotenv()
 
@@ -28,7 +29,7 @@ def get_s3_client():
         )
     )
 
-@trace_action
+@trace_action(logger_name)
 def upload_file(local_path, bucket, s3_path=None, metadata=None):
     """
     Upload un fichier sur le Data Lake avec détection de type et métadonnées.
@@ -50,34 +51,36 @@ def upload_file(local_path, bucket, s3_path=None, metadata=None):
 
     try:
         s3.upload_file(local_path, bucket, s3_path, ExtraArgs=extra_args)
-        logger.info(f"✅ Fichier {local_path} uploadé vers {bucket}/{s3_path}")
+        logger.info(f"Fichier {local_path} uploadé vers {bucket}/{s3_path}")
         return True
     except Exception as e:
-        logger.error(f"❌ Erreur lors de l'upload de {local_path} : {e}")
+        logger.error(f"Erreur lors de l'upload de {local_path} : {e}")
         return False
 
 # exemple d'utilisation de metadata:
 # upload_file(..., metadata={'source': 'API_Infoconcert', 'step': 'bronze'})
 
-@trace_action
+@trace_action(logger_name)
 def download_file(bucket, s3_path, local_path):
     """
     Télécharge un fichier du Data Lake vers le disque local.
     """
     s3 = get_s3_client()
     
-    # Créer le dossier local s'il n'existe pas
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    # Créer le dossier local s'il existe dans le chemin
+    directory = os.path.dirname(local_path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     
     try:
         s3.download_file(bucket, s3_path, local_path)
-        logger.info(f"✅ Fichier {s3_path} téléchargé vers {local_path}")
+        logger.info(f"Fichier {s3_path} téléchargé vers {local_path}")
         return True
     except Exception as e:
-        logger.error(f"❌ Erreur lors du téléchargement de {s3_path} : {e}")
+        logger.error(f"Erreur lors du téléchargement de {s3_path} : {e}")
         return False
 
-@trace_action
+@trace_action(logger_name)
 def read_csv_from_datalake(bucket, s3_path):
     """
     Lit un fichier CSV depuis le datalake et retourne un DataFrame Pandas.
@@ -87,10 +90,10 @@ def read_csv_from_datalake(bucket, s3_path):
     try:
         response = s3.get_object(Bucket=bucket, Key=s3_path)
         df = pd.read_csv(response['Body'])
-        logger.info(f"✅ CSV {s3_path} lu avec succès depuis le bucket {bucket}")
+        logger.info(f"CSV {s3_path} lu avec succès depuis le bucket {bucket}")
         return df
     except Exception as e:
-        logger.error(f"❌ Erreur lors de la lecture du CSV {s3_path} : {e}")
+        logger.error(f"Erreur lors de la lecture du CSV {s3_path} : {e}")
         return None
 
 if __name__ == "__main__":
@@ -101,4 +104,4 @@ if __name__ == "__main__":
         local_path="downloads/restored_catalog.json"
     )
     if success:
-        print("💾 Le fichier est bien revenu du Data Lake !")
+        print("Le fichier est bien revenu du Data Lake !")

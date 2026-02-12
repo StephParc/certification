@@ -32,7 +32,7 @@ def trace_action(logger_name="Audit-Global"):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             logger = logging.getLogger(logger_name)
-            logger.info(f"START - {func.__name__} | Args: {args}")
+            logger.info(f"START - {func.__name__} | Args: {args} | kwargs: {kwargs}")
             try:
                 result = func(*args, **kwargs)
                 logger.info(f"END   - {func.__name__} | Success")

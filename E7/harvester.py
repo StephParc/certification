@@ -1,3 +1,4 @@
+# harvester.py
 import os
 import sys
 from pathlib import Path
@@ -10,8 +11,9 @@ from botocore.client import Config
 from pymongo import MongoClient
 from datetime import datetime
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.logger_config import trace_action, setup_logger
+from utils.S3_utils import upload_file
 
 # env_path = os.path.join(os.path.dirname(__file__),'../.env')
 # load_dotenv(dotenv_path=env_path)
@@ -20,14 +22,16 @@ logger_name = "E7-Catalogue"
 logger = setup_logger(logger_name)
 
 # Chargement du .env situé dans le dossier parent
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR.parent / ".env")
+# BASE_DIR = Path(__file__).resolve().parent
+# load_dotenv(BASE_DIR.parent / ".env")
+load_dotenv()
 
 @trace_action(logger_name)
 def catalogue_BDD():
     try:
         conn = psycopg2.connect(
             host=os.getenv('DBHOST'),
+            port=os.getenv('DBPORT', 5433),
             database=os.getenv('DBNAME'),
             user=os.getenv('DBUSER_RW'),
             password=os.getenv('PASSWORD_RW'),
@@ -202,6 +206,18 @@ def catalogue_export():
         json.dump(data, f, indent=4, ensure_ascii=False)
     
     logger.info(f"Catalogue exporté avec succès dans {file_path}")
+    
+    try:
+        upload_file(
+            local_path=file_path,
+            bucket="zone-config",
+            s3_path="governance/data_catalog.json",
+            metadata={"version": datetime.now().strftime("%Y%m%d"), "type": "catalog"}
+        )
+        logger.info("Catalogue sauvegardé dans Garage (zone-config)")
+    except Exception as e:
+        logger.error(f"Échec de la sauvegarde S3 : {e}")
+
     return file_path
 
 if __name__ == "__main__":

@@ -7,26 +7,29 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pandas = "^2.2.3"
+numpy = "<2.0.0"
+psycopg2-binary = "^2.9.10"
+boto3 = "^1.42.33"
+pymongo = "^4.16.0"
+requests = "^2.32.5"
+python-dotenv = "^1.2.1"
+
+[tool.poetry.group.app.dependencies]
 python = "^3.12"
 scrapy = "^2.12.0"
 dateparser = "^1.2.1"
-pandas = "^2.2.3"
 azure-storage-file-datalake = "^12.20.0"
 sqlalchemy = "^2.0.40"
-dotenv = "^0.9.9"
 streamlit = "^1.44.1"
 pydantic = {extras = ["email"], version = "^2.12.5"}
 fastapi = "^0.115.12"
 uvicorn = "^0.34.2"
 python-multipart = "^0.0.20"
 pyjwt = "^2.10.1"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-psycopg2-binary = "^2.9.10"
-boto3 = "^1.42.33"
-pymongo = "^4.16.0"
 bcrypt = "4.0.1"
-requests = "^2.32.5"
-
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [build-system]
 requires = ["poetry-core"]

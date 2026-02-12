@@ -47,6 +47,7 @@ site/
 #**/*musicshop1*.csv
 
 *.env
+*.env.*
 .venv/
 
 E4/registre-traitement-simplifie.ods
@@ -60,5 +61,4 @@ __pycache__/
 **/.~lock.*
 
 *garage.toml
-
-test_conn.py
+*garage_dl.txt

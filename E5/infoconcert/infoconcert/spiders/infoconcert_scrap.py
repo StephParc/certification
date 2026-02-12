@@ -6,7 +6,7 @@ import re
 class InfoconcertScrapSpider(scrapy.Spider):
     name = "infoconcert_scrap"
     allowed_domains = ["infoconcert.com"]
-    start_urls = ["https://www.infoconcert.com/concerts/derniere-minute.html", "https://www.infoconcert.com/spectacles-musicaux/derniere-minute.html"]
+    start_urls = ["https://www.infoconcert.com/concerts/derniere-minute", "https://www.infoconcert.com/spectacles-musicaux/derniere-minute"]
 
     custom_settings = {
         'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter',
@@ -35,7 +35,7 @@ class InfoconcertScrapSpider(scrapy.Spider):
                 event = "spectacles-musicaux"
             page_suivante = int(page_actuelle[0]) + 1
 
-        url_page_suivante = f"https://www.infoconcert.com/{event}/derniere-minute-{page_suivante}.html"
+        url_page_suivante = f"https://www.infoconcert.com/{event}/derniere-minute-{page_suivante}"
         
         condition_page_utile = response.xpath("//div[@class='panel panel-default date-line date-line-concert']").get()
    

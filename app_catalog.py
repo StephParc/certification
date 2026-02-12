@@ -1,21 +1,36 @@
+# app_catalogue.py
 import streamlit as st
 import json
 import pandas as pd
 import os
+from utils.S3_utils import download_file
 
 # Configuration de la page
 st.set_page_config(page_title="HBM Data Catalog", layout="wide")
 
+# Bouton de mise à jour manuelle dans la barre latérale
+if st.sidebar.button("🔄 Forcer la mise à jour S3"):
+    st.cache_data.clear()
+    st.rerun()
+
 # Fonction pour charger le JSON avec mise en cache (évite de recharger à chaque clic)
 @st.cache_data
 def load_data():
-    # On cherche le fichier à la racine
-    path = "data_catalog.json"
-    if not os.path.exists(path):
-        st.error(f"Fichier {path} introuvable à la racine !")
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    # # On cherche le fichier à la racine
+    # path = "data_catalog.json"
+    # if not os.path.exists(path):
+    #     st.error(f"Fichier {path} introuvable à la racine !")
+    #     return None
+    # with open(path, "r", encoding="utf-8") as f:
+    #     return json.load(f)
+    local_path = "data_catalog.json"
+    # On récupère la version fraîche sur le Data Lake
+    success = download_file(bucket="zone-config", s3_path="governance/data_catalog.json", local_path=local_path)
+    
+    if success and os.path.exists(local_path):
+        with open(local_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
 
 # Injection de CSS pour changer la couleur des onglets en Bleu
 st.markdown("""
