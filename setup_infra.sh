@@ -34,11 +34,15 @@ until docker exec postgres_db pg_isready > /dev/null 2>&1; do
 done
 
 echo "Création du schéma technique pour Airflow..."
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS airflow;"
 
 # Lancement du reste de l'infrastructure
 echo "Lancement du reste de l'infrastructure (Airflow, Garage...)"
 docker compose up -d
+
+echo "Initialisation des variables Airflow..."
+docker exec airflow_scheduler airflow variables set last_events_git_sha "initial_sync"
 
 # Sauvegarde de sécurité du .env (seulement si le .env n'est pas déjà corrompu)
 cp .env .env.last_run

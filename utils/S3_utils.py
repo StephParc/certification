@@ -81,6 +81,50 @@ def download_file(bucket, s3_path, local_path):
         return False
 
 @trace_action(logger_name)
+def upload_bytes(data, bucket, s3_path, metadata=None):
+    """
+    Upload des données brutes (bytes) directement vers S3.
+    Idéal pour les flux Git -> S3 sans fichier local.
+    """
+    s3 = get_s3_client()
+    extra_args = {'ContentType': 'text/csv'}
+    if metadata:
+        extra_args['Metadata'] = metadata
+
+    try:
+        s3.put_object(
+            Bucket=bucket, 
+            Key=s3_path, 
+            Body=data, 
+            **extra_args
+        )
+        logger.info(f"Données uploadées vers {bucket}/{s3_path}")
+        return True
+    except Exception as e:
+        logger.error(f"Erreur lors de l'upload vers {s3_path} : {e}")
+        return False
+
+def handle_path(input_path):
+    """
+    Vérifie si le chemin est local ou S3. 
+    Si S3, télécharge le fichier dans /tmp et renvoie le nouveau chemin.
+    """
+    if input_path.startswith("s3://"):
+        # On découpe s3://bucket/key
+        parts = input_path.replace("s3://", "").split("/", 1)
+        bucket, key = parts[0], parts[1]
+        
+        # Le dossier /tmp est universel sous Linux (Docker)
+        local_tmp = f"/tmp/{os.path.basename(key)}"
+        
+        if download_file(bucket, key, local_tmp):
+            return local_tmp
+        else:
+            raise Exception(f"Échec du téléchargement S3 pour {input_path}")
+            
+    return input_path
+
+@trace_action(logger_name)
 def read_csv_from_datalake(bucket, s3_path):
     """
     Lit un fichier CSV depuis le datalake et retourne un DataFrame Pandas.

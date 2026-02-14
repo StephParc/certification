@@ -1,3 +1,4 @@
+# docker-compose.yml
 services:
   garage:
     image: dxflrs/garage:v0.9.0
@@ -84,17 +85,22 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW_DATABASE_URL}
       - AIRFLOW__CORE__EXECUTOR=${AIRFLOW_EXECUTOR}
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - PYTHONPATH=/opt/airflow
     ports:
       - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags 
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ./E4:/opt/airflow/E4
       - ./E7:/opt/airflow/E7      
       - ./utils:/opt/airflow/utils  
       - .env:/opt/airflow/.env
+      - /var/run/docker.sock:/var/run/docker.sock
     command: webserver
     user: "${AIRFLOW_UID:-50000}:0"
+    group_add:
+      - "1001"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
@@ -115,15 +121,20 @@ services:
     environment:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW_DATABASE_URL}
       - AIRFLOW__CORE__EXECUTOR=${AIRFLOW_EXECUTOR}
+      - PYTHONPATH=/opt/airflow
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ./E4:/opt/airflow/E4
       - ./E7:/opt/airflow/E7
       - ./utils:/opt/airflow/utils
       - .env:/opt/airflow/.env
+      - /var/run/docker.sock:/var/run/docker.sock
     command: scheduler
     user: "${AIRFLOW_UID:-50000}:0"
+    group_add:
+      - "1001"
 
   streamlit_catalog:
     build: 
@@ -147,6 +158,28 @@ services:
         condition: service_started
       garage:
         condition: service_healthy
+
+  fastapi_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: fastapi_hbm
+    env_file: .env
+    environment:
+      # On force le PYTHONPATH à la racine pour que les imports "from E4..." fonctionnent
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    working_dir: /app
+    # Commande pour lancer l'API (on pointe vers le module complet)
+    command: uvicorn E4.harmonie.BDD.api_hbm:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      db_postgres:
+        condition: service_started
+      db_mongo:
+        condition: service_started
 
 volumes:
   garage_meta:

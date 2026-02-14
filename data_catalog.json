@@ -1,6 +1,622 @@
 {
-    "export_date": "2026-02-12T21:19:39.994419",
+    "export_date": "2026-02-14T16:30:14.475977",
     "relational_db": [
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_ass_auteur_partition",
+            "nom_colonne": "auteur_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK | FK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_ass_auteur_partition",
+            "nom_colonne": "partition_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK | FK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_ass_auteur_partition",
+            "nom_colonne": "role",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_ass_evenement_hbm",
+            "nom_colonne": "evenement_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK | FK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_ass_evenement_hbm",
+            "nom_colonne": "partition_hbm_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK | FK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "auteur_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "nom",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "prenom",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "identite",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "pays",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "IPI",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_auteur",
+            "nom_colonne": "ISNI",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "evenement_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "date_evenement",
+            "type_data": "date",
+            "nullable": "NO",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "nom_evenement",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "lieu",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "type_evenement",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_evenement",
+            "nom_colonne": "affiche",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_instrument",
+            "nom_colonne": "instrument_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_instrument",
+            "nom_colonne": "instrument_uuid",
+            "type_data": "uuid",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_instrument",
+            "nom_colonne": "nom",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_instrument",
+            "nom_colonne": "famille",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_instrument",
+            "nom_colonne": "sous_famille",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "partition_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "partition_uuid",
+            "type_data": "uuid",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "titre",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "sous_titre",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "edition",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "collection",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "instrumentation",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "niveau",
+            "type_data": "float8",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "genre",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "style",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "annee_sortie",
+            "type_data": "int4",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "ISMN",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "ref_editeur",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "duree",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "description",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition",
+            "nom_colonne": "url",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "partition_hbm_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "hbm_uuid",
+            "type_data": "uuid",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "partition_id",
+            "type_data": "int4",
+            "nullable": "YES",
+            "contraintes": "FK | UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "distribution",
+            "type_data": "date",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "rendue",
+            "type_data": "bool",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "numerisation",
+            "type_data": "bool",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "concert",
+            "type_data": "bool",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "defile",
+            "type_data": "bool",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_partition_hbm",
+            "nom_colonne": "sonnerie",
+            "type_data": "bool",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "user_id",
+            "type_data": "int4",
+            "nullable": "NO",
+            "contraintes": "PK",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "user_uuid",
+            "type_data": "uuid",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "pseudo",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": "UNIQUE",
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "fullname",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "hashed_password",
+            "type_data": "varchar",
+            "nullable": "NO",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "email",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "permissions",
+            "type_data": "varchar",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
+        {
+            "nom_base": "hbm",
+            "schema": "public",
+            "type_table": "table",
+            "nom_table": "TB_utilisateur",
+            "nom_colonne": "last_connection",
+            "type_data": "date",
+            "nullable": "YES",
+            "contraintes": null,
+            "colonne_description": null
+        },
         {
             "nom_base": "hbm",
             "schema": "airflow",
@@ -3141,9 +3757,342 @@
         {
             "bucket": "zone-brutes",
             "file_name": null,
-            "format": null,
-            "size_ko": 0,
-            "status": "Empty"
+            "path": "E5/",
+            "format": "folder",
+            "size_ko": 0.0,
+            "last_modified": "2026-02-14T15:42:58.844000+00:00",
+            "etag": "d41d8cd98f00b204e9800998ecf8427e",
+            "is_folder": true
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-12-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 2.07,
+            "last_modified": "2026-02-14T15:43:12.987000+00:00",
+            "etag": "cc9b39870304be8e3f694fe721813622",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-13-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 5.46,
+            "last_modified": "2026-02-14T15:43:13.069000+00:00",
+            "etag": "05219b35972c30d30c3c42b9561c5dea",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-15-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 5.14,
+            "last_modified": "2026-02-14T15:43:13.106000+00:00",
+            "etag": "74d0938ca023a334c77b73248c9e92be",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-16-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 21.44,
+            "last_modified": "2026-02-14T15:43:13.142000+00:00",
+            "etag": "bea737752ebcdb1ff1d16cac1e12b257",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-17-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 27.95,
+            "last_modified": "2026-02-14T15:43:13.173000+00:00",
+            "etag": "a7ba332fa3fe314d2a77c572e8d60b16",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-18-infoconcert backup.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 13.56,
+            "last_modified": "2026-02-14T15:43:13.201000+00:00",
+            "etag": "5a79535c723f8f42cb6c0d4e3352d106",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-18-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 7.04,
+            "last_modified": "2026-02-14T15:43:13.230000+00:00",
+            "etag": "71e29bc43393c5a66a52a4b8949672ac",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-19-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 3.12,
+            "last_modified": "2026-02-14T15:43:13.266000+00:00",
+            "etag": "cc8d4a98414ca25f22d02f0444ed9f73",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-20-infoconcert backup.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 11.68,
+            "last_modified": "2026-02-14T15:43:13.296000+00:00",
+            "etag": "ad26cab02fafcb40091a412823ee066d",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-20-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 11.2,
+            "last_modified": "2026-02-14T15:43:13.327000+00:00",
+            "etag": "acbd8c8bc5e588828dac029b24ebbc13",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-21-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 13.17,
+            "last_modified": "2026-02-14T15:43:13.367000+00:00",
+            "etag": "3efead4bf945733b86e29406d8ad7701",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-22-infoconcert backup.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 5.33,
+            "last_modified": "2026-02-14T15:43:13.399000+00:00",
+            "etag": "baf1c611ea0b97e339bef55c0d4fad5a",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-22-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 18.65,
+            "last_modified": "2026-02-14T15:43:13.434000+00:00",
+            "etag": "93d1178f6bf40faff2e5d9eea06499b6",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-23-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 33.67,
+            "last_modified": "2026-02-14T15:43:13.579000+00:00",
+            "etag": "9bf5c00df66943711934bc19c7b428ab",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-24-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 43.49,
+            "last_modified": "2026-02-14T15:43:13.608000+00:00",
+            "etag": "2ce07ad668ce8b0dd8d1ad4b0bf4933c",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-25-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 17.61,
+            "last_modified": "2026-02-14T15:43:13.638000+00:00",
+            "etag": "924f7e4e96d935078bf271c0680d13f6",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-26-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 4.87,
+            "last_modified": "2026-02-14T15:43:13.663000+00:00",
+            "etag": "040a4f3fbc44ad36db0278eaa40bf042",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-27-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 10.42,
+            "last_modified": "2026-02-14T15:43:13.688000+00:00",
+            "etag": "af58a6b7be802b9433e7b3ef2b4db18a",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-28-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 12.13,
+            "last_modified": "2026-02-14T15:43:13.713000+00:00",
+            "etag": "2ac321f1d2baec67f2607bd522eb3021",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-29-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 19.8,
+            "last_modified": "2026-02-14T15:43:13.739000+00:00",
+            "etag": "7b1232ca45b6bebfe02455e50497e742",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-30-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 39.66,
+            "last_modified": "2026-02-14T15:43:13.767000+00:00",
+            "etag": "afcc6d8722c9a2bd8fea4faf8705461b",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-01-31-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 36.78,
+            "last_modified": "2026-02-14T15:43:13.795000+00:00",
+            "etag": "a2e861bbe963525f7a2e3bbe9efbee0f",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-01-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 18.33,
+            "last_modified": "2026-02-14T15:43:13.820000+00:00",
+            "etag": "17c1fcf9ed2275f1ee92d2c287b67482",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-02-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 3.42,
+            "last_modified": "2026-02-14T15:43:13.853000+00:00",
+            "etag": "a8b504d41f66684f7fcd97dfc1c51a2d",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-03-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 12.7,
+            "last_modified": "2026-02-14T15:43:13.937000+00:00",
+            "etag": "062876722b6dfc00db1b77cd26e43db9",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-04-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 13.74,
+            "last_modified": "2026-02-14T15:43:13.991000+00:00",
+            "etag": "f6a4867293ad3abcc50609236d329c08",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-05-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 24.94,
+            "last_modified": "2026-02-14T15:43:14.031000+00:00",
+            "etag": "c9165ce82121320bc35c56f590f18050",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-06-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 42.87,
+            "last_modified": "2026-02-14T15:43:14.068000+00:00",
+            "etag": "e3b5ca3bde55cf30daf5c438f3a38923",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-07-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 47.74,
+            "last_modified": "2026-02-14T15:43:14.104000+00:00",
+            "etag": "f26cc8c28284b2b2cb4233af88048117",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-08-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 19.67,
+            "last_modified": "2026-02-14T15:43:14.159000+00:00",
+            "etag": "d2cf1ab0cf734cb882021b4264a27bd3",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-09-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 6.46,
+            "last_modified": "2026-02-14T15:43:14.208000+00:00",
+            "etag": "459a9b4a52a35bd170851c94a60bb498",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-10-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 11.18,
+            "last_modified": "2026-02-14T15:43:14.246000+00:00",
+            "etag": "14dfb85b5e5f144f56eedd4c1bb86a32",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "2026-02-11-infoconcert.csv",
+            "path": "E5/",
+            "format": "csv",
+            "size_ko": 0.0,
+            "last_modified": "2026-02-14T15:43:14.289000+00:00",
+            "etag": "d41d8cd98f00b204e9800998ecf8427e",
+            "is_folder": false
         },
         {
             "bucket": "zone-propres",
@@ -3162,24 +4111,66 @@
         {
             "bucket": "zone-config",
             "file_name": null,
-            "path": "governance/",
-            "format": "folder",
-            "size_ko": 0.0,
-            "last_modified": "2026-02-12T17:58:51.614000+00:00",
-            "etag": "d41d8cd98f00b204e9800998ecf8427e",
-            "is_folder": true
-        },
-        {
-            "bucket": "zone-config",
-            "file_name": "data_catalog.json",
-            "path": "governance/",
-            "format": "json",
-            "size_ko": 24.8,
-            "last_modified": "2026-02-12T17:58:58.643000+00:00",
-            "etag": "1835e7de476b4223c209680dd96e9ec9",
-            "is_folder": false
+            "format": null,
+            "size_ko": 0,
+            "status": "Empty"
         }
     ],
-    "nosql_db": [],
+    "nosql_db": [
+        {
+            "collection": "COL_musiciens",
+            "count": 2,
+            "fields": [
+                "_id",
+                "nom",
+                "prenom",
+                "date_naissance",
+                "date_entree_hbm",
+                "date_federation",
+                "adresse",
+                "telephone",
+                "portable",
+                "email",
+                "poste_nominal",
+                "competences",
+                "statut",
+                "accord_donnees_perso"
+            ]
+        },
+        {
+            "collection": "COL_partitions",
+            "count": 1,
+            "fields": [
+                "_id",
+                "titre",
+                "compositeur",
+                "nomenclature",
+                "prestation",
+                "date_distribution",
+                "rendue",
+                "numero_archive",
+                "audios",
+                "numérisation"
+            ]
+        },
+        {
+            "collection": "COL_regles_substitution",
+            "count": 12,
+            "fields": [
+                "_id",
+                "sous_famille",
+                "ordre"
+            ]
+        },
+        {
+            "collection": "COL_instruments",
+            "count": 7,
+            "fields": [
+                "_id",
+                "nom_sql",
+                "synonymes"
+            ]
+        }
+    ],
     "governance_reference": "access_control.json"
 }

@@ -1,5 +1,7 @@
 # sync_sql_mongo.py
 import os
+import sys
+import argparse
 import csv
 import secrets
 import string
@@ -12,11 +14,53 @@ from typing import Union
 from E4.harmonie.BDD.database import get_mongo_db, sql_connect
 from E4.harmonie.BDD.models import User, Instrument, PartitionHBM, Partition
 from E4.harmonie.BDD.auth import get_password_hash
+from E4.harmonie.BDD.config import REJET_INSTRUMENTS_PATH, USER_LOG_PATH, RECONCILIATION_PARTITIONS_PATH
 from utils.logger_config import setup_logger, trace_action
 from utils.utils_functions import write_rejection_log
 
 logger_name = "Synchronisation hbm mongoHbm"
 logger = setup_logger(logger_name)
+
+@trace_action(logger_name)
+def main():
+    parser = argparse.ArgumentParser(description="Synchronisation uuid")
+    # Premier argument : l'action à réaliser
+    parser.add_argument(
+        "action", 
+        choices=["sync_instruments", "sync_musiciens", "sync_partitions"],
+        help="Collection à sychroniser"
+    )
+    
+    # Second argument optionnel : le chemin du fichier (requis pour les imports)
+    parser.add_argument(
+        "--file", 
+        type=str,
+        help="Chemin relatif du fichier de rejets"
+    )
+
+    args = parser.parse_args()
+
+    # Logique de routage des commandes
+    try:
+        if args.action == "sync_instruments":
+            logger.info("--- Synchronisation des instruments ---")
+            sync_instruments_with_creation(REJET_INSTRUMENTS_PATH)
+            
+        elif args.action == "sync_musiciens":
+            logger.info("--- Synchronisation des musiciens ---")
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            sync_musicians_with_creation(USER_LOG_PATH)
+            
+        elif args.action == "sync_partitions":
+            logger.info("--- Synchronisation des partitions ---")
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            sync_partitions_hbm_uuids(RECONCILIATION_PARTITIONS_PATH)
+
+        logger.info(f"Succès : Action '{args.action}' terminée.")
+
+    except Exception as e:
+        logger.error(f"Erreur lors de l'exécution de '{args.action}': {e}", file=sys.stderr)
+        sys.exit(1)
 
 @trace_action(logger_name)
 def sync_instruments_with_creation(rejet_path: Union[str, Path]):
@@ -177,3 +221,6 @@ def sync_partitions_hbm_uuids(rejet_path: Union[str, Path]):
 
     session.commit()
     session.close()
+
+if __name__ == "__main__":
+    main()

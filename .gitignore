@@ -59,6 +59,9 @@ E7/data_lake/
 
 __pycache__/
 **/.~lock.*
+*.pyc
+*.pyo
+*.pyd
 
 *garage.toml
 *garage_dl.txt

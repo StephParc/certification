@@ -1,6 +1,8 @@
 # create_db.py
 import csv
 import os
+import sys
+import argparse
 from datetime import date, datetime
 from pathlib import Path
 
@@ -10,10 +12,60 @@ from E4.harmonie.BDD.api_externe import get_api_externe
 from E4.harmonie.BDD.models import Base
 from E4.harmonie.BDD.config import REJET_IMPORT_PATH
 from utils.logger_config import setup_logger, trace_action
+from utils.S3_utils import handle_path
 from utils.utils_functions import write_rejection_log
 
 logger_name = "E4 - Insertion BDD"
 logger = setup_logger(logger_name)
+
+@trace_action(logger_name)
+def main():
+    parser = argparse.ArgumentParser(description="HBM Database CLI Manager")
+    # Premier argument : l'action à réaliser
+    parser.add_argument(
+        "action", 
+        choices=["init", "import_users", "import_events", "import_instruments", "import_scrapy"],
+        help="Action à exécuter sur la base de données"
+    )
+    
+    # Second argument optionnel : le chemin du fichier (requis pour les imports)
+    parser.add_argument(
+        "--file", 
+        type=str,
+        help="Chemin relatif du fichier CSV à importer"
+    )
+
+    args = parser.parse_args()
+
+    # Logique de routage des commandes
+    try:
+        if args.action == "init":
+            logger.info("--- Initialisation du schéma SQL ---")
+            init_db()
+            
+        elif args.action == "import_users":
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            insert_users_to_db(args.file)
+            
+        elif args.action == "import_events":
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            processed_path = handle_path(args.file)
+            insert_event_to_db(processed_path)
+            
+        elif args.action == "import_instruments":
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            insert_instruments_to_db(args.file)
+            
+        elif args.action == "import_scrapy":
+            if not args.file: raise ValueError("Le flag --file est requis pour cet import.")
+            processed_path = handle_path(args.file)
+            insert_scrapy_to_db(processed_path)
+
+        logger.info(f"Succès : Action '{args.action}' terminée.")
+
+    except Exception as e:
+        logger.error(f"Erreur lors de l'exécution de '{args.action}': {e}", file=sys.stderr)
+        sys.exit(1)
 
 @trace_action(logger_name)
 def init_db():
@@ -258,13 +310,14 @@ def insert_instruments_to_db(file_path):
         session.close()
 
 if __name__ == "__main__":
-    init_db()
+    main()
+    # init_db()
     # user_file = Path("E4/harmonie/sources/users.csv")
     # insert_users_to_db(user_file)
     # scrapy_file = Path("E4/harmonie/harmonie/musicshop_last.csv")
     # insert_scrapy_to_db(scrapy_file)
-    scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
-    insert_scrapy_to_db(scrapy_file)
+    # scrapy_file = Path("E4/harmonie/harmonie/fichier_base_test.csv")
+    # insert_scrapy_to_db(scrapy_file)
     # event_file = Path("E4/harmonie/sources/events.csv")
     # insert_event_to_db(event_file)
     # instru_file = Path("E4/harmonie/sources/instruments.csv")

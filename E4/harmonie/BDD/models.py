@@ -38,7 +38,7 @@ class Partition(Base):
 
     partition_id:   Mapped[int]     = mapped_column(primary_key=True, autoincrement=True)
     partition_uuid: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
-                                        server_default=text("uuid_generate_v4()"))
+                                        server_default=text("gen_random_uuid()"))
     titre:          Mapped[str]     = mapped_column(String(), nullable=False)
     sous_titre:     Mapped[str]     = mapped_column(String(), nullable=True)
     edition:        Mapped[str]     = mapped_column(String(), nullable=True)
@@ -88,7 +88,7 @@ class PartitionHBM(Base):
 
     partition_hbm_id:Mapped[int]    = mapped_column(primary_key=True, autoincrement=True)
     hbm_uuid: Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True),unique=True, nullable=False, 
-                                        server_default=text("uuid_generate_v4()"))
+                                        server_default=text("gen_random_uuid()"))
     partition_id:   Mapped[int]     = mapped_column(ForeignKey('TB_partition.partition_id'), nullable=True, unique=True)
     distribution:   Mapped[date]    = mapped_column(Date(), nullable=True)
     rendue:         Mapped[bool]    = mapped_column(Boolean(), nullable=True)
@@ -148,7 +148,7 @@ class Instrument(Base):
 
     instrument_id:  Mapped[int]         = mapped_column(primary_key=True, autoincrement=True)
     instrument_uuid: Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, 
-                                            server_default=text("uuid_generate_v4()"))
+                                            server_default=text("gen_random_uuid()"))
     nom:            Mapped[str]         = mapped_column(String(100), nullable=False, unique=True)
     famille:        Mapped[str]         = mapped_column(String(50), nullable=True)
     sous_famille:   Mapped[str]         = mapped_column(String(50), nullable=True)
@@ -161,7 +161,7 @@ class User(Base):
 
     user_id:            Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_uuid:    Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True),unique=True,nullable=False, 
-                                        server_default=text("uuid_generate_v4()"))
+                                        server_default=text("gen_random_uuid()"))
     pseudo:             Mapped[str] = mapped_column(String(), unique=True, nullable=False)
     fullname:           Mapped[str] = mapped_column(String(), nullable=True)
     hashed_password:    Mapped[str] = mapped_column(String(), nullable=False)
@@ -170,7 +170,7 @@ class User(Base):
     last_connection:    Mapped[date]= mapped_column(Date(), nullable=True)
 
     def __repr__(self):
-        return f"User(user_id={self.user_id!r}, username={self.pseudo}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
+        return f"User(user_id={self.user_id!r},pseudo={self.pseudo}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
 
 # if __name__ == "__main__":
 #     engine = get_engine()
