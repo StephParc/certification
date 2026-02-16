@@ -125,7 +125,7 @@ def handle_path(input_path):
     return input_path
 
 @trace_action(logger_name)
-def read_csv_from_datalake(bucket, s3_path):
+def read_csv_from_datalake(bucket, s3_path, **kwargs):
     """
     Lit un fichier CSV depuis le datalake et retourne un DataFrame Pandas.
     file_key: le chemin du fichier dans le bucket (ex: 'raw/partitions.csv')
@@ -133,7 +133,7 @@ def read_csv_from_datalake(bucket, s3_path):
     s3 = get_s3_client()
     try:
         response = s3.get_object(Bucket=bucket, Key=s3_path)
-        df = pd.read_csv(response['Body'])
+        df = pd.read_csv(response['Body'], **kwargs)
         logger.info(f"CSV {s3_path} lu avec succès depuis le bucket {bucket}")
         return df
     except Exception as e:

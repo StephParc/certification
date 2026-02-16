@@ -36,12 +36,12 @@ def create_event(session, date_evenement, nom_evenement, lieu=None, type_eveneme
 def create_part(session, titre, sous_titre=None, edition=None, collection=None,
                 instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
                 ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
-
-    titre_clean = titre.upper() if titre else ""
+    titre_clean = titre.strip().upper() if titre else None
+    ref_clean = ref_editeur.strip() if ref_editeur else None
     # Requête de vérification d"existence
     existing_partition = session.query(Partition).filter_by(
                     titre = titre_clean,
-                    ref_editeur = ref_editeur
+                    ref_editeur = ref_clean
                     ).first()
                 
     # Sélection ou création de la partition
@@ -59,7 +59,7 @@ def create_part(session, titre, sous_titre=None, edition=None, collection=None,
                 style           = style,
                 annee_sortie    = annee_sortie,
                 ISMN            = ISMN,
-                ref_editeur     = ref_editeur, 
+                ref_editeur     = ref_clean, 
                 duree           = duree,
                 description     = description,
                 url             = url)

@@ -19,6 +19,7 @@ python-dotenv = "^1.2.1"
 [tool.poetry.group.app.dependencies]
 python = "^3.12"
 scrapy = "^2.12.0"
+scrapy-impersonate = "^1.6.2"
 dateparser = "^1.2.1"
 azure-storage-file-datalake = "^12.20.0"
 sqlalchemy = "^2.0.40"
@@ -30,6 +31,7 @@ python-multipart = "^0.0.20"
 pyjwt = "^2.10.1"
 bcrypt = "4.0.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+scrapy-playwright = "^0.0.46"
 
 [build-system]
 requires = ["poetry-core"]

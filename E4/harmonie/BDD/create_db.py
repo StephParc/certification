@@ -10,9 +10,9 @@ from E4.harmonie.BDD.database import get_session_sql, sql_connect, get_engine
 from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin, create_instrument
 from E4.harmonie.BDD.api_externe import get_api_externe
 from E4.harmonie.BDD.models import Base
-from E4.harmonie.BDD.config import REJET_IMPORT_PATH
+from E4.harmonie.BDD.config import REJET_IMPORT_PATH, REJET_AUTEURS_PATH
 from utils.logger_config import setup_logger, trace_action
-from utils.S3_utils import handle_path
+from utils.S3_utils import handle_path, upload_file
 from utils.utils_functions import write_rejection_log
 
 logger_name = "E4 - Insertion BDD"
@@ -158,6 +158,7 @@ def insert_scrapy_to_db(file_path):
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     current_rejet_file = REJET_IMPORT_PATH.with_name(f"{timestamp}_{REJET_IMPORT_PATH.name}")
+    current_rejet_auteurs = REJET_AUTEURS_PATH.with_name(f"{REJET_AUTEURS_PATH.name}")
 
     SessionLocal= sql_connect()
     session = SessionLocal()
@@ -229,7 +230,18 @@ def insert_scrapy_to_db(file_path):
                     row_data = list(row.values()) + [error_detail]
                     write_rejection_log(str(current_rejet_file), headers, row_data)
                     logger.warning(f"Ligne rejetée vers {current_rejet_file.name}")
+            
+            if count_err > 0:
+                logger.warning(f"Exportation du log de rejet vers S3")
+                s3_rejet_path = f"rejets/E4/import_global/{current_rejet_file.name}"
+                upload_file(str(current_rejet_file), "zone_maintenance", s3_rejet_path)
+                logger.info(f"Fichier de rejet disponible sur S3: zone_maintenance/{s3_rejet_path}")
 
+            if current_rejet_auteurs.exists():
+                logger.warning(f"Exportation du log rejets auteurs vers S3")
+                s3_rejet_auteurs = f"rejets/E4/musicbrainz/{current_rejet_auteurs.name}"
+                upload_file(str(current_rejet_auteurs), "zone-maintenance", s3_rejet_auteurs)
+                logger.info(f"Fichier de rejet disponible sur S3: zone_maintenance/{s3_rejet_auteurs}")
             logger.info(f"Importation terminée. Succès: {count_ok}, Echecs: {count_err}")
     
     except Exception as e:

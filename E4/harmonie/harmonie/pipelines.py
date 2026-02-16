@@ -16,7 +16,7 @@ class HarmoniePipeline:
     This class contains methods to clean various fields of the scraped items.
     """
 
-    def process_item(self, item, spider):
+    def process_item(self, item, spider=None):
         """
         Process an item by applying various cleaning methods to its fields.
 

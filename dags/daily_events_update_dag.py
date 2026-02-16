@@ -1,4 +1,4 @@
-# daily_events_update.py
+# daily_events_update_dag.py
 import os
 import requests
 from datetime import datetime
@@ -62,7 +62,8 @@ with DAG(
     'daily_events_update_v1', 
     schedule_interval='@daily',
     start_date=datetime(2026, 2, 12),
-    catchup=False
+    catchup=False,
+    tags=['production', 'E4'],
 ) as dag:
     check = ShortCircuitOperator(
         task_id='check_git', 

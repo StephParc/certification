@@ -21,7 +21,7 @@ with DAG(
     schedule_interval=timedelta(days=1),
     start_date=datetime(2026, 2, 12),
     catchup=False,
-    tags=['gouvernance'],
+    tags=['gouvernance', 'E7'],
 ) as dag:
 
     # Définition de la tâche

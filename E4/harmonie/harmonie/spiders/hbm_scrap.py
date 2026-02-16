@@ -12,11 +12,39 @@ class HbmScrapSpider(scrapy.Spider):
         start_urls (list): The list of URLs from which the spider starts scraping.
     """
     name = "hbm_scrap"
-    allowed_domains = ["musicshopeurope.fr"]
-    
-    start_urls = ["https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page=1"] 
+    allowed_domains = ["musicshopeurope.com"]
+   
+    # start_urls = ["https://www.musicshopeurope.com/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page=1"] 
+    # start_urls = ["https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type de produit=conducteur -15= parties/?sort=Marketable+from_desc&page=1"]
 
-    def parse(self, response):
+    def start_requests(self):
+        # ÉTAPE 1 : On va d'abord sur l'accueil pour initialiser la session Azure/Cookies
+        yield scrapy.Request(
+            "https://www.musicshopeurope.com/",
+            callback=self.parse_home,
+            meta={
+                "playwright": True,
+                "playwright_page_methods": [
+                    # On simule l'acceptation des cookies comme dans ton test
+                    {"method": "click", "args": ["button:has-text('Accept all')"]},
+                    {"method": "wait_for_timeout", "args": [2000]},
+                ],
+            }
+        )
+
+    def parse_home(self, response):
+        # ÉTAPE 2 : Une fois la session "chaude", on va vers les partitions
+        target_url = "https://www.musicshopeurope.com/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc"
+        yield scrapy.Request(
+            target_url,
+            callback=self.parse,
+            meta={
+                "playwright": True,
+                "playwright_page_goto_params": {"wait_until": "networkidle"},
+            }
+        )
+
+    async def parse(self, response):
         """
         Parse the initial URLs and navigate through the pages.
 
@@ -37,13 +65,13 @@ class HbmScrapSpider(scrapy.Spider):
         #         yield response.follow(partition, callback=self.parse_partition)
 
         for partition in partitions:
-            yield response.follow(partition, callback=self.parse_partition)
+            yield response.follow(partition, callback=self.parse_partition, meta={"playwright": True})
 
         # Nombres de pages à scraper (commenter la ligne non retenue)
         #       ligne 45 pour le nombre de pages du site
         #       ligne 46 pour un nombre choisi
         # nombre_pages = int(response.xpath("//ul[@class='pager-list reset']/li//a/text()").getall()[-1])
-        nombre_pages = 10
+        nombre_pages = 1
 
         # Page de démarrage du scraping
         numero_page_actuelle = 1
@@ -51,11 +79,11 @@ class HbmScrapSpider(scrapy.Spider):
             numero_page_actuelle = int(re.findall(r'page=(\d+)', response.url)[0])
             numero_page_suivante = numero_page_actuelle + 1
         
-        next_page = f'https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page={numero_page_suivante}'
+        next_page = f"https://www.musicshopeurope.com/sheet-music-and-books/band/concert-band/product%20type=Set/?sort=Marketable+from_desc&page={numero_page_suivante}"
 
         if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
-
+            yield response.follow(next_page, callback=self.parse, meta={"playwright": True})
+        self.logger.info(f"Statut final : {response.status}")
 
     def parse_partition(self, response):
         """
