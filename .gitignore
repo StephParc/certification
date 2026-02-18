@@ -65,3 +65,7 @@ __pycache__/
 
 *garage.toml
 *garage_dl.txt
+
+harmonie_dbt/target/
+harmonie_dbt/dbt_packages/
+harmonie_dbt/logs/

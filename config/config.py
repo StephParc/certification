@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[1]
 ENV_PATH = BASE_DIR / ".env"
 
 if ENV_PATH.exists():
@@ -12,6 +12,11 @@ else:
     print("Info : .env non trouvé, utilisation des variables d'environnement système.")
 
 LOGS_BASE_PATH = BASE_DIR / os.getenv("LOGS_ROOT_DIR", "logs/rejets")
+for path in [
+    LOGS_BASE_PATH / "api_musicbrainz",
+    LOGS_BASE_PATH / "imports_global",
+    LOGS_BASE_PATH / "sync"]:
+    path.mkdir(parents=True, exist_ok=True)
 
 SQL_DATABASE_URL = os.getenv("SQL_DATABASE_URL")
 MONGO_DATABASE_URL = os.getenv("MONGO_DATABASE_URL")
@@ -35,6 +40,9 @@ REJET_IMPORT_PATH = LOGS_BASE_PATH / "imports_global/rejets_scrapy.csv"
 REJET_INSTRUMENTS_PATH = LOGS_BASE_PATH / "sync/instruments_a_completer.csv"
 USER_LOG_PATH = LOGS_BASE_PATH / "sync/credentials_temp.csv"
 RECONCILIATION_PARTITIONS_PATH = LOGS_BASE_PATH / "sync/partitions_a_reconcilier.csv"
+TICKETMASTER_CONSUMER_KEY = os.getenv("TICKETMASTER_CONSUMER_KEY")
+TICKETMASTER_CONSUMER_SECRET = os.getenv("TICKETMASTER_CONSUMER_SECRET")
+
 
 if not SQL_DATABASE_URL:
     raise ImportError("Erreur critique : SQL_DATABASE_URL est introuvable.")

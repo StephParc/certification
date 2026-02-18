@@ -1,26 +1,26 @@
 # S3_utils.py
 import os
+import json
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 import mimetypes
 import pandas as pd
-from dotenv import load_dotenv
+
 from utils.logger_config import trace_action, setup_logger
+from config.config import SQL_DATABASE_URL, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_ENDPOINT, DL_REGION
 
 logger_name = "E7 - Communications S3"
 logger = setup_logger(logger_name)
-
-load_dotenv()
 
 def get_s3_client():
     """Initialise le client S3 avec les droits d'écriture (RW)"""
     return boto3.client(
         's3',
-        endpoint_url=os.getenv("DL_ENDPOINT"),
-        aws_access_key_id=os.getenv("KEY_ID_DL_RW"),
-        aws_secret_access_key=os.getenv("SECRET_KEY_DL_RW"),
-        region_name="garage",
+        endpoint_url=DL_ENDPOINT,
+        aws_access_key_id=KEY_ID_DL_RW,
+        aws_secret_access_key=SECRET_KEY_DL_RW,
+        region_name=DL_REGION,
         use_ssl=False,
         # Configuration vitale pour Garage v0.9
         config=Config(
@@ -139,6 +139,19 @@ def read_csv_from_datalake(bucket, s3_path, **kwargs):
     except Exception as e:
         logger.error(f"Erreur lors de la lecture du CSV {s3_path} : {e}")
         return None
+
+@trace_action(logger_name)
+def get_json_from_s3(bucket_name, s3_key):
+    s3 = get_s3_client()
+    try:
+        response = s3.get_object(Bucket=bucket_name,Key=s3_key)
+        content = response['Body'].read().decode('utf-8')
+        return json.loads(content)
+    except s3.exceptions.NoSuchKey:
+        logger.error(f"Le fichier {s3_key} n'existe pas")
+    except Exception as e:
+        logger.error(f"Erreur lors de la lecture S3 ({s3_key}): {e}")
+    return None
 
 if __name__ == "__main__":
     # Test du download

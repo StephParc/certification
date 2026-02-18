@@ -1,0 +1,11 @@
+# stg_ticketmaster.yml
+version: 2
+
+models:
+  - name: stg_ticketmaster
+    description: "Version nettoyée et typée des événements Ticketmaster"
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null

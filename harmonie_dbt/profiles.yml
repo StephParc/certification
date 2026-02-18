@@ -1,0 +1,13 @@
+# profiles.yml
+harmonie_dbt:
+  outputs:
+    dev:
+      dbname: "{{ env_var('DBNAME') }}"
+      host: "{{ env_var('DBHOST', '127.0.0.1') }}"
+      password: "{{ env_var('PASSWORD_RW') }}"
+      port: "{{ env_var('DBPORT', '5433') | int }}"
+      schema: silver
+      threads: 4
+      type: postgres
+      user: "{{ env_var('DBUSER_RW') }}"
+  target: dev

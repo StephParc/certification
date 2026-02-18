@@ -11,7 +11,7 @@ import difflib
 from utils.logger_config import setup_logger, trace_action
 from utils.S3_utils import upload_file, get_s3_client
 from utils.utils_functions import write_rejection_log
-from E4.harmonie.BDD.config import REJET_AUTEURS_PATH
+from config.config import REJET_AUTEURS_PATH
 
 logger_name = "E4 - API Musicbrainz"
 logger = setup_logger(logger_name)

@@ -14,7 +14,7 @@ from sqlalchemy import func
 from E4.harmonie.BDD.database import get_mongo_db, sql_connect
 from E4.harmonie.BDD.models import User, Instrument, PartitionHBM, Partition
 from E4.harmonie.BDD.auth import get_password_hash
-from E4.harmonie.BDD.config import REJET_INSTRUMENTS_PATH, USER_LOG_PATH, RECONCILIATION_PARTITIONS_PATH
+from config.config import REJET_INSTRUMENTS_PATH, USER_LOG_PATH, RECONCILIATION_PARTITIONS_PATH
 from utils.logger_config import setup_logger, trace_action
 from utils.utils_functions import write_rejection_log
 from utils.S3_utils import upload_file

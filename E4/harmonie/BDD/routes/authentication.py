@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 from sqlalchemy.orm import  Session
 
-from E4.harmonie.BDD.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from config.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from E4.harmonie.BDD.auth import verify_password, create_access_token, get_current_user
 from E4.harmonie.BDD.database import get_session_sql
 from E4.harmonie.BDD.models import User

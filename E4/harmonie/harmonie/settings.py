@@ -6,7 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-from E4.harmonie.BDD.config import DL_ENDPOINT, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_REGION 
+from config.config import DL_ENDPOINT, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_REGION 
 
 AWS_ACCESS_KEY_ID = KEY_ID_DL_RW
 AWS_SECRET_ACCESS_KEY = SECRET_KEY_DL_RW

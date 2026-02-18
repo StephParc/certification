@@ -10,7 +10,7 @@ from E4.harmonie.BDD.database import get_session_sql, sql_connect, get_engine
 from E4.harmonie.BDD.crud import create_event, create_part, create_auteur, create_asso_auteur_partition, create_user_admin, create_instrument
 from E4.harmonie.BDD.api_externe import get_api_externe
 from E4.harmonie.BDD.models import Base
-from E4.harmonie.BDD.config import REJET_IMPORT_PATH, REJET_AUTEURS_PATH
+from config.config import REJET_IMPORT_PATH, REJET_AUTEURS_PATH
 from utils.logger_config import setup_logger, trace_action
 from utils.S3_utils import handle_path, upload_file
 from utils.utils_functions import write_rejection_log

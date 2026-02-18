@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from E4.harmonie.BDD.config import MONGO_DATABASE_URL, MONGO_DBNAME, REJET_INSTRUMENTS_PATH, USER_LOG_PATH, RECONCILIATION_PARTITIONS_PATH
+from config.config import MONGO_DATABASE_URL, MONGO_DBNAME, REJET_INSTRUMENTS_PATH, USER_LOG_PATH, RECONCILIATION_PARTITIONS_PATH
 from E4.harmonie.BDD.sync_sql_mongo import sync_instruments_with_creation, sync_musicians_with_creation, sync_partitions_hbm_uuids
 
 # # 1. Connexion

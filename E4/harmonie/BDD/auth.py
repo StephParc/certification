@@ -8,7 +8,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 
-from E4.harmonie.BDD.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from config.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from E4.harmonie.BDD.models import User
 from E4.harmonie.BDD.schemas import TokenData, UserPass
 from E4.harmonie.BDD.database import get_session_sql, sql_connect

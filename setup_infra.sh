@@ -37,6 +37,14 @@ echo "Création du schéma technique pour Airflow..."
 docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS airflow;"
 
+echo "Création du schéma et des accès pour l'analytics"
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS raw;"
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE TABLE IF NOT EXISTS raw.ticketmaster_events (id SERIAL PRIMARY KEY, inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, file_name TEXT, payload JSONB);"
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE INDEX idx_ticketmaster_filename ON raw.ticketmaster_events (file_name)";
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE USER ${DBUSER_RO} WITH PASSWORD '${PASSWORD_RO}';"
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE ROLE analyst_group;"
+docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "GRANT analyst_group TO ${DBUSER};"
+
 # Lancement du reste de l'infrastructure
 echo "Lancement du reste de l'infrastructure (Airflow, Garage...)"
 docker compose up -d

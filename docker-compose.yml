@@ -92,8 +92,11 @@ services:
       - ./dags:/opt/airflow/dags 
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
       - ./E4:/opt/airflow/E4
-      - ./E7:/opt/airflow/E7      
+      - ./E5:/opt/airflow/E5
+      - ./E7:/opt/airflow/E7
+      - ./harmonie_dbt:/opt/airflow/harmonie_dbt      
       - ./utils:/opt/airflow/utils  
       - .env:/opt/airflow/.env
       - /var/run/docker.sock:/var/run/docker.sock
@@ -126,8 +129,11 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ./config:/opt/airflow/config
       - ./E4:/opt/airflow/E4
+      - ./E5:/opt/airflow/E5
       - ./E7:/opt/airflow/E7
+      - ./harmonie_dbt:/opt/airflow/harmonie_dbt
       - ./utils:/opt/airflow/utils
       - .env:/opt/airflow/.env
       - /var/run/docker.sock:/var/run/docker.sock

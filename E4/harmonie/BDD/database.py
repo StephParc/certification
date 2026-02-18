@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 import os
 from pymongo import MongoClient
 
-from E4.harmonie.BDD.config import DBHOST, DBNAME,DBPORT, DBUSER_RW, PASSWORD_RW, MONGO_DATABASE_URL, MONGO_DBNAME
+from config.config import DBHOST, DBNAME,DBPORT, DBUSER_RW, PASSWORD_RW, MONGO_DATABASE_URL, MONGO_DBNAME
 
 def get_engine():
     ## Pour une BDD SQLite: 

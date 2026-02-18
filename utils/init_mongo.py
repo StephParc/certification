@@ -3,7 +3,7 @@ import json
 import os
 from pymongo import MongoClient
 
-from E4.harmonie.BDD.config import MONGO_DATABASE_URL, MONGO_DBNAME
+from config.config import MONGO_DATABASE_URL, MONGO_DBNAME
 from E4.harmonie.BDD.database import get_mongo_client, get_mongo_db
 from utils.logger_config import setup_logger, trace_action
 

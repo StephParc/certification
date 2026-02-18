@@ -1,5 +1,5 @@
 {
-    "export_date": "2026-02-14T16:30:14.475977",
+    "export_date": "2026-02-15T15:29:13.032457",
     "relational_db": [
         {
             "nom_base": "hbm",
@@ -3756,6 +3756,26 @@
     "datalake": [
         {
             "bucket": "zone-brutes",
+            "file_name": "events_latest.csv",
+            "path": "E4/",
+            "format": "csv",
+            "size_ko": 1.74,
+            "last_modified": "2026-02-15T00:00:04.011000+00:00",
+            "etag": "cc7f53ab7827137de47dd96bcae3fd9c",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
+            "file_name": "musicshop_last.csv",
+            "path": "E4/",
+            "format": "csv",
+            "size_ko": 18.92,
+            "last_modified": "2026-02-15T12:44:13.099000+00:00",
+            "etag": "d56d84bf82c2eb1e69d883f439164637",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-brutes",
             "file_name": null,
             "path": "E5/",
             "format": "folder",
@@ -4096,10 +4116,43 @@
         },
         {
             "bucket": "zone-propres",
-            "file_name": null,
-            "format": null,
-            "size_ko": 0,
-            "status": "Empty"
+            "file_name": "musicshop_2026-02-15.csv",
+            "path": "E4/archives/",
+            "format": "csv",
+            "size_ko": 3.95,
+            "last_modified": "2026-02-15T14:26:29.523000+00:00",
+            "etag": "58c952e8bcc1424834df1eb7799ba8bb",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-propres",
+            "file_name": "musicshop_all.csv",
+            "path": "E4/archives/",
+            "format": "csv",
+            "size_ko": 15.17,
+            "last_modified": "2026-02-15T14:26:29.475000+00:00",
+            "etag": "5dfdb3fba2a43ce819aab49b3f9b9a35",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-propres",
+            "file_name": "musicshop_all.csv",
+            "path": "E4/",
+            "format": "csv",
+            "size_ko": 18.89,
+            "last_modified": "2026-02-15T14:26:29.507000+00:00",
+            "etag": "645d2a1135fcd42d670dafec8a12874a",
+            "is_folder": false
+        },
+        {
+            "bucket": "zone-propres",
+            "file_name": "musicshop_new.csv",
+            "path": "E4/",
+            "format": "csv",
+            "size_ko": 3.88,
+            "last_modified": "2026-02-15T14:26:29.491000+00:00",
+            "etag": "60236bf2dd3cf830c91a2e1d249c4ea5",
+            "is_folder": false
         },
         {
             "bucket": "zone-enrichies",
@@ -4110,10 +4163,13 @@
         },
         {
             "bucket": "zone-config",
-            "file_name": null,
-            "format": null,
-            "size_ko": 0,
-            "status": "Empty"
+            "file_name": "data_catalog.json",
+            "path": "governance/",
+            "format": "json",
+            "size_ko": 126.92,
+            "last_modified": "2026-02-14T16:30:14.783000+00:00",
+            "etag": "57b23296c22d3110e13f8a56ec6fb978",
+            "is_folder": false
         }
     ],
     "nosql_db": [
