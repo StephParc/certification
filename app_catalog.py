@@ -111,9 +111,18 @@ if catalog:
         st.subheader("Inventaire des objets S3")
         if nb_s3 > 0:
             df_s3 = pd.DataFrame(catalog['datalake'])
-            cols_target = [['bucket','path', 'file_name','size_ko', 'last_modified']]
-            cols_final = [c for c in cols_target if c in df_s3.colums]
-            st.dataframe(df_s3[cols_final], width='stretch')
+            # try:
+            #     cols = [['bucket','path', 'file_name','size_ko', 'last_modified']]
+            #     st.dataframe(df_s3[cols], width='stretch', hide_index=True)
+            # except:
+            #     st.info(f"Le datalake ne contient pas de fichier")
+            cols_target = ['bucket','path', 'file_name','size_ko', 'last_modified']
+            cols_final = df_s3.columns.intersection(cols_target)
+        
+            if not cols_final.empty:
+                st.dataframe(df_s3[cols_final], width='stretch', hide_index=True)
+            else:
+                st.info("Les métadonnées S3 ne contiennent pas les colonnes standards")
         else:
             st.warning("Data Lake vide.")
 

@@ -28,8 +28,10 @@ load_dotenv()
 
 @trace_action(logger_name)
 def catalogue_BDD():
+    all_results = []
+
     try:
-        conn = psycopg2.connect(
+        base_conn = psycopg2.connect(
             host=os.getenv('DBHOST'),
             port=os.getenv('DBPORT', 5433),
             database=os.getenv('DBNAME'),
@@ -37,80 +39,101 @@ def catalogue_BDD():
             password=os.getenv('PASSWORD_RW'),
             options="-c client_encoding=utf8"
         )
-        
-        # RealDictCursor transforme chaque ligne en dictionnaire Python
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
-        query = """
-        SELECT
-            t.table_catalog AS nom_base,
-            t.table_schema AS schema,
-            CASE 
-                WHEN t.table_type = 'BASE TABLE' THEN 'table'
-                WHEN t.table_type = 'VIEW' THEN 'vue'
-                ELSE t.table_type
-            END AS type_table,
-            t.table_name AS nom_table,
-            c.column_name AS nom_colonne,
-            c.udt_name AS type_data,
-            c.is_nullable AS nullable,
-            -- Regroupement de toutes les contraintes de la colonne en une seule chaîne
-            string_agg(
-                CASE 
-                    WHEN tc.constraint_type = 'PRIMARY KEY' THEN 'PK'
-                    WHEN tc.constraint_type = 'FOREIGN KEY' THEN 'FK'
-                    ELSE tc.constraint_type
-                END, 
-                ' | ' 
-                ORDER BY CASE tc.constraint_type
-                    WHEN 'PRIMARY KEY' THEN 1
-                    WHEN 'FOREIGN KEY' THEN 2
-                    WHEN 'UNIQUE' THEN 3
-                    ELSE 4
-                END
-            ) AS contraintes,
-            pgd.description AS colonne_description
-        FROM information_schema.tables t 
-        JOIN information_schema.columns c 
-            ON t.table_name = c.table_name 
-            AND t.table_schema = c.table_schema
-        JOIN pg_class pgc ON pgc.relname = t.table_name
-        JOIN pg_namespace pgn ON pgn.oid = pgc.relnamespace AND pgn.nspname = t.table_schema
-        LEFT JOIN pg_description pgd 
-            ON pgd.objoid = pgc.oid 
-            AND pgd.objsubid = c.ordinal_position
-        LEFT JOIN information_schema.key_column_usage kcu 
-            ON kcu.table_name = c.table_name 
-            AND kcu.table_schema = c.table_schema 
-            AND kcu.column_name = c.column_name
-        LEFT JOIN information_schema.table_constraints tc 
-            ON tc.constraint_name = kcu.constraint_name
-            AND tc.table_name = c.table_name
-            AND tc.constraint_type <> 'CHECK'
-        WHERE t.table_schema NOT IN ('information_schema', 'pg_catalog')
-        GROUP BY 
-            t.table_catalog, t.table_schema, t.table_type, t.table_name, 
-            c.column_name, c.udt_name, c.is_nullable, c.ordinal_position, pgd.description
-        ORDER BY t.table_name, c.ordinal_position;
-        """
-        
-        cur.execute(query)
-        results = cur.fetchall()
-        
-        cur.close()
-        conn.close()
-        return results
-    
-    # except psycopg2.OperationalError as e:
-    #     logger.error(f"Impossible de se connecter à la base SQL : {e}")
-    #     return []
+        cur_list = base_conn.cursor()
+        cur_list.execute("SELECT datname FROM pg_database WHERE datistemplate = false AND datname != 'postgres';")
+        databases = [row[0] for row in cur_list.fetchall()]
+        cur_list.close()
+        base_conn.close()
+
+        logger.info(f"Bases de données détectées: {databases}")
     except Exception as e:
-        # 1. On nettoie le message pour éviter le bug de décodage '0xe9'
-        error_msg = str(e).encode('utf-8', 'replace').decode('utf-8')
+        logger.error(f"Impossible de lister les bases: {e}")
+
+    for db in databases:
+        try:
+            conn = psycopg2.connect(
+                host=os.getenv('DBHOST'),
+                port=os.getenv('DBPORT', 5433),
+                database=db,
+                user=os.getenv('DBUSER_RW'),
+                password=os.getenv('PASSWORD_RW'),
+                options="-c client_encoding=utf8"
+            )
+            
+            # RealDictCursor transforme chaque ligne en dictionnaire Python
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            
+            query = """
+            SELECT
+                t.table_catalog AS nom_base,
+                t.table_schema AS schema,
+                CASE 
+                    WHEN t.table_type = 'BASE TABLE' THEN 'table'
+                    WHEN t.table_type = 'VIEW' THEN 'vue'
+                    ELSE t.table_type
+                END AS type_table,
+                t.table_name AS nom_table,
+                c.column_name AS nom_colonne,
+                c.udt_name AS type_data,
+                c.is_nullable AS nullable,
+                -- Regroupement de toutes les contraintes de la colonne en une seule chaîne
+                string_agg(
+                    CASE 
+                        WHEN tc.constraint_type = 'PRIMARY KEY' THEN 'PK'
+                        WHEN tc.constraint_type = 'FOREIGN KEY' THEN 'FK'
+                        ELSE tc.constraint_type
+                    END, 
+                    ' | ' 
+                    ORDER BY CASE tc.constraint_type
+                        WHEN 'PRIMARY KEY' THEN 1
+                        WHEN 'FOREIGN KEY' THEN 2
+                        WHEN 'UNIQUE' THEN 3
+                        ELSE 4
+                    END
+                ) AS contraintes,
+                pgd.description AS colonne_description
+            FROM information_schema.tables t 
+            JOIN information_schema.columns c 
+                ON t.table_name = c.table_name 
+                AND t.table_schema = c.table_schema
+            JOIN pg_class pgc ON pgc.relname = t.table_name
+            JOIN pg_namespace pgn ON pgn.oid = pgc.relnamespace AND pgn.nspname = t.table_schema
+            LEFT JOIN pg_description pgd 
+                ON pgd.objoid = pgc.oid 
+                AND pgd.objsubid = c.ordinal_position
+            LEFT JOIN information_schema.key_column_usage kcu 
+                ON kcu.table_name = c.table_name 
+                AND kcu.table_schema = c.table_schema 
+                AND kcu.column_name = c.column_name
+            LEFT JOIN information_schema.table_constraints tc 
+                ON tc.constraint_name = kcu.constraint_name
+                AND tc.table_name = c.table_name
+                AND tc.constraint_type <> 'CHECK'
+            WHERE t.table_schema NOT IN ('information_schema', 'pg_catalog')
+            GROUP BY 
+                t.table_catalog, t.table_schema, t.table_type, t.table_name, 
+                c.column_name, c.udt_name, c.is_nullable, c.ordinal_position, pgd.description
+            ORDER BY t.table_name, c.ordinal_position;
+            """
+            
+            cur.execute(query)
+            all_results.extend(cur.fetchall())
+            
+            cur.close()
+            conn.close()
+            logger.info(f"Métadonnées extraites pour la base: {db}")
         
-        # 2. On loggue l'erreur proprement via ton logger configuré
-        logger.error(f"Erreur lors du catalogage BDD : {error_msg}")
-        return []
+        # except psycopg2.OperationalError as e:
+        #     logger.error(f"Impossible de se connecter à la base SQL : {e}")
+        #     return []
+        except Exception as e:
+            # 1. On nettoie le message pour éviter le bug de décodage '0xe9'
+            error_msg = str(e).encode('utf-8', 'replace').decode('utf-8')
+            
+            # 2. On loggue l'erreur proprement via ton logger configuré
+            logger.error(f"Erreur lors du catalogage BDD : {error_msg}")
+            return []
+    return all_results
 
 @trace_action(logger_name)
 def catalogue_DL():
