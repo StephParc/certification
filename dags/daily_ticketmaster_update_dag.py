@@ -39,14 +39,18 @@ with DAG(
     task_loader = PythonOperator(
         task_id='s3_to_postgres',
         python_callable=load_ticketmaster_file_to_bd,
-        op_kwargs={'folder_date': '{{ ds }}'} 
+        op_kwargs={'folder_date': '{{ data_interval_end | ds }}'} 
     )
 
     # 3. Transformation dbt (Silver & Gold)
     # On lance dbt deps d'abord pour être sûr d'avoir les packages, puis run
     task_dbt = BashOperator(
         task_id='dbt_transform',
-        bash_command='cd /opt/airflow/harmonie_dbt && dbt deps && dbt run --profiles-dir . && dbt test --profiles-dir .'
+        bash_command='cd /opt/airflow/harmonie_dbt && '
+        'rm -rf dbt_packages target && '
+        'dbt clean && dbt deps && '
+        'dbt run --target ticketmaster --select ticketmaster --profiles-dir . && '
+        'dbt test --target ticketmaster --select ticketmaster --profiles-dir .'
     )
 
     # Ordonnancement des tâches

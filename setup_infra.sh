@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -ex
 set -a; source .env; set +a
 
 echo "--- Préparation des dossiers ---"
@@ -33,17 +33,53 @@ until docker exec postgres_db pg_isready > /dev/null 2>&1; do
     sleep 2
 done
 
-echo "Création du schéma technique pour Airflow..."
+# echo "Création du schéma technique pour Airflow..."
 docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS airflow;"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS airflow;"
+echo "Initialisation des autres bases"
 
-echo "Création du schéma et des accès pour l'analytics"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS raw;"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE TABLE IF NOT EXISTS raw.ticketmaster_events (id SERIAL PRIMARY KEY, inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, file_name TEXT, payload JSONB);"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE INDEX idx_ticketmaster_filename ON raw.ticketmaster_events (file_name)";
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE USER ${DBUSER_RO} WITH PASSWORD '${PASSWORD_RO}';"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE ROLE analyst_group;"
-docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "GRANT analyst_group TO ${DBUSER};"
+BASES=("${DBNAME_AIRFLOW}" "${DBNAME_TICKETMASTER}" "${DBNAME_MUSICSHOP}")
+
+for db in "${BASES[@]}"; do
+    echo "Création de la base: $db"
+    docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE DATABASE \"$db\";"
+done
+
+echo "Vérification de l'existence des bases de données..."
+# On liste les bases et on cherche 'ticketmaster'
+EXISTING_DBS=$(docker exec postgres_db psql -U admin -d hbm -tAc "SELECT datname FROM pg_database")
+
+if [[ ! "$EXISTING_DBS" =~ "ticketmaster" ]]; then
+    echo "ERREUR CRITIQUE : La base ticketmaster n'existe pas encore."
+    exit 1
+fi
+# docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} <<EOF
+# CREATE DATABASE ${DBNAME_AIRFLOW};
+# CREATE DATABASE ${DBNAME_TICKETMASTER};
+# CREATE DATABASE ${DBNAME_MUSICSHOP};
+# EOF
+
+echo "Pause de 2 secondes pour laisser Postgres créer les bases"
+sleep 2
+
+
+# echo "Création du schéma et des accès pour l'analytics"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS raw;"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE TABLE IF NOT EXISTS raw.ticketmaster_events (id SERIAL PRIMARY KEY, inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, file_name TEXT, payload JSONB);"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE INDEX idx_ticketmaster_filename ON raw.ticketmaster_events (file_name)";
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE USER ${DBUSER_RO} WITH PASSWORD '${PASSWORD_RO}';"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE ROLE analyst_group;"
+# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "GRANT analyst_group TO ${DBUSER_RO};"
+
+echo "Configuration ticketmaster"
+docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME_TICKETMASTER} \
+    -v user_ro="${DBUSER_RO}" \
+    -v pass_ro="${PASSWORD_RO}" \
+    < ./scripts_postgres_init/setup_ticketmaster.sql
+
+echo "Configuration musicshop"
+docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME_MUSICSHOP} \
+    < ./scripts_postgres_init/setup_musicshop.sql
 
 # Lancement du reste de l'infrastructure
 echo "Lancement du reste de l'infrastructure (Airflow, Garage...)"

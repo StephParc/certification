@@ -33,5 +33,3 @@ def inspect_single_event():
 
 if __name__ == "__main__":
     inspect_single_event()
-
-

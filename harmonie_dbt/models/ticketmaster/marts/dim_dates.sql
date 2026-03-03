@@ -9,9 +9,9 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(['event_date','event_heure']) }} AS date_key,
     event_date,
     event_heure,
-    EXTRACT(YEAR FROM event_date) AS annee,
-    EXTRACT(MONTH FROM event_date) AS mois,
-    EXTRACT(DAY FROM event_date) AS jour,
+    EXTRACT(YEAR FROM event_date)::integer AS annee,
+    EXTRACT(MONTH FROM event_date)::integer AS mois,
+    EXTRACT(DAY FROM event_date)::integer AS jour,
     TO_CHAR(event_date, 'TMDay') AS jour_semaine,
     CASE
         WHEN event_heure BETWEEN '08:00:00' AND '12:00:00' THEN 'matin'

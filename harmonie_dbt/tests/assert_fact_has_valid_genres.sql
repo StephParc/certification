@@ -1,3 +1,4 @@
+-- assert_fact_has_valid_genres.sql
 -- Vérifie que chaque événement a un genre qui existe bien dans la dimension
 SELECT
     f.event_key

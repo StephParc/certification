@@ -100,7 +100,7 @@ def ingest_all_ticketmaster():
 
     # --- 1. ÉTATS-UNIS (US) : Un fichier par jour pour les 15 prochains jours ---
     logger.info("Lancement extraction USA (Journalière)")
-    base_date_us = datetime.now(timezone.utc) + timedelta(days=60)
+    base_date_us = datetime.now(timezone.utc) + timedelta(days=223)
     for i in range(15):
         # On définit les heures pour couvrir la journée complète
         start_us = (base_date_us + timedelta(days=i)).replace(hour=0, minute=0, second=0)

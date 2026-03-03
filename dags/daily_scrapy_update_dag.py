@@ -13,7 +13,7 @@ with DAG(
     'daily_scrapy_update_v1',
     default_args=default_args,
     description='Scraping quotidien MusicShop, nettoyage et mise à jour BDD',
-    schedule_interval='@daily',
+    schedule_interval=None,
     start_date=datetime(2026, 2, 12),
     catchup=False,
     tags=['production', 'E4'],

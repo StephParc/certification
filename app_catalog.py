@@ -111,7 +111,9 @@ if catalog:
         st.subheader("Inventaire des objets S3")
         if nb_s3 > 0:
             df_s3 = pd.DataFrame(catalog['datalake'])
-            st.dataframe(df_s3[['bucket','path', 'file_name','size_ko', 'last_modified']], width='stretch')
+            cols_target = [['bucket','path', 'file_name','size_ko', 'last_modified']]
+            cols_final = [c for c in cols_target if c in df_s3.colums]
+            st.dataframe(df_s3[cols_final], width='stretch')
         else:
             st.warning("Data Lake vide.")
 

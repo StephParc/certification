@@ -1,3 +1,4 @@
+-- assert_unique_location_key.sql
 --Ce test vérifie qu'il n'y a pas de doublons de localisation_key
 SELECT
     localisation_key,

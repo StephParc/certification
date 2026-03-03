@@ -36,6 +36,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - postgres_archives:/archives
 
   db_mongo:
     image: mongo:latest
@@ -95,8 +96,10 @@ services:
       - ./config:/opt/airflow/config
       - ./E4:/opt/airflow/E4
       - ./E5:/opt/airflow/E5
+      # - ./E6:/opt/airflow/E6
       - ./E7:/opt/airflow/E7
-      - ./harmonie_dbt:/opt/airflow/harmonie_dbt      
+      - ./harmonie_dbt:/opt/airflow/harmonie_dbt  
+      - ./scripts_postgres_init:/opt/airflow/scripts_postgres_init    
       - ./utils:/opt/airflow/utils  
       - .env:/opt/airflow/.env
       - /var/run/docker.sock:/var/run/docker.sock
@@ -132,8 +135,10 @@ services:
       - ./config:/opt/airflow/config
       - ./E4:/opt/airflow/E4
       - ./E5:/opt/airflow/E5
+      # - ./E6:/opt/airflow/E6
       - ./E7:/opt/airflow/E7
       - ./harmonie_dbt:/opt/airflow/harmonie_dbt
+      - ./scripts_postgres_init:/opt/airflow/scripts_postgres_init 
       - ./utils:/opt/airflow/utils
       - .env:/opt/airflow/.env
       - /var/run/docker.sock:/var/run/docker.sock
@@ -191,4 +196,5 @@ volumes:
   garage_meta:
   garage_data:
   postgres_data: 
+  postgres_archives:
   mongo_data:  

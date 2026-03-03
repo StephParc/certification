@@ -3,7 +3,7 @@ import boto3
 import json
 import psycopg2
 import psycopg2.extras
-from config.config import SQL_DATABASE_URL, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_ENDPOINT, DL_REGION
+from config.config import SQL_TICKETMASTER_URL, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_ENDPOINT, DL_REGION
 from utils.S3_utils import get_s3_client, get_json_from_s3
 from utils.logger_config import setup_logger, trace_action
 
@@ -19,7 +19,7 @@ def bulk_load_from_s3(prefix="E5/ticketmaster/"):
         paginator = s3.get_paginator('list_objects_v2')
         pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
         
-        conn = psycopg2.connect(SQL_DATABASE_URL)
+        conn = psycopg2.connect(SQL_TICKETMASTER_URL)
         cur = conn.cursor()
         
         count_files = 0

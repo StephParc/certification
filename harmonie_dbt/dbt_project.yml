@@ -32,15 +32,27 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   harmonie_dbt:
     # Config indicated by + and applies to all files under models/example/
-    staging:
-      +materialized: view
-      +schema: silver
-    marts:
-      +materialized: table
-      +schema: gold
-      +grants:
-        select: ['analyst_group']
+    ticketmaster:
+      staging:
+        +materialized: view
+        +schema: silver
+      marts:
+        +materialized: table
+        +schema: gold
+        +grants:
+          select: ['analyst_group']
+
+    musicshop:
+      staging:
+        +materialized: view
+        +schema: silver
+      marts:
+        +materialized: table
+        +schema: gold
+        +grants:
+          select: ['analyst_group', 'editor_role']
 
 on-run-end:
   - "GRANT USAGE ON SCHEMA gold TO analyst_group"
+  - "GRANT SELECT ON ALL TABLES IN SCHEMA gold TO analyst_group"
 
