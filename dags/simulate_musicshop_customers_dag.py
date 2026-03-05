@@ -1,4 +1,4 @@
-# setup_musicshop_dag.py
+# simulate_musicshop_customers_dag_dag.py
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from datetime import datetime

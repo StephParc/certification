@@ -1,4 +1,4 @@
-# musicshop_pipeline_dag.py
+# simulate_musicshop_orders_dag.py
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
