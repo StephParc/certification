@@ -10,6 +10,10 @@ import boto3
 from botocore.client import Config
 from pymongo import MongoClient
 from datetime import datetime
+import psutil
+import platform
+import re
+
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.logger_config import trace_action, setup_logger
@@ -73,6 +77,8 @@ def catalogue_BDD():
                     ELSE t.table_type
                 END AS type_table,
                 t.table_name AS nom_table,
+                pgc.reltuples::bigint AS nb_lignes,
+                pg_total_relation_size(pgc.oid) AS taille_octets,
                 c.column_name AS nom_colonne,
                 c.udt_name AS type_data,
                 c.is_nullable AS nullable,
@@ -111,7 +117,8 @@ def catalogue_BDD():
                 AND tc.constraint_type <> 'CHECK'
             WHERE t.table_schema NOT IN ('information_schema', 'pg_catalog')
             GROUP BY 
-                t.table_catalog, t.table_schema, t.table_type, t.table_name, 
+                t.table_catalog, t.table_schema, t.table_type, t.table_name,
+                pgc.reltuples, pgc.oid, 
                 c.column_name, c.udt_name, c.is_nullable, c.ordinal_position, pgd.description
             ORDER BY t.table_name, c.ordinal_position;
             """
@@ -155,6 +162,14 @@ def catalogue_DL():
             if 'Contents' in response:
                 for obj in response['Contents']:
                     key = obj['Key']
+
+                    try:
+                        head = s3.head_object(Bucket=bucket_name, Key=key)
+                        # Les métadonnées utilisateur sont dans 'Metadata'
+                        meta = head.get('Metadata', {})
+                    except:
+                        meta = {}
+
                     if not key.endswith('/'):
                         parts = key.split('/')
                         name = parts[-1]   
@@ -172,7 +187,11 @@ def catalogue_DL():
                         "size_ko": round(obj['Size'] / 1024, 2),
                         "last_modified": obj['LastModified'].isoformat(),
                         "etag": obj['ETag'].replace('"', ''),
-                        "is_folder": key.endswith('/')
+                        "is_folder": key.endswith('/'),
+                        "source": meta.get('source', 'Inconnue'),
+                        "step": meta.get('step', 'N/A'),
+                        "dag": meta.get('dag', 'Inconnue'), 
+                        "destination": meta.get('destination', 'N/A')
                     })
             else:
                 catalog_s3.append({
@@ -185,8 +204,20 @@ def catalogue_DL():
 
         except Exception as e:
             logger.error(f"Erreur sur le bucket {bucket_name}: {e}")
+
+    storage_summary = {}
+    for bucket in buckets:
+        objs = [o for o in catalog_s3 if o.get('bucket') == bucket]
+        total_size = sum(o.get('size_ko', 0) for o in objs)
+        storage_summary[bucket] = {
+            "total_size_ko": round(total_size, 2),
+            "objet_count": len(obj)
+        }
             
-    return catalog_s3
+    return {
+        "items": catalog_s3,
+        "summary": storage_summary
+    }
 
 @trace_action(logger_name)
 def catalogue_Mongo():
@@ -211,12 +242,126 @@ def catalogue_Mongo():
         return []
     return mongo_meta
 
+
+@trace_action(logger_name)
+def get_system_stats():
+    """Récupère l'état de santé du serveur de données"""
+    return {
+        "server_name": platform.node(),
+        "os": f"{platform.system()} {platform.release()}",
+        "cpu_usage_pct": psutil.cpu_percent(interval=1),
+        "ram_usage_pct": psutil.virtual_memory().percent,
+        "disk_free_gb": round(psutil.disk_usage('/').free / (1024**3), 2),
+        "status": "Healthy" if psutil.cpu_percent() < 90 else "Warning"
+    }
+
+@trace_action(logger_name)
+def get_dbt_lineage():
+    """Extrait le lignage dynamique depuis le manifest dbt"""
+    # Chemin vers le manifest de ton projet 'musicshop'
+    manifest_path = "harmonie_dbt/target/manifest.json"
+    
+    lineage_nodes = {}
+    lineage_edges = []
+    
+    if os.path.exists(manifest_path):
+        try:
+            with open(manifest_path, encoding='utf-8') as f:
+                manifest = json.load(f)
+                nodes = manifest.get('nodes', {})
+                
+                for node_id, node_data in nodes.items():
+                    # On filtre pour ne garder que les modèles et snapshots de ton projet
+                    if node_data['resource_type'] in ['model', 'snapshot']:
+                        node_name = node_data['name']
+                        materialized = node_data['config']['materialized']
+                        
+                        # On stocke l'info du noeud (pour sa couleur dans Streamlit)
+                        lineage_nodes[node_name] = materialized
+                        
+                        # On récupère les parents (depends_on)
+                        depends_on_nodes = node_data.get('depends_on', {}).get('nodes', [])
+                        
+                        for parent_id in depends_on_nodes:
+                            # On ne garde que le nom propre (pas le type de ressource)
+                            parent_name = parent_id.split('.')[-1]
+                            # On crée le lien
+                            lineage_edges.append({"from": parent_name, "to": node_name})
+                            
+            logger.info(f"Lignage dynamique dbt extrait ({len(lineage_nodes)} noeuds, {len(lineage_edges)} liens)")
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de la lecture du manifest dbt : {e}")
+    else:
+        logger.warning(f"Manifest dbt introuvable ({manifest_path}). Lance 'dbt build'.")
+        
+    return {"nodes": lineage_nodes, "edges": lineage_edges}
+
+@trace_action(logger_name)
+def get_airflow_dags_from_code():
+    dags_folder = "dags"  # Ajuste le chemin selon ton architecture
+    dags_logic = []
+
+    if not os.path.exists(dags_folder):
+        return []
+
+    for file in os.listdir(dags_folder):
+        if file.endswith(".py") and file != "__init__.py":
+            path = os.path.join(dags_folder, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+                # 1. Extraction ID du DAG (on cherche le premier)
+                dag_id_match = re.search(r'dag_id=["\']([^"\']+)["\']', content)
+                # Si pas trouvé dans le code, on prend le nom du DAG dans le 'with DAG(...) as name'
+                if not dag_id_match:
+                    dag_id_match = re.search(r'DAG\(\s*["\']([^"\']+)["\']', content)
+                
+                dag_id = dag_id_match.group(1) if dag_id_match else file
+
+                # 2. Mapping Variable -> Task_ID (Indispensable pour le >>)
+                # On utilise re.DOTALL pour gérer les définitions sur plusieurs lignes
+                task_map = {}
+                # Cherche : ma_var = Operator( ... task_id='mon_id' ... )
+                task_patterns = re.findall(r'(\w+)\s*=\s*[^=]*?task_id=["\']([^"\']+)["\']', content, re.DOTALL)
+                for var_name, t_id in task_patterns:
+                    task_map[var_name] = t_id
+
+                # 3. Extraction des chaînes complexes : check >> t1 >> t2
+                edges = []
+                # On cherche toutes les lignes contenant >>
+                for line in content.split('\n'):
+                    if '>>' in line:
+                        # On sépare les éléments de la chaîne
+                        parts = [p.strip() for p in line.split('>>')]
+                        for i in range(len(parts) - 1):
+                            start_var = parts[i]
+                            end_var = parts[i+1]
+                            # On ne crée le lien que si on connaît les IDs réels
+                            if start_var in task_map and end_var in task_map:
+                                edges.append({"from": task_map[start_var], "to": task_map[end_var]})
+
+                dags_logic.append({
+                    "file": file,
+                    "dag_id": dag_id,
+                    "tasks": list(task_map.values()), # On ne prend que les IDs réels
+                    "dependencies": edges
+                })
+    return dags_logic
+
 @trace_action(logger_name)
 def catalogue_export():
     """Fonction maîtresse qui assemble et sauvegarde"""
+    dbt_data = get_dbt_lineage()
     
     data = {
         "export_date": datetime.now().isoformat(),
+        "system_health": get_system_stats(),
+        "dbt_lineage": get_dbt_lineage(),
+        "dbt_nodes": dbt_data['nodes'],  # <-- NOUVEAU
+        "dbt_edges": dbt_data['edges'],
+        "airflow_static_analysis": get_airflow_dags_from_code(),
+        # "ingestion_lineage": get_lineage_metadata(),
         "relational_db": catalogue_BDD(),
         "datalake": catalogue_DL(),
         "nosql_db": catalogue_Mongo(),

@@ -86,7 +86,17 @@ def run_daily_ingestion(country_code="US"):
                     }, f, ensure_ascii=False, indent=4)
         
     s3_dest_path = f"E5/ticketmaster/{date_folder}/{filename}"
-    if upload_file(local_path, "zone-brutes", s3_dest_path):
+    if upload_file(
+        local_path=local_path, 
+        bucket="zone-brutes", 
+        s3_path=s3_dest_path, 
+        metadata={
+            "source": "Ticketmaster_API",
+            "step": "bronze",
+            "owner": "Harmonie",
+            "dag": "daily_ticketmaster_update_dag.py",
+            "destination": "ticketmaster.raw.ticketmaster_events"
+        }):
         logger.info(f"Ingestion terminée{country_code} : {len(all_events)} événements dans s3://zone-brutes/{s3_dest_path}")
         os.remove(local_path)
 

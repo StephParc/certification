@@ -53,8 +53,12 @@ def transfer_git_to_garage():
         data=res.content,
         bucket=BUCKET_NAME,
         s3_path="E4/events_latest.csv",
-        metadata={'source': 'github_events', 'sync_date': datetime.now().isoformat()}
+        metadata={
+            "source": "github_events", 
+            "sync_date": datetime.now().isoformat(),
+            "destination": "hbm.public.TB_evenement"}
     )
+    
     if not success:
         raise Exception("Échec de l'upload vers Garage")
 

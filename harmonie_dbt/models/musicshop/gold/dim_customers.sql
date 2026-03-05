@@ -1,6 +1,9 @@
 -- dim_customers.sql
-SELECT
-    {{ dbt_utils.generate_surrogate_key(['customer_id','system_source']) }} AS customer_key,
+-- depends_on: {{ ref('snp_customers') }}
+
+SELECT DISTINCT
+    -- On ajoute dbt_valid_from dans la clé pour qu'elle soit unique par version du client
+    {{ dbt_utils.generate_surrogate_key(['customer_id', 'system_source', 'dbt_valid_from']) }} AS customer_key,
     customer_id,
     system_source,
     name AS customer_name,

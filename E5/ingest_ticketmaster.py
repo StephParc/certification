@@ -89,7 +89,15 @@ def fetch_and_upload(country_code, start_date, end_date, label, extraction_date)
 
     # Upload vers Garage S3
     s3_dest_path = f"E5/ticketmaster/{date_folder}/{filename}"
-    if upload_file(local_path, "zone-brutes", s3_dest_path):
+    if upload_file(
+        local_path=local_path, 
+        bucket="zone-brutes", 
+        s3_path=s3_dest_path, 
+        metadata={
+            "source": "Ticketmaster_API",
+            "step": "bronze",
+            "destination": "ticketmaster.raw.ticketmaster_events"
+        }):
         logger.info(f"Ingestion terminée{label} : {len(all_events)} événements dans s3://zone-brutes/{s3_dest_path}")
         os.remove(local_path)
 

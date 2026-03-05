@@ -64,7 +64,16 @@ def save_to_s3():
         tmp_cust = "/tmp/customers.csv"
 
         df_customer.to_csv(tmp_cust, index=False)
-        upload_file(tmp_cust, "zone-brutes", "E6/musicshop/customers.csv")
+        upload_file(
+            local_path=tmp_cust,
+            bucket="zone-brutes",
+            s3_path="E6/musicshop/customers.csv",
+            metadata={
+                "source": "Généré par gen_customers.py",
+                "step": "raw",
+                "dag": "simulate_musicshop_customers_dag.py",
+                "destination": "musicshop.raw.customer"
+            })
 
         logger.info(f"Répartition par pays:\n{df_customer['country'].value_counts()}")
 

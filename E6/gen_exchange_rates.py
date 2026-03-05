@@ -49,7 +49,17 @@ def generate_exchange_rates():
     tmp_path = "/tmp/exchange_rates.csv"
     df_rates.to_csv(tmp_path, index=False)
 
-    upload_file(tmp_path, "zone-brutes", f"E6/musicshop/exchange_rates/{today}.csv")
+    upload_file(
+        local_path=tmp_path, 
+        bucket="zone-brutes", 
+        s3_path=f"E6/musicshop/exchange_rates/{today}.csv",
+        metadata={
+                "source": "Généré par gen_exchange_rates.py",
+                "step": "raw",
+                "dag": "daily_exchange_rates_dag.py",
+                "destination": "musicshop.raw.exchange_rates et zone-brutes/E6/musicshop/exchange_rates/"
+            })
+
     logger.info(f"Taux de change générés et uploadés pour le {today}")
 
 if __name__ == "__main__":

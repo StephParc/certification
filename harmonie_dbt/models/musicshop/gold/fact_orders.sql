@@ -26,20 +26,37 @@
     ]
 ) }}
 
-WITH silver_orders AS (
+WITH orders AS (
     SELECT * FROM {{ ref('int_orders_converted') }}
+),
+customers AS (
+    SELECT * FROM {{ ref('dim_customers') }}
 )
 
 SELECT
-    order_id,
-    customer_key,
-    customer_id,
-    product_id,
-    date_key,
-    quantity,
-    currency_code,
-    local_price,
-    local_amount,
-    euro_price,
-    euro_amount
-FROM silver_orders
+    o.order_id,
+    o.customer_id,
+    (
+        SELECT c.customer_key 
+        FROM customers c 
+        WHERE c.customer_id = o.customer_id 
+        ORDER BY 
+            -- On cherche la version qui contient la date, 
+            -- sinon on prend la plus proche
+            CASE 
+                WHEN o.order_date >= c.valid_from 
+                     AND (o.order_date < c.valid_to OR c.valid_to IS NULL) THEN 1
+                ELSE 2 
+            END,
+            c.valid_from ASC
+        LIMIT 1
+    ) AS customer_key,
+    o.product_id,
+    o.date_key,
+    o.quantity,
+    o.currency_code,
+    o.local_price,
+    o.local_amount,
+    o.euro_price,
+    o.euro_amount
+FROM orders o

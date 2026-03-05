@@ -63,7 +63,17 @@ def generate_orders(n=50):
     tmp_path = f"/tmp/{filename}"
     df_orders.to_csv(tmp_path, index=False)
 
-    upload_file(tmp_path, "zone-brutes", f"E6/musicshop/orders/{filename}")
+    upload_file(
+        local_path=tmp_path, 
+        bucket="zone-brutes", 
+        s3_path=f"E6/musicshop/orders/{filename}",
+        metadata={
+            "source": "Généré par gen_orders.py à partir de hbm.public.TB_partition et customer",
+            "step": "raw",
+            "dag": "simulate_musicshop_orders_dag.py",
+            "destination": "musicshop.raw.orders et zone-brutes/E6/musicshop/archives"
+            })
+
     logger.info(f"{n} commandes générées ({len(orders)} lignes) et uploadées")
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ with DAG(
     'daily_orders_pipeline',
     default_args=default_args,
     description='Génération et ingestion des commandes',
-    schedule_interval='*/60 * * * *',
+    schedule_interval='* */1 * * *',
     start_date=datetime(2026, 2, 12),
     catchup=False,
     tags=['production', 'E6'],

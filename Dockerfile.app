@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     curl \
+    graphviz \
     # Dépendances système pour Chromium (inclut libnspr4 et libnss3)
     libnss3 libnspr4 libasound2 libatk1.0-0 libc6 libcups2 libdbus-1-3 \
     libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 \

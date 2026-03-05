@@ -23,8 +23,8 @@ SELECT
 FROM {{ ref('fact_orders') }} AS f
 LEFT JOIN {{ ref('dim_customers') }} AS c
     ON f.customer_key=c.customer_key
-    AND f.date_key >= CAST(c.valid_from AS DATE)
-    AND (f.date_key < CAST(c.valid_to AS DATE) OR c.valid_to IS NULL)
+    -- AND f.date_key >= CAST(c.valid_from AS DATE)
+    -- AND (f.date_key < CAST(c.valid_to AS DATE) OR c.valid_to IS NULL)
 LEFT JOIN {{ ref('dim_products') }} AS p
     ON f.product_id=p.product_id
 LEFT JOIN {{ ref('dim_dates_musicshop') }} AS d

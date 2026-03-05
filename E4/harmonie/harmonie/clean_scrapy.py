@@ -39,21 +39,53 @@ def clean_scrapy_S3():
 
         # Sécuriser musicshop_all
         df_all.to_csv(tmp_old_all, index=False)
-        upload_file(tmp_old_all, "zone-propres", "E4/archives/musicshop_all.csv")
+        upload_file(
+            local_path=tmp_old_all, 
+            bucket="zone-propres", 
+            s3_path="E4/archives/musicshop_all.csv",
+            metadata={
+                "source": "Scraping musicshopeurope",
+                "dag": "daily_musicshop_update_dag.py",
+                "destination": "zone-propres/E4/archives/"
+            })
 
         # Enregistrer les nouveautés
         df_new.to_csv(tmp_new, index=False)
-        upload_file(tmp_new, "zone-propres", "E4/musicshop_new.csv")
+        upload_file(
+            local_path=tmp_new, 
+            bucket="zone-propres", 
+            s3_path="E4/musicshop_new.csv",
+            metadata={
+                "source": "zone-brutes/E4/musicshop_last.csv et zone-propres/E4/musicshop_all.csv",
+                "dag": "daily_musicshop_update_dag.py",
+                "destination": "hbm.public.TB_[auteur, partition]"
+            })
 
         # Compléter les données avec les nouveautés 
         df_combined = pd.concat([df_new, df_all], ignore_index=True)
         df_combined.to_csv(tmp_all, index=False)     
-        upload_file(tmp_all, "zone-propres", "E4/musicshop_all.csv")
+        upload_file(
+            local_path=tmp_all, 
+            bucket="zone-propres", 
+            s3_path="E4/musicshop_all.csv",
+            metadata={
+                "source": "Scraping musicshopeurope",
+                "dag": "daily_musicshop_update_dag.py",
+                "destination": "zone-propres/E4/"
+            })
 
         # Archiver les nouveautés
         df_new["date_ajout"] = date_du_jour
         df_new.to_csv(tmp_archive, index=False)
-        upload_file(tmp_archive, "zone-propres", f"E4/archives/musicshop_{date_str}.csv")
+        upload_file(
+            local_path=tmp_archive, 
+            bucket="zone-propres", 
+            s3_path=f"E4/archives/musicshop_{date_str}.csv",
+            metadata={
+                "source": "zone-propres/E4/musicshop_new.csv",
+                "dag": "daily_musicshop_update_dag.py",
+                "destination": "zone-propres/E4/archives/"
+            })
 
         logger.info(f"{len(df_new)} nouveautés traitées.")
         return True
