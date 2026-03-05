@@ -9,7 +9,7 @@ from E5.load_to_db import load_ticketmaster_file_to_bd
 
 # Configuration par défaut
 default_args = {
-    'owner': 'harmonie',
+    'owner': 'ticketmaster',
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,

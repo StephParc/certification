@@ -5,7 +5,7 @@ from airflow.operators.bash import BashOperator
 
 # Définition des arguments par défaut
 default_args = {
-    'owner': 'airflow',
+    'owner': 'harmonie',
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,

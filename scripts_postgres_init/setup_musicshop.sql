@@ -12,20 +12,21 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS public.editor_metadata (
     db_user TEXT PRIMARY KEY,
-    editor_id TEXT NOT NULL
+    editor_name TEXT NOT NULL
 );
 
-CREATE OR REPLACE FUNCTION create_editor(username TEXT, password TEXT, e_id TEXT, country_code TEXT) 
+CREATE OR REPLACE FUNCTION create_editor(username TEXT, password TEXT, e_name TEXT) 
 RETURNS VOID AS $$
 BEGIN
     EXECUTE format('CREATE USER %I WITH PASSWORD %L', username, password);
     EXECUTE format('GRANT editor_role TO %I', username);
-    INSERT INTO public.editor_metadata (db_user, editor_id) 
-    VALUES (username, e_id)
-    ON CONFLICT (db_user) DO UPDATE SET editor_id = EXCLUDED.editor_id;
+    INSERT INTO public.editor_metadata (db_user, editor_name) 
+    VALUES (username, e_name)
+    ON CONFLICT (db_user) DO UPDATE SET editor_name = EXCLUDED.editor_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+CREATE SCHEMA IF NOT EXISTS raw;
 CREATE SCHEMA IF NOT EXISTS silver;
 CREATE SCHEMA IF NOT EXISTS gold;
 
@@ -35,71 +36,87 @@ GRANT USAGE ON SCHEMA gold TO editor_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA gold GRANT SELECT ON TABLES TO analyst_group;
 ALTER DEFAULT PRIVILEGES IN SCHEMA gold GRANT SELECT ON TABLES TO editor_role;
 
-CREATE TABLE IF NOT EXISTS public.fact_exchange_rates (
+CREATE TABLE IF NOT EXISTS raw.exchange_rates (
     date_key DATE,
     currency_code VARCHAR(3),
-    exchange_rate DECIMAL(10,4),
+    exchange_rate DECIMAL(10,6),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (date_key, currency_code)
 );
 
-INSERT INTO public.fact_exchange_rates (date_key, currency_code, exchange_rate) VALUES
-    ('2025-01-01', 'GBP', 1.1850),
-    ('2025-02-01', 'GBP', 1.2010),
-    ('2025-03-01', 'GBP', 1.1920)
-ON CONFLICT DO NOTHING;
-
-CREATE SCHEMA IF NOT EXISTS france;
-CREATE SCHEMA IF NOT EXISTS uk;
-
-CREATE TABLE IF NOT EXISTS france.customer (
-    customer_id TEXT PRIMARY KEY,
-    name TEXT,
-    address TEXT,
-    email TEXT,
-    postal_code TEXT,
-    profile TEXT
+CREATE TABLE IF NOT EXISTS raw.customer (
+    customer_id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255),
+    address VARCHAR(255),
+    postal_code VARCHAR(20),
+    email VARCHAR(255),
+    country VARCHAR(100),
+    city VARCHAR(100),
+    profile VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS france.products (
-    product_id TEXT PRIMARY KEY,
-    title TEXT,
-    editor_referency TEXT,
-    editor_id TEXT,
-    editor_name TEXT,
-    local_unit_price DECIMAL(10,2)
-);
-CREATE TABLE IF NOT EXISTS france.orders (
-    order_id TEXT PRIMARY KEY,
-    customer_id TEXT,
-    product_id TEXT,
+
+CREATE TABLE IF NOT EXISTS raw.raw_orders(
+    order_id VARCHAR(20),
+    customer_id VARCHAR(50),
+    system_source VARCHAR(20),
+    name VARCHAR(255),
+    address VARCHAR(255),
+    postal_code VARCHAR(20),
+    email VARCHAR(255),
+    country VARCHAR(100),
+    profile VARCHAR(50),
+    order_date TIMESTAMP,
+    partition_id INT,
+    titre VARCHAR(255),
+    ref_editeur VARCHAR(100),
+    edition VARCHAR(255),
     quantity INT,
-    amount DECIMAL(10,2),
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    local_price DECIMAL(15,2)
 );
 
-CREATE TABLE IF NOT EXISTS uk.customer (
-    customer_id TEXT PRIMARY KEY,
-    name TEXT,
-    address TEXT,
-    email TEXT,
-    postal_code TEXT,
-    profile TEXT
-);
-CREATE TABLE IF NOT EXISTS uk.products (
-    product_id TEXT PRIMARY KEY,
-    title TEXT,
-    editor_referency TEXT,
-    editor_id TEXT,
-    editor_name TEXT,
-    local_unit_price DECIMAL(10,2)
-);
-CREATE TABLE IF NOT EXISTS uk.orders (
-    order_id TEXT PRIMARY KEY,
-    customer_id TEXT,
-    product_id TEXT,
-    quantity INT,
-    amount DECIMAL(10,2),
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- CREATE TABLE IF NOT EXISTS france.products (
+--     product_id TEXT PRIMARY KEY,
+--     title TEXT,
+--     editor_referency TEXT,
+--     editor_id TEXT,
+--     editor_name TEXT,
+--     local_unit_price DECIMAL(10,2)
+-- );
+-- CREATE TABLE IF NOT EXISTS france.orders (
+--     order_id TEXT PRIMARY KEY,
+--     customer_id TEXT,
+--     product_id TEXT,
+--     quantity INT,
+--     amount DECIMAL(10,2),
+--     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
+-- CREATE TABLE IF NOT EXISTS uk.customer (
+--     customer_id TEXT PRIMARY KEY,
+--     name TEXT,
+--     address TEXT,
+--     email TEXT,
+--     postal_code TEXT,
+--     profile TEXT
+-- );
+-- CREATE TABLE IF NOT EXISTS uk.products (
+--     product_id TEXT PRIMARY KEY,
+--     title TEXT,
+--     editor_referency TEXT,
+--     editor_id TEXT,
+--     editor_name TEXT,
+--     local_unit_price DECIMAL(10,2)
+-- );
+-- CREATE TABLE IF NOT EXISTS uk.orders (
+--     order_id TEXT PRIMARY KEY,
+--     customer_id TEXT,
+--     product_id TEXT,
+--     quantity INT,
+--     amount DECIMAL(10,2),
+--     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 
 -- ALTER TABLE gold.view_fact_orders ENABLE ROW LEVEL SECURITY;

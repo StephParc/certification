@@ -1,0 +1,119 @@
+# _gold_schema.yml
+version: 2
+
+models:
+  # --- DIMENSION CLIENTS (SCD2) ---
+  - name: dim_customers
+    description: "Référentiel client historisé via dbt Snapshot (SCD Type 2)"
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns: [customer_key]
+    columns:
+      - name: customer_key
+        data_type: text
+        description: "Clé de substitution (hash) basée sur customer_id et system_source"
+      - name: customer_id
+        data_type: varchar(50)
+      - name: system_source
+        data_type: varchar(20)
+      - name: customer_name
+        data_type: varchar(255)
+      - name: email
+        data_type: varchar(255)
+      - name: country
+        data_type: varchar(100)
+      - name: profile
+        data_type: varchar(20)
+      - name: valid_from
+        data_type: timestamp
+      - name: valid_to
+        data_type: timestamp
+      - name: is_current
+        data_type: boolean
+
+  # --- DIMENSION PRODUITS ---
+  - name: dim_products
+    description: "Référentiel des partitions vendues"
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns: [product_id]
+    columns:
+      - name: product_id
+        data_type: integer
+      - name: title
+        data_type: varchar(255)
+      - name: editor_referency
+        data_type: varchar(100)
+      - name: editor_name
+        data_type: varchar(255)
+
+  # --- DIMENSION DATES ---
+  - name: dim_dates_musicshop
+    description: "Calendrier de référence pour les analyses temporelles"
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns: [date_key]
+    columns:
+      - name: date_key
+        data_type: date
+      - name: annee
+        data_type: integer
+      - name: mois
+        data_type: integer
+      - name: jour
+        data_type: integer
+
+  # --- TABLE DE FAITS COMMANDES ---
+  - name: fct_orders
+    description: "Table de faits centrale contenant les transactions converties en EUR"
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns: [order_id]
+    columns:
+      - name: order_id
+        data_type: varchar(20)
+      - name: customer_key
+        data_type: text
+        tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_key
+      - name: customer_id
+        data_type: varchar(50)
+      - name: product_id
+        data_type: integer
+        tests:
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+      - name: date_key
+        data_type: date
+        tests:
+          - relationships:
+              to: ref('dim_dates_musicshop')
+              field: date_key
+      - name: quantity
+        data_type: integer
+      - name: currency_code
+        data_type: varchar(10)
+      - name: local_price
+        data_type: numeric(15,2)
+      - name: local_amount
+        data_type: numeric(15,2)
+      - name: euro_price
+        data_type: numeric(15,2)
+      - name: euro_amount
+        data_type: numeric(15,2)
+

@@ -20,7 +20,7 @@ S3_ENDPOINT = os.getenv("DL_ENDPOINT")
 BUCKET_NAME = "zone-brutes"
 
 default_args = {
-    'owner': 'airflow',
+    'owner': 'harmoniew',
     'depends_on_past': False,
     'retries': 1,
 }

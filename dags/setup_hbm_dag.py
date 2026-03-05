@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 default_args = {
-    'owner': 'airflow',
+    'owner': 'harmonie',
     'depends_on_past': False,
     'email_on_failure': False,
     'retries': 0,
@@ -14,10 +14,10 @@ with DAG(
     'setup_hbm_database_v1',
     default_args=default_args,
     description='Initialisation BDD et chargement des données sources',
-    schedule_interval=None,
+    schedule_interval='@once',
     start_date=datetime(2026, 2, 12),
     catchup=False,
-    tags=['setup'],
+    tags=['setup', 'E4'],
 ) as dag:
 
     # Commande de base pour docker exec

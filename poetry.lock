@@ -957,6 +957,24 @@ dnspython = ">=2.0.0"
 idna = ">=2.0.0"
 
 [[package]]
+name = "faker"
+version = "40.5.1"
+description = "Faker is a Python package that generates fake data for you."
+optional = false
+python-versions = ">=3.10"
+groups = ["app"]
+files = [
+    {file = "faker-40.5.1-py3-none-any.whl", hash = "sha256:c69640c1e13bad49b4bcebcbf1b52f9f1a872b6ea186c248ada34d798f1661bf"},
+    {file = "faker-40.5.1.tar.gz", hash = "sha256:70222361cd82aa10cb86066d1a4e8f47f2bcdc919615c412045a69c4e6da0cd3"},
+]
+
+[package.dependencies]
+tzdata = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+tzdata = ["tzdata"]
+
+[[package]]
 name = "fastapi"
 version = "0.115.14"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -3806,4 +3824,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.13"
-content-hash = "2b0878888dae56607a602a05c455b90e81e45d96ca7fc76b4163737c9a23cde3"
+content-hash = "18474ea4d21ae40fed2ae0a409b75a5baa6761e8f83093fd8bbc0cb6ab2431c0"

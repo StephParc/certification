@@ -7,7 +7,7 @@
         "ALTER TABLE {{ this }} ADD CONSTRAINT fk_fact_venue FOREIGN KEY (localisation_key) REFERENCES {{ ref('dim_venues') }} (localisation_key)"
     ]
 ) }}
-SELECT
+SELECT DISTINCT
     event_key,
     event_nom,
     {{ dbt_utils.generate_surrogate_key(['event_date','event_heure']) }} AS date_key,

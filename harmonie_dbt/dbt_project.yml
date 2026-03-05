@@ -45,12 +45,25 @@ models:
     musicshop:
       staging:
         +materialized: view
+        +schema: staging
+      silver:
+        +materialized: table
         +schema: silver
-      marts:
+      gold:
         +materialized: table
         +schema: gold
         +grants:
           select: ['analyst_group', 'editor_role']
+snapshots:
+  harmonie_dbt:
+    +target_schema: snapshots
+
+seeds:
+  harmonie_dbt:
+    +schema: public
+    countries:
+      +column_types:
+        utc_offset: varchar(10)
 
 on-run-end:
   - "GRANT USAGE ON SCHEMA gold TO analyst_group"

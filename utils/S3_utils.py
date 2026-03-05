@@ -153,6 +153,31 @@ def get_json_from_s3(bucket_name, s3_key):
         logger.error(f"Erreur lors de la lecture S3 ({s3_key}): {e}")
     return None
 
+@trace_action(logger_name)
+def move_s3_object(bucket_name, source_key, source_prefix, target_prefix):
+    """ 
+    Déplace un objet S3 d'un préfixe à un autre de manière générique.
+    Ex: source_key = "E6/musicshop/orders/file.csv"
+        source_prefix = "E6/musicshop/orders/"
+        target_prefix = "E6/musicshop/archives/orders/"
+    """
+    s3 = get_s3_client()
+    target_key = source_key.replace(source_prefix, target_prefix, 1)
+
+    try:
+        s3.copy_object(
+            Bucket=bucket_name,
+            CopySource={'Bucket': bucket_name, 'Key': source_key},
+            Key=target_key
+        )
+
+        s3.delete_object(Bucket=bucket_name, Key=source_key)
+
+        return target_key
+    except Exception as e:
+        logger.error(f"Erreur move_s3_object: {e}")
+        raise
+
 if __name__ == "__main__":
     # Test du download
     success = download_file(
