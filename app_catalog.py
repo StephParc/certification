@@ -4,7 +4,42 @@ import json
 import pandas as pd
 import os
 from utils.S3_utils import download_file
+from config.config import PASSWORD_RW, PASSWORD_RO
 import graphviz
+
+# --- SYSTÈME DE LOGIN ---
+def check_password():
+    """Retourne True si l'utilisateur a saisi un mot de passe correct."""
+    def password_entered():
+        # Dictionnaire des utilisateurs (à mettre dans le .env en prod)
+        users = {"admin": PASSWORD_RW, "user": PASSWORD_RO}
+        if st.session_state["username"] in users and st.session_state["password"] == users[st.session_state["username"]]:
+            st.session_state["password_correct"] = True
+            st.session_state["role"] = "Admin" if st.session_state["username"] == "admin" else "User"
+            del st.session_state["password"]  # On ne garde pas le mdp en mémoire
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        st.text_input("Utilisateur", key="username")
+        st.text_input("Mot de passe", type="password", key="password")
+        st.button("Connexion", on_click=password_entered)
+        return False
+    elif not st.session_state["password_correct"]:
+        st.error("Utilisateur ou mot de passe incorrect")
+        st.text_input("Utilisateur", key="username")
+        st.text_input("Mot de passe", type="password", key="password")
+        st.button("Connexion", on_click=password_entered)
+        return False
+    return True
+
+if not check_password():
+    st.stop() # Arrête l'exécution ici si pas connecté
+
+# Bouton Déconnexion dans la barre latérale
+if st.sidebar.button("🚪 Déconnexion"):
+    st.session_state.clear()
+    st.rerun()
 
 STORAGE_THRESHOLD_KO = 1048576 # 1Go
 # Configuration de la page
@@ -172,10 +207,15 @@ if catalog:
     st.markdown("---")
 
     # --- SECTION EXPLORATION ---
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🛢️ Base Relationnelle", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🏗️🩺 Santé", "🗺️ Lignage"])
-    
+    tab_titles = ["🛢️ Base Relationnelle", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🗺️ Lignage"]
+    if st.session_state["role"] == "Admin":
+        tab_titles += ["🏗️🩺 Santé"]
 
-    with tab1:
+    tabs = st.tabs(tab_titles)
+
+    # tab1, tab2, tab3, tab4, tab5 = st.tabs(["🛢️ Base Relationnelle", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🏗️🩺 Santé", "🗺️ Lignage"])
+
+    with tabs[0]:
         st.subheader("Dictionnaire des données Postgres")
         if not df_sql.empty:
         # if nb_sql > 0:
@@ -202,12 +242,25 @@ if catalog:
                                 nb_lignes = group_table['nb_lignes'].iloc[0]
                                 taille = group_table['taille_octets'].iloc[0]
                                 
-                                # On formate le label avec les stats
-                                label_table = f"{type_t.upper()} : {nom_table} ({nb_lignes} lignes | {format_taille(taille)})"
+                                if st.session_state["role"] != "Admin":
+                                    # On retire les colonnes marquées "donnée sensible"
+                                    group_table = group_table[~group_table['colonne_description'].str.contains("donnée sensible", na=False, case=False)]
+                                    taille_display = "Masqué"
+                                    lignes_display = "Masqué"
+                                else:
+                                    taille_display = format_taille(group_table['taille_octets'].iloc[0])
+                                    lignes_display = f"{group_table['nb_lignes'].iloc[0]} lignes"
+
+                                label_table = f"{type_t.upper()} : {nom_table} ({taille_display} | {lignes_display})"
+
+                                # label_table = f"{type_t.upper()} : {nom_table} ({group_table['nb_lignes'].iloc[0]} lignes | {taille_display})"
+
+                                # # On formate le label avec les stats
+                                # label_table = f"{type_t.upper()} : {nom_table} ({nb_lignes} lignes | {format_taille(taille)})"
                                 
-                                with st.expander(f"&nbsp;&nbsp;&nbsp;&nbsp;{type_t} : {nom_table}"):
+                                with st.expander(f"&nbsp;&nbsp;&nbsp;&nbsp;{label_table}"):
                                     # 4. Affichage final des colonnes de la table
-                                    st.caption(f"📊 Volume total : {format_taille(taille)} | Enregistrements estimés : {nb_lignes}")
+                                    # st.caption(f"📊 Volume total : {format_taille(taille)} | Enregistrements estimés : {nb_lignes}")
                                     # On ne garde que les infos de colonnes pour le tableau final
                                     cols_view = ['nom_colonne', 'type_data', 'nullable', 'contraintes', 'colonne_description']
                                     st.dataframe(
@@ -220,7 +273,7 @@ if catalog:
         else:
             st.info("Aucun résultat dans Postgres")
 
-    with tab2:
+    with tabs[1]:
         st.subheader("Inventaire des objets S3")
         if not df_s3.empty:
         # 1. On s'assure que les colonnes nécessaires existent
@@ -270,7 +323,7 @@ if catalog:
         # else:
         #     st.info("Aucun résultat dans le Data Lake")
 
-    with tab3:
+    with tabs[2]:
         st.subheader("Schémas MongoDB")
         if nosql_data:
             for coll in nosql_data:
@@ -281,54 +334,15 @@ if catalog:
         else:
             st.info("Aucun résultat dans MongoDB")
 
-    with tab4:
-        st.subheader("📦 Occupation du Data Lake")
-        
-        # Récupération du résumé calculé dans le harvester
-        dl_summary = catalog.get('datalake', {}).get('summary', {})
-        
-        if dl_summary:
-            alerts_found = False
-            for bucket, stats in dl_summary.items():
-                size = stats.get('total_size_ko', 0)
-                if size > STORAGE_THRESHOLD_KO:
-                    st.error(f"⚠️ **Alerte Quota** : Le bucket `{bucket}` dépasse le seuil critique ({round(size/1024, 2)} Mo / 1 Go)")
-                    alerts_found = True
-            
-            if not alerts_found:
-                st.success("✅ Tous les volumes de stockage sont sous contrôle.")
-
-            # Création d'un petit DataFrame pour un graphique
-            df_storage = pd.DataFrame.from_dict(dl_summary, orient='index').reset_index()
-            df_storage.columns = ['Bucket', 'Taille (Ko)', 'Nb Objets']
-            
-            # Affichage sous forme de colonnes de métriques
-            cols = st.columns(len(dl_summary))
-            for i, bucket in enumerate(dl_summary):
-                cols[i].metric(bucket, f"{dl_summary[bucket]['total_size_ko']} Ko")
-            
-            # Graphique en barres pour la visibilité
-            st.bar_chart(df_storage.set_index('Bucket')['Taille (Ko)'])
-        
-        st.markdown("---")
-
-        st.subheader("🖥️ État du Serveur")
-        health = catalog.get('system_health', {})
-        if health:
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Disque Libre", f"{health['disk_free_gb']} GB")
-            c2.metric("Usage RAM", f"{health['ram_usage_pct']}%")
-            c3.info(f"Serveur: {health['server_name']} ({health['status']})")
-
-    with tab5:    
+    with tabs[3]:    
         st.subheader("🔗 Lignage Visuel des données")
-        sub_dbt, sub_dags, sub_files = st.tabs([
-            "⚙️ Transformation (dbt)", 
-            "🤖 Orchestration (DAGs)", 
-            "📥 Ingestion (S3)"
-        ])
+        tab_subtitles = ["⚙️ Transformation (dbt)", "📥 Ingestion (S3)"]
+        if st.session_state["role"] == "Admin":
+            tab_subtitles += ["🤖 Orchestration (DAGs)"]
+        
+        subtabs = st.tabs(tab_subtitles)
 
-        with sub_dbt:
+        with subtabs[0]:
             st.subheader("Dépendances des modèles SQL")
             nodes_dbt = catalog.get('dbt_nodes', {})
             edges_dbt = catalog.get('dbt_edges', [])
@@ -346,6 +360,36 @@ if catalog:
             else:
                 st.info("Aucun manifest dbt détecté.")
 
+        with subtabs[1]:
+                st.subheader("Inventaire S3 par familles")
+                items_s3 = catalog.get('datalake', {}).get('items', [])
+                
+                if items_s3:
+                    dot_files = graphviz.Digraph()
+                    dot_files.attr(rankdir='LR', nodesep='0.1')
+                    
+                    # Logique de regroupement par préfixe (ex: musicshop_*, events_*)
+                    grouped_prefixes = {}
+                    for item in items_s3:
+                        fname = item.get('file_name')
+                        if not fname: continue
+                        
+                        # On détermine le préfixe (ce qui est avant le premier '_' ou '.')
+                        prefix = fname.split('_')[0] if '_' in fname else fname.split('.')[0]
+                        if prefix not in grouped_prefixes:
+                            grouped_prefixes[prefix] = {"count": 0, "source": item.get('source'), "step": item.get('step')}
+                        grouped_prefixes[prefix]["count"] += 1
+
+                    for pref, info in grouped_prefixes.items():
+                        label = f"📦 Family: {pref}_*\n({info['count']} fichiers)\nStep: {info['step']}"
+                        dot_files.node(pref, label, shape="folder", fillcolor="#E1F5FE", style="filled")
+                        # Optionnel : relier à la source
+                        src = str(info['source'] or "Source").split(' ')[0]
+                        dot_files.node(src, src, shape="ellipse")
+                        dot_files.edge(src, pref)
+                        
+                    st.graphviz_chart(dot_files)
+
         # # On récupère les vraies données de lignage
         # items_s3 = catalog.get('datalake', {}).get('items', [])
         # steps_disponibles = sorted(list(set([str(i.get('step') or 'unknown') for i in items_s3])))
@@ -353,88 +397,100 @@ if catalog:
         #                             options=steps_disponibles, 
         #                             default=steps_disponibles)
     
-        with sub_dags:
-            st.subheader("Flux par DAG Airflow")
-            st.caption("Analyse statique des scripts Python dans le dossier /dags")
-    
-            airflow_logic = catalog.get('airflow_static_analysis', [])
-            
-            if airflow_logic:
-                dot_dag = graphviz.Digraph()
-                # 'rankdir' LR = Gauche à droite, 'splines' ortho = lignes droites
-                dot_dag.attr(rankdir='LR', splines='ortho', nodesep='0.4', ranksep='0.6') 
-                dot_dag.attr('node', fontname='Arial', fontsize='10', shape='rectangle', style='filled,rounded')
+        if st.session_state["role"] == "Admin":
+            with subtabs[2]:
+                st.subheader("Flux par DAG Airflow")
+                st.caption("Analyse statique des scripts Python dans le dossier /dags")
+        
+                airflow_logic = catalog.get('airflow_static_analysis', [])
+                
+                if airflow_logic:
+                    dot_dag = graphviz.Digraph()
+                    # 'rankdir' LR = Gauche à droite, 'splines' ortho = lignes droites
+                    dot_dag.attr(rankdir='LR', splines='ortho', nodesep='0.4', ranksep='0.6') 
+                    dot_dag.attr('node', fontname='Arial', fontsize='10', shape='rectangle', style='filled,rounded')
 
-                dot_dag.attr('node', 
-                     shape='rectangle', 
-                     style='filled,rounded', 
-                     fillcolor='#F1F3F4',
-                     fontname='Arial', 
-                     fontsize='9',      # Police plus petite
-                     height='0.3',      # Hauteur fixée
-                     width='1.2',       # Largeur fixée
-                     fixedsize='false') # S'adapte juste au texte mais reste petit
+                    dot_dag.attr('node', 
+                        shape='rectangle', 
+                        style='filled,rounded', 
+                        fillcolor='#F1F3F4',
+                        fontname='Arial', 
+                        fontsize='9',      # Police plus petite
+                        height='0.3',      # Hauteur fixée
+                        width='1.2',       # Largeur fixée
+                        fixedsize='false') # S'adapte juste au texte mais reste petit
 
-                for dag in airflow_logic:
-                    # On crée un cluster par fichier pour isoler les flux
-                    with dot_dag.subgraph(name=f"cluster_{dag['dag_id']}") as c:
-                        c.attr(label=f" 📄 Script: {dag['file']} ", style='rounded', color='#D1D5DB')
-                        
-                        # Le Noeud du DAG (en orange clair)
-                        dag_node_id = f"dag_{dag['dag_id']}"
-                        c.node(dag_node_id, f"📅 DAG: {dag['dag_id']}", fillcolor="#FFF3E0", color="#FFB74D")
-                        
-                        # Création des Tâches (en gris/bleu)
-                        for t_id in dag['tasks']:
-                            unique_id = f"{dag['dag_id']}_{t_id}"
-                            c.node(unique_id, f"⚙️ {t_id}", fillcolor="#ECEFF1", color="#90A4AE")
-                        
-                        # Dessin des flèches séquentielles (>>)
-                        if dag.get('dependencies'):
-                            for edge in dag['dependencies']:
-                                c.edge(f"{dag['dag_id']}_{edge['from']}", f"{dag['dag_id']}_{edge['to']}", color="#546E7A")
+                    for dag in airflow_logic:
+                        # On crée un cluster par fichier pour isoler les flux
+                        with dot_dag.subgraph(name=f"cluster_{dag['dag_id']}") as c:
+                            c.attr(label=f" 📄 Script: {dag['file']} ", style='rounded', color='#D1D5DB')
                             
-                            # On lie le DAG à la première tâche de la liste pour lancer le flux
-                            first_task = dag['tasks'][0]
-                            c.edge(dag_node_id, f"{dag['dag_id']}_{first_task}", style="dashed")
-                        else:
-                            # Fallback si pas de >> détectés
+                            # Le Noeud du DAG (en orange clair)
+                            dag_node_id = f"dag_{dag['dag_id']}"
+                            c.node(dag_node_id, f"📅 DAG: {dag['dag_id']}", fillcolor="#FFF3E0", color="#FFB74D")
+                            
+                            # Création des Tâches (en gris/bleu)
                             for t_id in dag['tasks']:
-                                c.edge(dag_node_id, f"{dag['dag_id']}_{t_id}", style="dotted")
-                
-                st.graphviz_chart(dot_dag, use_container_width=True)
-            else:
-                st.info("Aucun script de DAG analysé.")
+                                unique_id = f"{dag['dag_id']}_{t_id}"
+                                c.node(unique_id, f"⚙️ {t_id}", fillcolor="#ECEFF1", color="#90A4AE")
+                            
+                            # Dessin des flèches séquentielles (>>)
+                            if dag.get('dependencies'):
+                                for edge in dag['dependencies']:
+                                    c.edge(f"{dag['dag_id']}_{edge['from']}", f"{dag['dag_id']}_{edge['to']}", color="#546E7A")
+                                
+                                # On lie le DAG à la première tâche de la liste pour lancer le flux
+                                first_task = dag['tasks'][0]
+                                c.edge(dag_node_id, f"{dag['dag_id']}_{first_task}", style="dashed")
+                            else:
+                                # Fallback si pas de >> détectés
+                                for t_id in dag['tasks']:
+                                    c.edge(dag_node_id, f"{dag['dag_id']}_{t_id}", style="dotted")
+                    
+                    st.graphviz_chart(dot_dag, use_container_width=True)
+                else:
+                    st.info("Aucun script de DAG analysé.")          
 
-        with sub_files:
-            st.subheader("Inventaire S3 par familles")
-            items_s3 = catalog.get('datalake', {}).get('items', [])
+    if st.session_state["role"] == "Admin":
+        with tabs[4]:
+            st.subheader("📦 Occupation du Data Lake")
             
-            if items_s3:
-                dot_files = graphviz.Digraph()
-                dot_files.attr(rankdir='LR', nodesep='0.1')
+            # Récupération du résumé calculé dans le harvester
+            dl_summary = catalog.get('datalake', {}).get('summary', {})
+            
+            if dl_summary:
+                alerts_found = False
+                for bucket, stats in dl_summary.items():
+                    size = stats.get('total_size_ko', 0)
+                    if size > STORAGE_THRESHOLD_KO:
+                        st.error(f"⚠️ **Alerte Quota** : Le bucket `{bucket}` dépasse le seuil critique ({round(size/1024, 2)} Mo / 1 Go)")
+                        alerts_found = True
                 
-                # Logique de regroupement par préfixe (ex: musicshop_*, events_*)
-                grouped_prefixes = {}
-                for item in items_s3:
-                    fname = item.get('file_name')
-                    if not fname: continue
-                    
-                    # On détermine le préfixe (ce qui est avant le premier '_' ou '.')
-                    prefix = fname.split('_')[0] if '_' in fname else fname.split('.')[0]
-                    if prefix not in grouped_prefixes:
-                        grouped_prefixes[prefix] = {"count": 0, "source": item.get('source'), "step": item.get('step')}
-                    grouped_prefixes[prefix]["count"] += 1
+                if not alerts_found:
+                    st.success("✅ Tous les volumes de stockage sont sous contrôle.")
 
-                for pref, info in grouped_prefixes.items():
-                    label = f"📦 Family: {pref}_*\n({info['count']} fichiers)\nStep: {info['step']}"
-                    dot_files.node(pref, label, shape="folder", fillcolor="#E1F5FE", style="filled")
-                    # Optionnel : relier à la source
-                    src = str(info['source'] or "Source").split(' ')[0]
-                    dot_files.node(src, src, shape="ellipse")
-                    dot_files.edge(src, pref)
-                    
-                st.graphviz_chart(dot_files)
+                # Création d'un petit DataFrame pour un graphique
+                df_storage = pd.DataFrame.from_dict(dl_summary, orient='index').reset_index()
+                df_storage.columns = ['Bucket', 'Taille (Ko)', 'Nb Objets']
+                
+                # Affichage sous forme de colonnes de métriques
+                cols = st.columns(len(dl_summary))
+                for i, bucket in enumerate(dl_summary):
+                    cols[i].metric(bucket, f"{dl_summary[bucket]['total_size_ko']} Ko")
+                
+                # Graphique en barres pour la visibilité
+                st.bar_chart(df_storage.set_index('Bucket')['Taille (Ko)'])
+            
+            st.markdown("---")
+
+            st.subheader("🖥️ État du Serveur")
+            health = catalog.get('system_health', {})
+            if health:
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Disque Libre", f"{health['disk_free_gb']} GB")
+                c2.metric("Usage RAM", f"{health['ram_usage_pct']}%")
+                c3.info(f"Serveur: {health['server_name']} ({health['status']})")
+
 
         # # Filtrage des données
         # items_to_show = [i for i in items_s3 if str(i.get('step') or 'unknown') in selected_steps]

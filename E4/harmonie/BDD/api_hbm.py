@@ -3,7 +3,10 @@ from fastapi import FastAPI
 from E4.harmonie.BDD.routes import evenements, users, authentication, associations, auteurs, partitions, partitions_hbm, instruments
 from E4.harmonie.BDD.routes import instruments_dico, musiciens, partitions_details, regles_substitution
 
-app = FastAPI(title="HBM - Harmonie Manager 2026")
+app = FastAPI(
+    title="HBM - Harmonie Manager 2026",
+    root_path="/api"
+)
 
 app.include_router(authentication.router)
 app.include_router(users.router)

@@ -16,7 +16,7 @@ from E4.harmonie.BDD.database import get_session_sql, sql_connect
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated= "auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login",
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login",
     description="Entrez votre nom d'utilisateur et votre mot de passe",
     # scopes={"full_admin": "Accès total",
     #         "user_admin": "Accès complet aux utilisateurs", 
