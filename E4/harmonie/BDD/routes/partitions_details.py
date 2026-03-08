@@ -1,14 +1,16 @@
 # partitions_details.py
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlalchemy.orm import Session
 from E4.harmonie.BDD.crud_mongo import get_partition_by_uuid
 from E4.harmonie.BDD.database import get_session_sql
 from E4.harmonie.BDD.schemas_mongo import FullPartitionDetailsResponse
 from E4.harmonie.BDD.models import PartitionHBM, AssAuteurPartition, Auteur
+from E4.harmonie.BDD.auth import get_current_user
 
 router = APIRouter(
     prefix="/partitions-details", 
-    tags=["Partitions - Vue Hybride"]
+    tags=["Partitions - Vue Hybride"],
+    dependencies=[Security(get_current_user,scopes=["read_only"])]
     )
 
 @router.get("/{hbm_uuid}", response_model=FullPartitionDetailsResponse)

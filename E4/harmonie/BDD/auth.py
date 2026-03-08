@@ -58,14 +58,61 @@ def get_current_user(security_scopes: SecurityScopes, token: str = Depends(oauth
     user = session.query(User).filter_by(pseudo = token_data.pseudo).first()
     if user is None:
         raise credentials_exception
+    # Définition de la hiérarchie pour simplifier le code
+    is_full_admin = "full_admin" in token_data.scopes
+    is_user_admin = "user_admin" in token_data.scopes
+    is_read_only = "read_only" in token_data.scopes
+
     for scope in security_scopes.scopes:
-        if scope not in token_data.scopes:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": authenticate_value},
-            )
+        if is_full_admin:
+            continue # Passe au scope suivant, c'est bon
+        
+        if is_user_admin and scope in ["user_admin", "read_only"]:
+            continue # Passe au scope suivant
+            
+        if is_read_only and scope == "read_only":
+            continue # Passe au scope suivant
+            
+        # Si on arrive ici, c'est qu'aucune condition n'a été remplie
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Permission '{scope}' manquante",
+            headers={"WWW-Authenticate": authenticate_value},
+        )
     return user
 
 if __name__ == "__main__":
     print("hashed_password: ", get_password_hash("password"))
+
+#     if security_scopes.scopes:
+#         authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
+#     else:
+#         authenticate_value = "Bearer"
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": authenticate_value},
+#     )
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         pseudo = payload.get("sub")
+#         if pseudo is None:
+#             raise credentials_exception
+#         token_scopes = payload.get("scopes", [])
+#         token_data = TokenData(scopes=token_scopes, pseudo=pseudo)
+#     except (InvalidTokenError, ValidationError):
+#         raise credentials_exception
+#     user = session.query(User).filter_by(pseudo = token_data.pseudo).first()
+#     if user is None:
+#         raise credentials_exception
+#     for scope in security_scopes.scopes:
+#         if scope not in token_data.scopes:
+#             raise HTTPException(
+#                 status_code=status.HTTP_403_UNAUTHORIZED,
+#                 detail="Not enough permissions",
+#                 headers={"WWW-Authenticate": authenticate_value},
+#             )
+#     return user
+
+# if __name__ == "__main__":
+#     print("hashed_password: ", get_password_hash("password"))

@@ -1,0 +1,16 @@
+version: "3"
+
+endpoints:
+  - name: harmonie-tunnel
+    url: https://DOMAIN_A_REMPLACER.ngrok-free.dev # Si tu as un domaine fixe, sinon enlève cette ligne
+    upstream:
+      url: http://nginx_proxy:80
+    # traffic_policy:
+    #   on_http_request:
+    #     - expressions:
+    #         - "true"
+    #       actions:
+    #         - type: "basic-auth"
+    #           config:
+    #             credentials:
+    #               - "USER_A_REMPLACER:MOT_DE_PASSE_A_REMPLACER"

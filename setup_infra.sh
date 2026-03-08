@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+# set -ex  # uniquement pour débogage
 set -a; source .env; set +a
 
 echo "--- Préparation des dossiers ---"
@@ -81,6 +81,31 @@ echo "Configuration musicshop"
 docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME_MUSICSHOP} \
     < ./scripts_postgres_init/setup_musicshop.sql
 
+# Nettoyage d'éventuels dossiers Docker résiduels
+if [ -d "garage.toml" ]; then
+    echo "Nettoyage du dossier fantôme garage.toml..."
+    sudo rm -rf garage.toml
+fi
+
+if [ -d "ngrok.yml" ]; then
+    echo "Nettoyage du dossier fantôme ngrok.yml..."
+    sudo rm -rf ngrok.yml
+fi
+
+# Copie des template avec les pour droits
+cp garage.toml.template garage.toml
+cp ngrok.yml.template ngrok.yml
+sudo chown $(id -u):$(id -g) garage.toml ngrok.yml
+
+# Création rcp_secret pour garage.toml
+RPC_SECRET=$(openssl rand -hex 32)
+sed -i "s/^rpc_secret.*/rpc_secret = \"$RPC_SECRET\"/" garage.toml
+
+# Remplacement des valeurs dans ngrok.yml
+sed -i "s|DOMAIN_A_REMPLACER|$NGROK_DOMAIN|g" ngrok.yml
+sed -i "s|USER_A_REMPLACER|$NGROK_USER|g" ngrok.yml
+sed -i "s|MOT_DE_PASSE_A_REMPLACER|$NGROK_PASSWORD|g" ngrok.yml
+
 # Lancement du reste de l'infrastructure
 echo "Lancement du reste de l'infrastructure (Airflow, Garage...)"
 docker compose up -d
@@ -90,6 +115,17 @@ docker exec airflow_scheduler airflow variables set last_events_git_sha "initial
 
 # Sauvegarde de sécurité du .env (seulement si le .env n'est pas déjà corrompu)
 cp .env .env.last_run
+
+# # Création rcp_secret pour garage.toml
+# cp garage.toml.template garage.toml
+# RPC_SECRET=$(openssl rand -hex 32)
+# sed -i "s/^rpc_secret.*/rpc_secret = \"$RPC_SECRET\"/" garage.toml
+
+# # Remplacement des valeurs dans ngrok.yml
+# cp ngrok.yml.template ngrok.yml
+# sed -i "s|DOMAIN_A_REMPLACER|$NGROK_DOMAIN|g" ngrok.yml
+# sed -i "s|USER_A_REMPLACER|$NGROK_USER|g" ngrok.yml
+# sed -i "s|MOT_DE_PASSE_A_REMPLACER|$NGROK_PASSWORD|g" ngrok.yml
 
 until [ "$(docker ps -a -q -f name=garage_datalake)" ]; do
     echo "Le conteneur n'est pas encore créé... (téléchargement des images ?)"

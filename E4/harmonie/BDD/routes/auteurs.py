@@ -10,8 +10,8 @@ from E4.harmonie.BDD.database import get_session_sql
 router = APIRouter(
     prefix="/auteurs",
     tags=["Auteur: Compositeur/Arrangeur/Artiste"],
-    dependencies=[Depends(get_current_user)],
-    responses={404: {"description":"Not found"}},
+    dependencies=[Security(get_current_user,scopes=["read_only"])],
+    responses={404: {"description":"Not found"}}
 )   
 
 @router.get("/", response_model=list[AuteurId])
@@ -23,14 +23,16 @@ def get_auteur_by_id(auteur_id:int, session:Session=Depends(get_session_sql)):
     return read_auteur_by_id(session, auteur_id)
 
 @router.post("/")
-def create_autor(auteur:Auteur, session:Session=Depends(get_session_sql)):
+def create_autor(auteur:Auteur, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     autor=create_auteur(session, nom=auteur.nom, prenom=auteur.prenom, pays=auteur.pays, IPI=auteur.IPI, ISNI=auteur.ISNI)
     session.commit()
     session.refresh(autor)
     return autor
 
 @router.delete("/{auteur_id}")
-def del_auteur(auteur_id:int, session:Session=Depends(get_session_sql)):
+def del_auteur(auteur_id:int, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = delete_auteur(session,auteur_id)
     if "succès" in result.lower():
         session.commit()

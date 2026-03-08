@@ -220,11 +220,12 @@ def create_user(session, pseudo, password, fullname=None, email=None):
     session.flush()
     return user
 
-def create_user_admin(session, pseudo, fullname, hashed_password, email, permissions):
+def create_user_admin(session, pseudo, password, fullname=None, email=None, permissions="read_only"):
+    hashed_password = get_password_hash(password)
     # Vérification d'existence
     existing_user = session.query(User).filter_by(pseudo=pseudo).first()
     if existing_user:
-        return existing_user
+        return None
 
     # Création de l'utilisateur avec l'UUID généré par Postgres
     user = User(
@@ -398,19 +399,16 @@ def delete_user(session, user_id):
             u_id = existing_user.user_id
             session.delete(existing_user)
             session.flush()
-            print(f"Succès : L'utilisateur {u_id} a été supprimé.")
             message = f"Succès : L'utilisateur {u_id} a été supprimé."
         else:
-            print(f"Échec : L'utilisateur avec l'ID {user_id} n'existe pas.")
             message = f"Échec : L'utilisateur avec l'ID {user_id} n'existe pas."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur SQL lors de la suppression de l'utilisateur : {str(e)}")
         message = f"Erreur lors de la suppression de l'utilisateur : {str(e)}"
 
-        return message
+    return message
     
 def delete_instrument(session, instrument_id):
     instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
@@ -728,6 +726,7 @@ def read_user_by_id(session, user_id):
 def read_user_by_pseudo(session, pseudo):
     stmt = select(User.pseudo, User.fullname, User.email).where(User.pseudo==pseudo)
     result = session.execute(stmt)
+    # user = result.scalars().first()
     user = result.first()
     return user
 

@@ -176,7 +176,7 @@ services:
     command: scheduler
     user: "${AIRFLOW_UID:-50000}:0"
     group_add:
-      - "1001"
+      - "1001" # à remplacer par la valeur obtenue par commande: getent group docker | cut -d: -f3 ou stat -c '%g' /var/run/docker.sock
     networks:
       - harmonie_net
 

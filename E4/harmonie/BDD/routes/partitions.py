@@ -11,8 +11,8 @@ from E4.harmonie.BDD.database import get_session_sql
 router = APIRouter(
     prefix="/partitions",
     tags=["Partition"],
-    dependencies=[Depends(get_current_user)],
-    responses={404: {"description":"Not found"}},
+    dependencies=[Security(get_current_user,scopes=["read_only"])],
+    responses={404: {"description":"Not found"}}
 )
 
 @router.get("/{partition_id}", response_model=list[PartitionID])
@@ -83,7 +83,8 @@ def get_partition_by_grade(grade: float,session:Session=Depends(get_session_sql)
 #     return read_partition_by_genre/(session, genre)
 
 @router.post("/", response_model=Partition)
-def create_partition(part:Partition, session:Session=Depends(get_session_sql)):
+def create_partition(part:Partition, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     titre = part.titre
     sous_titre = part.sous_titre
     edition = part.edition
@@ -104,7 +105,8 @@ def create_partition(part:Partition, session:Session=Depends(get_session_sql)):
     return part
 
 @router.delete("/{partition_id}")
-def del_partition(id:int, session:Session=Depends(get_session_sql)):
+def del_partition(id:int, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = delete_partition(session,id)
     session.commit()
     return result

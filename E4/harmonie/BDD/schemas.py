@@ -114,12 +114,11 @@ class UserPublic(BaseModel):
 
 class UserPass(UserPublic):
     password: str
+    permissions: str | None = "read_only"
 
 class UserAdmin(UserPublic):
     user_id: int | None = None
     permissions: str | None = None
-    # hashed_password: str | None =None
-    scopes: list[str] | None = []
 
     model_config = ConfigDict(from_attributes=True)
 

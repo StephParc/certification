@@ -1,18 +1,19 @@
 # instruments_dico.py
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Security
 from E4.harmonie.BDD.crud_mongo import get_one_document, get_many_documents, create_one_document, update_one_document, delete_one_document
 from E4.harmonie.BDD.schemas_mongo import InstrumentSchema, InstrumentSchemaID
 from E4.harmonie.BDD.auth import get_current_user
 
 router = APIRouter(
     prefix="/instruments-dico", 
-    tags=["Instruments - dictionnaire"]
+    tags=["Instruments - dictionnaire"],
+    dependencies=[Security(get_current_user,scopes=["read_only"])]
     )
 
 COLLECTION = "COL_instruments"
 
 @router.post("/", response_model=str)
-def create_instrument(data: InstrumentSchema, current_user = Depends(get_current_user)):
+def create_instrument(data: InstrumentSchema, current_user = Security(get_current_user, scopes=["full_admin"])):
     """Création sans ID dans le corps de la requête."""
     if current_user.permissions != "full_admin":
         raise HTTPException(status_code=403, detail="Droits insuffisants")
@@ -32,7 +33,7 @@ def get_instrument_by_name(nom_sql: str):
     return doc
 
 @router.delete("/{nom_sql}")
-def delete_instrument(nom_sql: str, current_user = Depends(get_current_user)):
+def delete_instrument(nom_sql: str, current_user = Security(get_current_user, scopes=["full_admin"])):
     if current_user.permissions != "full_admin":
         raise HTTPException(status_code=403, detail="Droits insuffisants")
     success = delete_one_document(COLLECTION, {"nom_sql": nom_sql})

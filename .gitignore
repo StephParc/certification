@@ -48,6 +48,7 @@ site/
 
 *.env
 *.env.*
+!.env.template
 .venv/
 
 E4/registre-traitement-simplifie.ods
@@ -73,4 +74,4 @@ harmonie_dbt/logs/
 Sauvegarde_garage/
 backups/
 
-ngrok.yml
+*ngrok.yml

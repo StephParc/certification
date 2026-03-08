@@ -1,5 +1,5 @@
 # evenements.py
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Security
 from sqlalchemy.orm import  Session
 
 from E4.harmonie.BDD.crud import read_event_by_id, read_event_by_date, read_event_by_year, read_event_by_type, read_event_by_partition, read_event_all
@@ -11,8 +11,8 @@ from E4.harmonie.BDD.database import get_session_sql
 router = APIRouter(
     prefix="/event",
     tags=["Evénement"],
-    dependencies=[Depends(get_current_user)],
-    responses={404: {"description":"Not found"}},
+    dependencies=[Security(get_current_user,scopes=["read_only"])],
+    responses={404: {"description":"Not found"}}
 )
 
 @router.get("/{event_id}", response_model=list[EventId])
@@ -36,14 +36,16 @@ def get_event_by_partition_hbm_id(id:int, session:Session=Depends(get_session_sq
     return read_event_by_partition(session, id)
 
 @router.post("/", response_model=EventId)
-def create_evenement(event:Event, session:Session=Depends(get_session_sql)):
+def create_evenement(event:Event, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     evenement=create_event(session, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
     session.commit()
     session.refresh(evenement)
     return evenement
 
 @router.delete("/{event_id}")
-def del_evenement(event_id:int, session:Session=Depends(get_session_sql)):
+def del_evenement(event_id:int, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = delete_event(session,event_id)
     if "succès" in result.lower():
         session.commit()
@@ -53,13 +55,15 @@ def del_evenement(event_id:int, session:Session=Depends(get_session_sql)):
     return {"status": "error", "message": result}
 
 @router.put("/{event_id}")
-def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
+def update_evenement(event:EventId, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
     session.commit()
     return result
 
 @router.patch("/{event_id}")
-def update_evenement(event:EventId, session:Session=Depends(get_session_sql)):
+def update_evenement(event:EventId, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = update_event(session, event.evenement_id, event.date_evenement, event.nom_evenement, event.lieu, event.type_evenement, event.affiche)
     session.commit()
     return result
