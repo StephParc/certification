@@ -1,4 +1,21 @@
 # S3_utils.py
+"""
+S3 Data Lake Orchestration Service.
+
+This module acts as the universal bridge between the application services 
+and the Garage S3 Object Storage. It manages data transfers across all 
+Medallion zones (Bronze, Silver, Gold, Config).
+
+Key Operational Features:
+1. Garage v0.9 Optimization: Forces 'path-style' addressing and S3v4 
+   signatures for maximum compatibility.
+2. Governance Metadata: Systematically attaches lineage tags (source, step, 
+   dag) to every object during upload.
+3. Stream Integration: Enables direct I/O between S3 and Pandas/JSON 
+   without local temporary files.
+4. Lifecycle Management: Provides generic 'move' operations for 
+   landing-to-archive transitions.
+"""
 import os
 import json
 import boto3
@@ -14,7 +31,12 @@ logger_name = "E7 - Communications S3"
 logger = setup_logger(logger_name)
 
 def get_s3_client():
-    """Initialise le client S3 avec les droits d'écriture (RW)"""
+    """
+    Initializes a Read-Write S3 client with Garage-specific configurations.
+
+    Crucially configures 'addressing_style' as 'path' to accommodate the 
+    Garage v0.9 backend requirements.
+    """
     return boto3.client(
         's3',
         endpoint_url=DL_ENDPOINT,
@@ -32,7 +54,13 @@ def get_s3_client():
 @trace_action(logger_name)
 def upload_file(local_path, bucket, s3_path=None, metadata=None):
     """
-    Upload un fichier sur le Data Lake avec détection de type et métadonnées.
+    Delivers a local file to the Data Lake with automatic MIME detection.
+
+    Args:
+        local_path (str): Path to the source file on disk.
+        bucket (str): Target S3 bucket name.
+        s3_path (str, optional): Destination key. Defaults to local filename.
+        metadata (dict, optional): Custom tags for lineage and governance.
     """
     s3 = get_s3_client()
     
@@ -63,7 +91,16 @@ def upload_file(local_path, bucket, s3_path=None, metadata=None):
 @trace_action(logger_name)
 def download_file(bucket, s3_path, local_path):
     """
-    Télécharge un fichier du Data Lake vers le disque local.
+    Downloads an object from the Data Lake to a local filesystem path.
+
+    Used primarily for scripts requiring local file manipulation before 
+    processing. Ensures that the target local directory exists before 
+    starting the transfer.
+
+    Args:
+        bucket (str): Source S3 bucket.
+        s3_path (str): The object key in the Data Lake.
+        local_path (str): Destination path on the local machine.
     """
     s3 = get_s3_client()
     
@@ -127,8 +164,18 @@ def handle_path(input_path):
 @trace_action(logger_name)
 def read_csv_from_datalake(bucket, s3_path, **kwargs):
     """
-    Lit un fichier CSV depuis le datalake et retourne un DataFrame Pandas.
-    file_key: le chemin du fichier dans le bucket (ex: 'raw/partitions.csv')
+    Direct Stream: S3 to Pandas DataFrame.
+
+    Optimized for analytical workloads. It reads the raw bytes of a CSV 
+    file from S3 and streams them into a Pandas DataFrame using a buffer.
+
+    Args:
+        bucket (str): Source S3 bucket.
+        s3_path (str): Path to the CSV file.
+        **kwargs: Additional arguments passed to 'pd.read_csv'.
+
+    Returns:
+        pd.DataFrame: The loaded dataset.
     """
     s3 = get_s3_client()
     try:
@@ -142,6 +189,16 @@ def read_csv_from_datalake(bucket, s3_path, **kwargs):
 
 @trace_action(logger_name)
 def get_json_from_s3(bucket_name, s3_key):
+    """
+    Direct Stream: S3 to Python Dictionary.
+
+    Retrieves a JSON object and parses it directly into memory. 
+    Ideal for processing Ticketmaster API responses stored in the 
+    Bronze zone without intermediate disk writes.
+
+    Returns:
+        dict: Parsed JSON content or None if an error occurs.
+    """
     s3 = get_s3_client()
     try:
         response = s3.get_object(Bucket=bucket_name,Key=s3_key)
@@ -155,11 +212,11 @@ def get_json_from_s3(bucket_name, s3_key):
 
 @trace_action(logger_name)
 def move_s3_object(bucket_name, source_key, source_prefix, target_prefix):
-    """ 
-    Déplace un objet S3 d'un préfixe à un autre de manière générique.
-    Ex: source_key = "E6/musicshop/orders/file.csv"
-        source_prefix = "E6/musicshop/orders/"
-        target_prefix = "E6/musicshop/archives/orders/"
+    """
+    Generic object relocation service (Copy-then-Delete pattern).
+    
+    Facilitates the transition of files between Landing and Archive zones 
+    to prevent duplicate processing in daily batches.
     """
     s3 = get_s3_client()
     target_key = source_key.replace(source_prefix, target_prefix, 1)

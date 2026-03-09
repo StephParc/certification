@@ -1,14 +1,36 @@
 # sauvegarde_bases_dag.py
+"""
+DAG for Database Maintenance and Backups (PostgreSQL & MongoDB).
+
+This workflow automates the daily backup of both relational (PostgreSQL) 
+and NoSQL (MongoDB) databases. It performs local dumps, uploads them 
+to the 'zone-maintenance' S3 bucket for long-term storage, and purges 
+old local files. It also includes an automated alerting system via Discord.
+"""
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import os
 import requests
-from config.config import DISCORD_WEBHOOK_URL, DBUSER_RW, DBNAME, MONGO_USER, MONGO_PASSWORD, MONGO_DBNAME
+from config.config import (DISCORD_WEBHOOK_URL, DBUSER_RW, DBNAME,
+             MONGO_USER, MONGO_PASSWORD, MONGO_DBNAME)
 from utils.S3_utils import upload_file
 
 def send_discord_alert(context):
+    """
+    Send a failure notification to a Discord channel via Webhook.
+
+    This function extracts task instance metadata (ID, log URL) from the 
+    Airflow context to build a rich embed message for monitoring.
+
+    Args:
+        context (dict): The Airflow task context dictionary.
+
+    Side Effects:
+        - Performs a POST request to the Discord Webhook URL.
+        - Prints an error message to the console if the request fails.
+    """
     webhook_url = DISCORD_WEBHOOK_URL
     if not webhook_url:
         return 
@@ -38,13 +60,27 @@ def send_discord_alert(context):
         print(f"Erreur lors de l'envoi Discord : {e}")
 
 def purge_old_backups(prefix, limit=2):
+    """
+    Clean up old local backup files to preserve disk space.
+
+    It lists all files in the backup directory starting with a specific 
+    prefix, sorts them alphabetically (chronologically), and deletes 
+    all but the most recent ones.
+
+    Args:
+        prefix (str): The filename prefix (e.g., 'postgres_' or 'mongo_').
+        limit (int, optional): The number of recent backups to keep. Defaults to 2.
+
+    Side Effects:
+        - Deletes files from the '/opt/airflow/backups/' directory.
+    """
     directory = "/opt/airflow/backups/"
     files = [f for f in os.listdir(directory) if f.startswith(prefix)]
 
-    # L'ordre alphabétique correspond ici à l'ordre chronologique
+    # Alphabetical order corresponds to chronological order here
     files.sort()
     
-    # 3. Identifier les fichiers à supprimer (tous sauf les 'limit' derniers)
+    # Identify files to delete (all except the last 'limit' files)
     files_to_delete = files[:-limit]
     
     for f in files_to_delete:
@@ -68,21 +104,20 @@ default_args = {
 with DAG(
     'maintenance_database_backups',
     default_args=default_args,
-    description='Sauvegarde automatique de PostgreSQL et MongoDB',
+    description='Automated PostgreSQL and MongoDB backups',
     schedule_interval='@daily',
     catchup=False
 ) as dag:
 
+    # --- PostgreSQL Pipeline ---
     pg_filename = "postgres_{}_{}.sql".format(DBNAME, "{{ ts_nodash }}")
     pg_local_path = f"/opt/airflow/backups/{pg_filename}"
 
-    # Sauvegarde PostgreSQL locale
     task_backup_postgres_local = BashOperator(
         task_id='backup_postgresql_local',
         bash_command=f"docker exec postgres_db pg_dump -U {DBUSER_RW} {DBNAME} --clean --create > {pg_local_path}"
     )
 
-    # Sauvegarde PostgreSQL s3
     task_backup_postgres_s3 = PythonOperator(
         task_id='backup_postgresql_s3',
         python_callable=upload_file,
@@ -104,17 +139,15 @@ with DAG(
         op_kwargs={'prefix': 'postgres_', 'limit': 2}
     )
 
+    # --- MongoDB Pipeline ---
     mongo_filename = "mongo_{}.gz".format("{{ ts_nodash }}")
     mongo_local_path = f"/opt/airflow/backups/{mongo_filename}"
 
-    # Sauvegarde MongoDB locale
     task_backup_mongodb_local = BashOperator(
         task_id='backup_mongodb_local',
-        # bash_command=f"docker exec mongodb_db mongodump --archive > {mongo_local_path}"
         bash_command=f"docker exec mongodb_db mongodump --username { MONGO_USER } --password { MONGO_PASSWORD } --authenticationDatabase admin --db {MONGO_DBNAME} --archive > {mongo_local_path}"
     )
 
-    # Sauvegarde MongoDB locale
     task_backup_mongo_s3 = PythonOperator(
         task_id='backup_mongo_s3',
         python_callable=upload_file,

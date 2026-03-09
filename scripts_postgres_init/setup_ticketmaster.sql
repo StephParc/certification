@@ -1,5 +1,14 @@
 -- setup_ticketmaster.sql
-
+/*
+ * Ticketmaster Raw Ingestion Schema.
+ *
+ * Architecture:
+ * - Table 'raw.ticketmaster_events': Stores full JSON payloads along 
+ * with the source file name for full traceability.
+ * - Indexing: Implements a B-Tree index on 'file_name' to ensure 
+ * idempotent loads (preventing duplicates).
+ * - Security: Grants read-only access to the 'analyst_group'.
+ */
 CREATE SCHEMA IF NOT EXISTS raw;
 
 CREATE TABLE IF NOT EXISTS raw.ticketmaster_events (

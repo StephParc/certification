@@ -1,4 +1,19 @@
-# schema.py . Contient les modèles Pydantic.
+# schema.py 
+"""
+Pydantic Data Schemas - Harmonie Manager 2026.
+
+This module defines the Data Transfer Objects (DTO) used for request 
+validation and response serialization. It acts as the "Contract" 
+between the API and its consumers.
+
+Key Features:
+- ORM Compatibility: Uses 'from_attributes=True' to allow seamless 
+  conversion from SQLAlchemy models to JSON responses.
+- Enumerations: Implements strict 'TypeEvent' and 'Role' enums to 
+  enforce data quality at the API entry point.
+- Security: Separates public profiles (UserPublic) from sensitive 
+  administrative data (UserAdmin/UserPass).
+"""
 from datetime import date
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List

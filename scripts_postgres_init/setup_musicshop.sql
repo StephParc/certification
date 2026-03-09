@@ -1,4 +1,20 @@
 -- setup_musicshop.sql
+/*
+ * Musicshop Analytics Infrastructure Setup.
+ *
+ * This script initializes the PostgreSQL environment for the Musicshop 
+ * data warehouse. It implements a Medallion Architecture and a 
+ * Role-Based Access Control (RBAC) security model.
+ *
+ * Components:
+ * 1. RBAC: Definition of 'analyst_group' and 'editor_role'.
+ * 2. User Provisioning: Stored procedure for secure editor creation.
+ * 3. Schema Layering: Creation of 'raw', 'silver', and 'gold' zones.
+ * 4. Staging Tables: Definitions for exchange rates, customers, and orders.
+ */
+
+-- Role-Based Access Control (RBAC) Initialization
+-- Ensures that roles exist before granting permissions.
 
 DO $$
 BEGIN
@@ -14,6 +30,14 @@ CREATE TABLE IF NOT EXISTS public.editor_metadata (
     db_user TEXT PRIMARY KEY,
     editor_name TEXT NOT NULL
 );
+
+/*
+ * FUNCTION: create_editor
+ * -----------------------
+ * Automates the creation of database users with restricted permissions.
+ * Uses SECURITY DEFINER to allow execution by non-superusers while 
+ * maintaining strict metadata tracking in 'public.editor_metadata'.
+ */
 
 CREATE OR REPLACE FUNCTION create_editor(username TEXT, password TEXT, e_name TEXT) 
 RETURNS VOID AS $$
@@ -75,57 +99,3 @@ CREATE TABLE IF NOT EXISTS raw.raw_orders(
     quantity INT,
     local_price DECIMAL(15,2)
 );
-
--- CREATE TABLE IF NOT EXISTS france.products (
---     product_id TEXT PRIMARY KEY,
---     title TEXT,
---     editor_referency TEXT,
---     editor_id TEXT,
---     editor_name TEXT,
---     local_unit_price DECIMAL(10,2)
--- );
--- CREATE TABLE IF NOT EXISTS france.orders (
---     order_id TEXT PRIMARY KEY,
---     customer_id TEXT,
---     product_id TEXT,
---     quantity INT,
---     amount DECIMAL(10,2),
---     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
--- CREATE TABLE IF NOT EXISTS uk.customer (
---     customer_id TEXT PRIMARY KEY,
---     name TEXT,
---     address TEXT,
---     email TEXT,
---     postal_code TEXT,
---     profile TEXT
--- );
--- CREATE TABLE IF NOT EXISTS uk.products (
---     product_id TEXT PRIMARY KEY,
---     title TEXT,
---     editor_referency TEXT,
---     editor_id TEXT,
---     editor_name TEXT,
---     local_unit_price DECIMAL(10,2)
--- );
--- CREATE TABLE IF NOT EXISTS uk.orders (
---     order_id TEXT PRIMARY KEY,
---     customer_id TEXT,
---     product_id TEXT,
---     quantity INT,
---     amount DECIMAL(10,2),
---     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
-
--- ALTER TABLE gold.view_fact_orders ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY editor_visibility_policy ON gold.view_fact_orders
---     FOR ALL
---     TO editor_role
---     USING (scope_country = (SELECT scope_country FROM public.editor_scopes WHERE db_user = current_user));
-
-
--- SELECT create_editor('editor_fr', 'pass_fr', 'FR');
--- SELECT create_editor('editor_uk', 'pass_uk', 'UK');
-

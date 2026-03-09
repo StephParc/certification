@@ -1,4 +1,20 @@
 # gen_customers.py
+"""
+Musicshop Synthetic Customer Generator.
+
+This module generates a realistic, internationally-diverse customer dataset 
+to simulate retail activity. It leverages the Faker library to produce 
+localized data (names, addresses, phone formats) based on a list of 
+supported countries.
+
+Operational Features:
+1. Integration with dbt Seeds: Reads 'countries.csv' from the dbt project 
+   to ensure data consistency across the analytical pipeline.
+2. Multi-Localization: Uses specific Faker locales (e.g., fr_FR, de_DE, en_GB) 
+   to generate authentic regional data.
+3. Automated S3 Delivery: Uploads the generated dataset directly to the 
+   S3 Data Lake (Bronze zone) with rich audit metadata.
+"""
 import pandas as pd
 from faker import Faker
 import random
@@ -13,6 +29,17 @@ logger = setup_logger(logger_name)
 
 @trace_action(logger_name)
 def generate_customers(n=200):
+    """
+    Produces a DataFrame of synthetic customers.
+
+    The function dynamically maps countries to their corresponding Faker 
+    locale. Each record includes a randomized customer profile 
+    (occasional, amateur, professional) and a historical creation date 
+    spanning the last two years.
+
+    Returns:
+        pd.DataFrame: A collection of N customers with localized attributes.
+    """
     seed_path = "harmonie_dbt/seeds/countries.csv"
     if not os.path.exists(seed_path):
         logger.error(f"Erreur: le fichier {seed_path} est introuvable. Lancer 'dbt seed'")
@@ -79,9 +106,3 @@ def save_to_s3():
 
 if __name__ == "__main__":
     save_to_s3()
-
-# Génération
-# df_cust = generate_customers(250)
-# df_cust.to_csv('customers.csv', index=False)
-# print(f"✅ 250 clients générés dans customers.csv (Pays cibles : {len(allowed_countries)})")
-# print(f"Répartition par pays:\n{df_cust['country'].value_counts()}")

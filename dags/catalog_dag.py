@@ -1,4 +1,11 @@
 # catalog_dag.py
+"""
+DAG for Catalog Harvesting and Governance.
+
+This DAG automates the execution of the metadata harvester script. 
+It is designed to collect, process, and update the data catalog 
+to ensure proper data governance and traceability.
+"""
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -25,7 +32,6 @@ with DAG(
 ) as dag:
 
     # Définition de la tâche
-
     run_harvester = BashOperator(
         task_id='executer_catalog_harvester',
         bash_command='cd /opt/airflow && export PYTHONPATH=$PYTHONPATH:. && python3 -m E7.harvester',

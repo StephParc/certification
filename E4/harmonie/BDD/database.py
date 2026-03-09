@@ -1,10 +1,16 @@
 # database.py
+"""
+Database Connection & Session Management.
+
+Provides the infrastructure for both SQL (SQLAlchemy) and NoSQL 
+(PyMongo) database interactions.
+"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 from pymongo import MongoClient
 
-from config.config import DBHOST, DBNAME,DBPORT, DBUSER_RW, PASSWORD_RW, MONGO_DATABASE_URL, MONGO_DBNAME
+from config.config import SQL_DATABASE_URL, MONGO_DATABASE_URL, MONGO_DBNAME
 
 def get_engine():
     ## Pour une BDD SQLite: 
@@ -12,8 +18,6 @@ def get_engine():
     # engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
 
     # Pour une BDD PostgreSQL:
-    SQL_DATABASE_URL = f"postgresql://{DBUSER_RW}:{PASSWORD_RW}@{DBHOST}:{DBPORT}/{DBNAME}"
-
     engine = create_engine(SQL_DATABASE_URL, echo=True)
     return engine
 
@@ -30,6 +34,9 @@ def get_session_sql():
         session.close()
 
 def get_mongo_client():
+    """
+    Returns a client to the configured MongoDB database.
+    """
     return MongoClient(MONGO_DATABASE_URL)
 
 def get_mongo_db():

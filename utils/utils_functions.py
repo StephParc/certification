@@ -1,4 +1,11 @@
 # utils_functions.py
+"""
+Shared Utility Functions - Harmonie Manager 2026.
+
+This module provides common helper functions used across the platform for:
+1. Data Normalization: Standardizing identity strings for robust lookups.
+2. Rejection Handling: Logging malformed or ambiguous data for manual audit.
+"""
 import csv
 import os
 from datetime import datetime
@@ -8,7 +15,13 @@ logger_name = "Fonction utiliairey"
 logger = setup_logger(logger_name)
 
 def normalize_name(nom: str, prenom: str = "") -> str:
-    """Combine, nettoie et met en minuscule pour une recherche fiable."""
+    """
+    Standardizes names for database searching and deduplication.
+    
+    Combines first and last names, strips whitespace, and converts to 
+    lowercase to create a 'search identity' that is resilient to 
+    formatting variations.
+    """
     p = prenom.strip() if prenom else ""
     n = nom.strip() if nom else ""
 
@@ -18,8 +31,16 @@ def normalize_name(nom: str, prenom: str = "") -> str:
 @trace_action(logger_name)
 def write_rejection_log(file_path: str, headers: list, data_row: list):
     """
-    Fonction générique pour écrire une ligne dans un fichier de rejet CSV.
-    Gère la création de dossiers et l'écriture de l'en-tête si nécessaire.
+    Generic CSV rejection logger.
+    
+    Ensures that any data rejected during synchronization or ingestion 
+    is recorded with its context. It automatically manages directory 
+    creation and header initialization to prevent data loss.
+    
+    Args:
+        file_path (str): Local path for the rejection file.
+        headers (list): CSV column headers (only written if file is new).
+        data_row (list): The specific data point that failed processing.
     """
     try:
         # 1. Gestion du répertoire (évite l'erreur du dossier vide)

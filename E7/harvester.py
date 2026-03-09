@@ -1,4 +1,20 @@
 # harvester.py
+"""
+Governance Metadata Harvester - Harmonie Manager 2026.
+
+This module acts as the central observability engine for the entire platform. 
+It performs deep metadata extraction across all architectural layers to 
+generate a unified 'Data Catalog'.
+
+Core Capabilities:
+1. SQL Metadata: Introspects PostgreSQL schemas, tables, columns, and 
+   constraints (PK/FK).
+2. Data Lake Inventory: Scans S3 (Garage) buckets and extracts custom 
+   governance tags (source, step, dag).
+3. Lineage Extraction: Parses dbt manifests to map data transformations 
+   and Airflow DAGs for task dependencies.
+4. System Observability: Captures server health metrics (CPU, RAM, Disk).
+"""
 import os
 import sys
 from pathlib import Path
@@ -14,24 +30,25 @@ import psutil
 import platform
 import re
 
-
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.logger_config import trace_action, setup_logger
 from utils.S3_utils import upload_file
-
-# env_path = os.path.join(os.path.dirname(__file__),'../.env')
-# load_dotenv(dotenv_path=env_path)
 
 logger_name = "E7-Catalogue"
 logger = setup_logger(logger_name)
 
-# Chargement du .env situé dans le dossier parent
-# BASE_DIR = Path(__file__).resolve().parent
-# load_dotenv(BASE_DIR.parent / ".env")
 load_dotenv()
 
 @trace_action(logger_name)
 def catalogue_BDD():
+    """
+    Performs deep introspection of the PostgreSQL environment.
+    
+    It iterates through all non-system databases to extract:
+    - Table types (Base table vs View).
+    - Column details (Types, Nullability, Descriptions).
+    - Relational constraints (Primary and Foreign Keys).
+    - Storage metrics (Row counts and byte sizes).
+    """
     all_results = []
 
     try:
@@ -144,6 +161,13 @@ def catalogue_BDD():
 
 @trace_action(logger_name)
 def catalogue_DL():
+    """
+    Inventory service for the S3 Data Lake (Bronze/Silver/Gold/Config).
+    
+    Beyond basic file listing, it retrieves custom user-defined metadata 
+    (tags) to track data provenance and the specific Airflow DAGs 
+    responsible for each object.
+    """
     s3 = boto3.client(
         's3',
         endpoint_url=os.getenv("DL_ENDPOINT"),
@@ -257,7 +281,11 @@ def get_system_stats():
 
 @trace_action(logger_name)
 def get_dbt_lineage():
-    """Extrait le lignage dynamique depuis le manifest dbt"""
+    """
+    Parses the dbt 'manifest.json' to reconstruct the data lineage graph.
+    Identifies nodes (models/snapshots) and their edges (dependencies) 
+    to visualize the transformation flow.
+    """
     # Chemin vers le manifest de ton projet 'musicshop'
     manifest_path = "harmonie_dbt/target/manifest.json"
     
@@ -299,7 +327,14 @@ def get_dbt_lineage():
 
 @trace_action(logger_name)
 def get_airflow_dags_from_code():
-    dags_folder = "dags"  # Ajuste le chemin selon ton architecture
+    """
+    Static Analysis Engine for Airflow Orchestration.
+    
+    Reads DAG Python files without executing them to extract:
+    - DAG and Task IDs.
+    - Execution logic and task dependencies (via '>>' operator parsing).
+    """
+    dags_folder = "dags"
     dags_logic = []
 
     if not os.path.exists(dags_folder):
@@ -311,7 +346,7 @@ def get_airflow_dags_from_code():
             with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
 
-                # 1. Extraction ID du DAG (on cherche le premier)
+                # 1. Extraction ID du DAG
                 dag_id_match = re.search(r'dag_id=["\']([^"\']+)["\']', content)
                 # Si pas trouvé dans le code, on prend le nom du DAG dans le 'with DAG(...) as name'
                 if not dag_id_match:
@@ -319,7 +354,7 @@ def get_airflow_dags_from_code():
                 
                 dag_id = dag_id_match.group(1) if dag_id_match else file
 
-                # 2. Mapping Variable -> Task_ID (Indispensable pour le >>)
+                # 2. Mapping Variable -> Task_ID 
                 # On utilise re.DOTALL pour gérer les définitions sur plusieurs lignes
                 task_map = {}
                 # Cherche : ma_var = Operator( ... task_id='mon_id' ... )
@@ -351,21 +386,26 @@ def get_airflow_dags_from_code():
 
 @trace_action(logger_name)
 def catalogue_export():
-    """Fonction maîtresse qui assemble et sauvegarde"""
+    """
+    The Orchestrator of Governance.
+    
+    Aggregates all metadata (SQL, NoSQL, S3, dbt, Airflow, System) into 
+    a single 'data_catalog.json' and secures it in the 'zone-config' 
+    S3 bucket for auditing and Streamlit visualization.
+    """
     dbt_data = get_dbt_lineage()
     
     data = {
         "export_date": datetime.now().isoformat(),
         "system_health": get_system_stats(),
         "dbt_lineage": get_dbt_lineage(),
-        "dbt_nodes": dbt_data['nodes'],  # <-- NOUVEAU
+        "dbt_nodes": dbt_data['nodes'],  
         "dbt_edges": dbt_data['edges'],
         "airflow_static_analysis": get_airflow_dags_from_code(),
-        # "ingestion_lineage": get_lineage_metadata(),
         "relational_db": catalogue_BDD(),
         "datalake": catalogue_DL(),
         "nosql_db": catalogue_Mongo(),
-        "governance_reference": "access_control.json" # Lien symbolique
+        "governance_reference": "access_control.json"
     }
     
     # Génération du JSON final
@@ -389,24 +429,4 @@ def catalogue_export():
     return file_path
 
 if __name__ == "__main__":
-    # --- TEST 1 : PostgreSQL ---
-    # print("\n--- TEST BDD ---")
-    # res_bdd = catalogue_BDD()
-    # print(f"Nombre de colonnes cataloguées : {len(res_bdd)}")
-    # if res_bdd: print(f"Exemple : {res_bdd[0]['nom_table']} -> {res_bdd[0]['nom_colonne']}")
-
-    # --- TEST 2 : Data Lake (Garage) ---
-    # print("\n--- TEST DL ---")
-    # res_dl = catalogue_DL()
-    # print(f"Nombre d'objets trouvés : {len(res_dl)}")
-    # for item in res_dl:
-    #     size = item.get('size_ko', f"{item['size_ko']} bytes")
-    #     print(f"- {item['bucket']}: {item['file_name']} ({size})")
-
-    # --- TEST 3 : MongoDB ---
-    # print("\n--- TEST MONGO ---")
-    # res_mongo = catalogue_Mongo()
-    # print(res_mongo)
-
-    # --- EXPORT COMPLET ---
     catalogue_export()

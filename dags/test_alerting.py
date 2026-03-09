@@ -1,3 +1,11 @@
+# test_alerting.py
+"""
+DAG to test the Discord alerting system.
+
+This DAG intentionally triggers a failure to verify that the 
+'on_failure_callback' correctly sends a rich notification to the 
+dedicated Discord channel via Webhook.
+"""
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
@@ -5,6 +13,12 @@ import requests
 from config.config import DISCORD_WEBHOOK_URL
 
 def send_discord_alert(context):
+    """
+    Send a failure notification to Discord via Webhook.
+
+    Args:
+        context (dict): Airflow task context containing task_instance and log_url.
+    """
     webhook_url = DISCORD_WEBHOOK_URL
     if not webhook_url:
         return 
@@ -36,6 +50,7 @@ def send_discord_alert(context):
 
 
 def task_qui_echoue():
+    """Dummy task designed to raise a ValueError for testing purposes."""
     raise ValueError("Oups ! Quelque chose a cassé dans le pipeline Harmonie.")
 
 default_args = {

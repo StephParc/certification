@@ -1,4 +1,18 @@
 # ingest_rates_to_postgres.py
+"""
+Musicshop Exchange Rate Ingestion Service (S3 to PostgreSQL).
+
+This module automates the daily retrieval of currency exchange rates from 
+the S3 Data Lake and their ingestion into the analytical staging area.
+
+Key Technical Features:
+1. Automated Key Resolution: Dynamically constructs the S3 path based on 
+   the current execution date.
+2. Memory-to-DB Streaming: Uses 'io.StringIO' to pipe CSV data from S3 
+   directly into the database, bypassing local file storage.
+3. Native Bulk Ingestion: Leverages 'cur.copy_expert' for high-performance 
+   loading into the 'raw.exchange_rates' table.
+"""
 import boto3
 import csv
 import psycopg2
@@ -14,6 +28,13 @@ logger = setup_logger(logger_name)
 
 @trace_action(logger_name)
 def ingest_rates():
+    """
+    Synchronizes today's exchange rates from S3 to PostgreSQL.
+
+    The function targets the 'exchange_rates' staging table and performs 
+    a bulk copy operation. It is designed to be idempotent when called 
+    within a daily orchestration window.
+    """
     today = datetime.now().strftime('%Y-%m-%d')
     s3 = get_s3_client()
     bucket_name = "zone-brutes"

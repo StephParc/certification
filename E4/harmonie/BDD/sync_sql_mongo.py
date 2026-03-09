@@ -1,15 +1,20 @@
 # sync_sql_mongo.py
-# import os
+"""
+Database Synchronization & UUID Reconciliation Service.
+
+This CLI utility ensures referential integrity across the hybrid 
+PostgreSQL/MongoDB architecture. It performs three critical tasks:
+1. Instrument Alignment: Bridges relational and document-based instrument data.
+2. User Provisioning: Automatically creates SQL user accounts for musicians 
+   discovered in the NoSQL database.
+3. Partition Linking: Establishes the HBM_UUID link for the music catalog.
+"""
 import sys
 import argparse
-# import csv
 import secrets
 import string
 from datetime import datetime
 from sqlalchemy import func
-# from sqlalchemy.orm import Session
-# from pathlib import Path
-# from typing import Union
 
 from E4.harmonie.BDD.database import get_mongo_db, sql_connect
 from E4.harmonie.BDD.models import User, Instrument, PartitionHBM, Partition

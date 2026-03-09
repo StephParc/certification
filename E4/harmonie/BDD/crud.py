@@ -1,8 +1,20 @@
 # crud.py
+"""
+Data Access Layer (DAL) for PostgreSQL.
+
+This module implements the core business logic for the relational database. 
+It utilizes SQLAlchemy ORM to perform robust data operations, including:
+1. Automated Data Enrichment: Merging local inputs with MusicBrainz API data.
+2. Relationship Management: Handling complex Many-to-Many associations.
+3. Data Normalization: Ensuring consistency in titles and identity strings.
+"""
 from sqlalchemy.orm import noload
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
 
-from E4.harmonie.BDD.models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User, Instrument
+from E4.harmonie.BDD.models import (
+    Auteur, AssAuteurPartition, Partition, 
+    PartitionHBM, AssEvenementHbm, Evenement, User, Instrument
+)
 from E4.harmonie.BDD.schemas import UserPublic, UserAdmin, UserPass
 from E4.harmonie.BDD.auth import get_password_hash
 from E4.harmonie.BDD.database import get_session_sql, sql_connect

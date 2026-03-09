@@ -1,4 +1,19 @@
-# models.py . Contient les modèles SQLAlchemy des tables
+# models.py
+"""
+SQLAlchemy Data Models - Harmonie Manager 2026.
+
+This module defines the relational schema for the PostgreSQL database. 
+It uses the SQLAlchemy 2.0 Declarative Mapping style to ensure strong 
+typing and seamless ORM integration.
+
+Key Architectural Choices:
+- UUIDs: Primary identifiers for users (user_uuid) use PostgreSQL's 
+  'gen_random_uuid()' for enhanced security and external system integration.
+- Many-to-Many Relationships: Implemented via association tables 
+  (e.g., TB_ass_auteur_partition) to link authors to their works with specific roles.
+- Modern Mapping: Uses 'Mapped' and 'mapped_column' for better IDE support 
+  and type safety.
+"""
 from sqlalchemy import Column, Integer, String, Float, Date, Boolean, text, ForeignKey, Table, MetaData
 from typing import List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker
@@ -9,11 +24,16 @@ from sqlalchemy.dialects.postgresql import UUID
 from E4.harmonie.BDD.database import get_session_sql, get_engine
 
 class Base(DeclarativeBase):
+    """Base class for all relational models."""
     pass
 
 metadata = MetaData()
 
 class Auteur(Base):
+    """
+    Represents a musical creator (Composer, Arranger, or Artist).
+    Links to partitions through the association table.
+    """
     __tablename__ = "TB_auteur"
 
     auteur_id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -157,6 +177,10 @@ class Instrument(Base):
         return f"Instrument(id={self.instrument_id}, nom={self.nom})"
 
 class User(Base):
+    """
+    System User model for authentication and profiles.
+    Uses UUID for secure external references and GDPR-compliant profile linking.
+    """
     __tablename__ = "TB_utilisateur"
 
     user_id:            Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -172,7 +196,3 @@ class User(Base):
     def __repr__(self):
         return f"User(user_id={self.user_id!r},pseudo={self.pseudo}, fullname={self.fullname!r}, hashed_password={self.hashed_password!r}, email={self.email!r}, permissions={self.permissions!r})"
 
-# if __name__ == "__main__":
-#     engine = get_engine()
-#     Base.metadata.create_all(bind=engine)
-#     print("BDD créée")

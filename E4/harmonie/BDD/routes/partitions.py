@@ -1,4 +1,19 @@
 # partitions.py
+"""
+API Router for Sheet Music Catalog (SQL).
+
+This module manages the central catalog of sheet music (partitions). 
+It provides extensive search capabilities, allowing users to filter 
+the repertoire by:
+- Technical IDs (Internal, ISMN, Publisher reference).
+- Authorship (Composers, Arrangers, Artists).
+- Musical attributes (Grade/Level, Genre, Style).
+- Associated events (Concerts, Tours).
+
+Security:
+    - Default: 'read_only' scope required for all catalog queries.
+    - Administrative: 'full_admin' scope required for adding or deleting works.
+"""
 from fastapi import APIRouter, Depends, Security, Query
 from sqlalchemy.orm import  Session
 

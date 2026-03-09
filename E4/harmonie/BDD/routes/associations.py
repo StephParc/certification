@@ -1,4 +1,16 @@
 # associations.py
+"""
+API Router for Entity Associations.
+
+This module provides endpoints for managing the relationships between 
+Authors, Partitions (Sheet Music), and Events. It facilitates linking 
+creative works to their creators (with specific roles) and associating 
+them with musical events.
+
+Security:
+    - Default dependency: 'read_only' scope required for all endpoints.
+    - Mutation endpoints (POST, DELETE): 'full_admin' scope required.
+"""
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
 
@@ -14,6 +26,8 @@ router = APIRouter(
     dependencies=[Security(get_current_user,scopes=["read_only"])],
     responses={404: {"description":"Not found"}}
 )
+
+# --- Author/Partition Associations ---
 
 @router.get("/auteur_partition/all", response_model=list[AssoAuteurPartition])
 def get_ass_auteur_partition_all(session:Session=Depends(get_session_sql)):
@@ -36,6 +50,8 @@ def del_ass_auteur_partition(auteur_id:int, partition_id: int, role: Role, sessi
         return {"status": "success", "message": result}
     
     return {"status": "error", "message": result}
+
+# --- Partition/Event Associations ---
 
 @router.get("/partition_evenement", response_model=list[PartitionEvent])
 def get_ass_partition_evenement_all(session:Session=Depends(get_session_sql)):

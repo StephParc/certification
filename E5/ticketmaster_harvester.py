@@ -1,4 +1,14 @@
 # ticketmaster_harvester.py
+"""
+Ticketmaster API Events Harvester.
+
+This module automates the daily extraction of musical events from the 
+Ticketmaster Discovery API. It handles:
+1. Time-windowed filtering (current day).
+2. Automated pagination and results aggregation.
+3. API Rate Limiting to prevent IP blacklisting.
+4. Automated landing in the S3 Data Lake (Bronze Zone).
+"""
 import os
 import json
 import requests
@@ -14,9 +24,20 @@ logger = setup_logger(logger_name)
 
 @trace_action(logger_name)
 def run_daily_ingestion(country_code="US"):
+    """
+    Executes the daily ingestion process for a specific country.
+
+    Queries the Ticketmaster Discovery v2 API for music segments scheduled 
+    for the current date. Results are aggregated, paginated, and saved as 
+    a JSON document before being uploaded to the Garage S3 Data Lake.
+
+    Args:
+        country_code (str): Two-letter ISO country code (default: "US").
+    """
     url = "https://app.ticketmaster.com/discovery/v2/events.json"
 
     extraction_date = datetime.now()
+    # Define the 24h window for the current day in UTC
     start_date = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0)
     end_date = start_date.replace(hour=23, minute=59, second=59)
     start_str = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -42,36 +63,34 @@ def run_daily_ingestion(country_code="US"):
             response.raise_for_status()
             data = response.json()
 
-        # Mise à jour du nombre total de pages (fourni par l'API)
+            # Update total pages from API response (limited to 5 for the demo)
             page_info = data.get("page", {})
             total_pages = min(page_info.get("totalPages", 1),5)
             
-            # Récupération des événements de la page actuelle
             events = data.get("_embedded", {}).get("events", [])
             all_events.extend(events)
 
             logger.info(f"Page {page + 1}/{total_pages} récupérée ({len(events)} événements)")
 
-            # Sécurité anti-spam (Rate Limiting)
-            # Ticketmaster limite le nombre d'appels par seconde
+            # Defensive sleep to respect Ticketmaster's Rate Limiting (0.2s)
             time.sleep(0.2) 
             
             page += 1
 
-        # Limite technique de l'API gratuite (souvent limitée à 1000 items max)
+            # Hard cap for the Discovery API's free tier
             if len(all_events) >= 1000:
-                logger.warning("Limite de 1000 événements atteinte (quota API Discovery).")
+                logger.warning("Reached 1000 events limit (Discovery API quota).")
                 break
 
         except Exception as e:
-            logger.error(f"Erreur à la page {page}: {e}")
+            logger.error(f"Error at page {page}: {e}")
             break
 
     if not all_events:
-        logger.warning(f"Aucun événement trouvé pour {country_code}")
+        logger.warning(f"No events found for {country_code}")
         return
     
-    # stockage dans s3
+    # Storage in S3 organized by extraction date
     date_folder = extraction_date.strftime("%Y-%m-%d")
     filename = f"ticketmaster_{country_code}_{date_folder}.json"
     local_path = f"/tmp/{filename}"
@@ -86,6 +105,8 @@ def run_daily_ingestion(country_code="US"):
                     }, f, ensure_ascii=False, indent=4)
         
     s3_dest_path = f"E5/ticketmaster/{date_folder}/{filename}"
+    
+    # Upload to S3 with governance metadata
     if upload_file(
         local_path=local_path, 
         bucket="zone-brutes", 
@@ -97,7 +118,7 @@ def run_daily_ingestion(country_code="US"):
             "dag": "daily_ticketmaster_update_dag.py",
             "destination": "ticketmaster.raw.ticketmaster_events"
         }):
-        logger.info(f"Ingestion terminée{country_code} : {len(all_events)} événements dans s3://zone-brutes/{s3_dest_path}")
+        logger.info(f"Ingestion successful for {country_code} : {len(all_events)} events uploaded to S3.")
         os.remove(local_path)
 
 if __name__ == "__main__":

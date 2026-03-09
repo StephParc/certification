@@ -1,4 +1,16 @@
 # partitions_details.py
+"""
+API Router for Hybrid Partition Details.
+
+This module provides a unified view of sheet music (partitions) by 
+merging data from multiple sources:
+1. SQL: Core catalog and inventory information.
+2. SQL: Associated authors and their roles.
+3. MongoDB: Technical nomenclature and file references.
+
+Security:
+    - Default: 'read_only' scope required for all retrieval operations.
+"""
 from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlalchemy.orm import Session
 from E4.harmonie.BDD.crud_mongo import get_partition_by_uuid

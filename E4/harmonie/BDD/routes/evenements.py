@@ -1,4 +1,15 @@
 # evenements.py
+"""
+API Router for Event Management.
+
+This module provides a comprehensive set of endpoints for managing 
+musical events. It supports full CRUD operations and offers flexible 
+filtering capabilities by date, year, event type, or associated partitions.
+
+Security:
+    - Default: 'read_only' scope required for all search operations.
+    - Administrative: 'full_admin' scope required for creation, updates, and deletion.
+"""
 from fastapi import APIRouter, Depends, Query, Security
 from sqlalchemy.orm import  Session
 

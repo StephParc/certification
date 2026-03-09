@@ -1,10 +1,25 @@
+# ingest_ticketmaster.py
+"""
+Batch Event Ingestion Service for Ticketmaster.
+
+This module extends the basic harvesting capabilities by providing 
+orchestration for large-scale data extractions. It allows the system 
+to query multiple time windows or geographical zones in a single 
+execution, ensuring the Data Lake is populated with comprehensive 
+future event data.
+
+Key Features:
+1. Targeted Windowing: Precision filtering using start/end date-times.
+2. Automated Batching: Orchestrates multiple daily extractions (e.g., 15-day outlook).
+3. Persistent Metadata: Attaches detailed provenance data to every S3 object.
+"""
 import os
 import json
 import requests
 import time
 from datetime import datetime, timedelta, timezone
 
-from config.config import DL_ENDPOINT, KEY_ID_DL_RW, SECRET_KEY_DL_RW, DL_REGION, TICKETMASTER_CONSUMER_KEY, TICKETMASTER_CONSUMER_SECRET
+from config.config import TICKETMASTER_CONSUMER_KEY
 from utils.S3_utils import upload_file
 from utils.logger_config import setup_logger, trace_action
 
@@ -13,7 +28,20 @@ logger = setup_logger(logger_name)
 
 @trace_action(logger_name)
 def fetch_and_upload(country_code, start_date, end_date, label, extraction_date):
-    # Paramètres de l'appel
+    """
+    Core extraction function for targeted API windows.
+
+    Queries the Ticketmaster API for a specific time range and country, 
+    collects all paginated results, and delivers the final JSON payload 
+    to the 'zone-brutes' bucket on S3.
+
+    Args:
+        country_code (str): ISO code for the target country.
+        start_date (datetime): Beginning of the search window (UTC).
+        end_date (datetime): End of the search window (UTC).
+        label (str): Human-readable label for logging purposes.
+        extraction_date (datetime): The reference date for S3 folder partitioning.
+    """
     api_key = TICKETMASTER_CONSUMER_KEY
     url = "https://app.ticketmaster.com/discovery/v2/events.json"
 
@@ -103,7 +131,13 @@ def fetch_and_upload(country_code, start_date, end_date, label, extraction_date)
 
 @trace_action(logger_name)
 def ingest_all_ticketmaster():
-    # On fixe la date d'extraction pour tout le batch
+    """
+    Orchestrator for multi-day batch ingestion.
+
+    Specifically configured here to fetch 15 consecutive days of musical 
+    events for the US market, simulating a 'catch-up' or 'bulk load' 
+    scenario.
+    """
     extraction_date = datetime.now()
 
     # --- 1. ÉTATS-UNIS (US) : Un fichier par jour pour les 15 prochains jours ---

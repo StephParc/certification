@@ -1,4 +1,15 @@
 # auteurs.py
+"""
+API Router for Author Management.
+
+This module handles CRUD operations for Authors (Composers, Arrangers, 
+and Artists). It provides endpoints to list all creators, retrieve 
+details by ID, and register new authors in the database.
+
+Security:
+    - Default: 'read_only' scope required for data retrieval.
+    - Administrative: 'full_admin' scope required for creation and deletion.
+"""
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import  Session
 

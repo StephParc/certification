@@ -1,4 +1,13 @@
 # api_externe.py
+"""
+MusicBrainz API Integration Module.
+
+This module provides high-level functions to query the MusicBrainz database 
+for artist metadata. It implements:
+    - Fuzzy matching logic to handle name variations.
+    - Robust retry mechanisms for API rate limits (429/503).
+    - Automatic logging of rejected data for quality control.
+"""
 import requests
 import csv
 import sys

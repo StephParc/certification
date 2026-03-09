@@ -1,13 +1,17 @@
 # daily_musicshop_update_dag.py
+"""
+DAG for MusicShop Data Transformation (Silver to Gold).
+
+This pipeline orchestrates dbt (data build tool) commands to transform 
+data from the Silver layer to the Gold layer within the MusicShop 
+data warehouse. It handles seeding static data, creating snapshots 
+for customer history, and building the final analytical models 
+(E6 competency).
+"""
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 
-from E5.ticketmaster_harvester import run_daily_ingestion
-from E5.load_to_db import load_ticketmaster_file_to_bd
-
-# Configuration par défaut
 default_args = {
     'owner': 'musicshop',
     'depends_on_past': False,
@@ -20,40 +24,32 @@ default_args = {
 with DAG(
     'musicshop_gold_transformation',
     default_args=default_args,
-    description='Pipeline de transformation dbt (Silver -> Gold) pour Musicshop',
+    description='dbt transformation pipeline (Silver -> Gold) for Musicshop',
     schedule_interval='0 8 * * *',
     start_date=datetime(2026, 2, 12),
     catchup=False,
     tags=['E6', 'BI', 'dbt', 'musicshop'],
 ) as dag:
-
-    # dbt_command = "docker exec -w /opt/airflow/harmonie_dbt fastapi_hbm dbt"
-    # dbt_flags = "--target musicshop --select musicshop --profile-dir ."
    
+    # Task to load static data (CSV seeds) into the database
     seed_task = BashOperator(
         task_id='dbt_seed',
         bash_command='cd /opt/airflow/harmonie_dbt && '
                  'dbt seed --target musicshop --profiles-dir .'
     )
 
+    # Task to capture historical changes (SCD Type 2) in the customer table
     snapshot_task = BashOperator(
         task_id='dbt_snapshot_customers',
         bash_command='cd /opt/airflow/harmonie_dbt && '
                  'dbt snapshot --target musicshop --profiles-dir .' 
     )
 
+    # Task to run and test the transformation models for the Gold analytical layer
     build_task = BashOperator(
         task_id='dbt_build_gold_layer',
         bash_command='cd /opt/airflow/harmonie_dbt && '
                  'dbt build --target musicshop --select musicshop --profiles-dir .'
     )
-
-    # task_dbt_musicshop = BashOperator(
-    # task_id='dbt_musicshop_transform',
-    # bash_command='cd /opt/airflow/harmonie_dbt && '
-    #              'dbt seed --target musicshop --select musicshop --profiles-dir . && '
-    #              'dbt snapshot --target musicshop --profiles-dir . && '
-    #              'dbt build --target musicshop --select musicshop --profiles-dir .'
-    # )
 
     seed_task >> snapshot_task >> build_task

@@ -1,7 +1,16 @@
 # crud_mongo.py
+"""
+NoSQL Data Access Object (DAO) for MongoDB.
+
+This module provides a generic and specialized interface for interacting 
+with the MongoDB database. It handles standard CRUD operations and 
+implements specific business logic for:
+1. Privacy-aware musician profile filtering (GDPR compliance).
+2. Hybrid data linking between SQL UUIDs and NoSQL ObjectIds.
+3. Automated action tracing and logging for all write operations.
+"""
 from bson import ObjectId
 from E4.harmonie.BDD.database import get_mongo_db
-from E4.harmonie.BDD.crud import create_user_admin
 from utils.logger_config import setup_logger, trace_action
 
 logger_name = "E4 - Manipulation collections mongoHbm"
@@ -11,30 +20,49 @@ logger = setup_logger(logger_name)
 @trace_action(logger_name)
 def create_one_document(collection_name: str, data: dict):
     """
-    Fonction générique pour insérer n'importe quel document 
-    dans une collection.
+    Generic function to insert a document into a specific collection.
+
+    Args:
+        collection_name (str): Name of the target MongoDB collection.
+        data (dict): Dictionary representing the document to insert.
+
+    Returns:
+        str: The string representation of the inserted document's ObjectId.
     """
     db = get_mongo_db()
     collection = db[collection_name]
     
     result = collection.insert_one(data)
-    logger.info(f"Document ajouté à la collection {collection_name}")
+    logger.info(f"Document added to collection {collection_name}")
     
-    # On retourne l'ID pour confirmer que ça a marché
     return str(result.inserted_id)
 
 # ******** READ / GET ********
 def get_one_document(collection_name: str, query: dict):
     """
-    Récupère un seul document correspondant au filtre 'query'.
-    Exemple query: {"email": "test@test.com"} ou {"_id": ObjectId(id_str)}
+    Retrieves a single document matching the provided query filter.
+
+    Args:
+        collection_name (str): Name of the collection to search in.
+        query (dict): MongoDB query filter (e.g., {"user_uuid": "..."}).
+
+    Returns:
+        dict: The retrieved document or None if no match is found.
     """
     db = get_mongo_db()
     return db[collection_name].find_one(query)
 
 def get_many_documents(collection_name: str, query: dict = None, limit: int = 0):
     """
-    Récupère plusieurs documents. Si query est None, récupère tout.
+    Retrieves multiple documents from a collection.
+
+    Args:
+        collection_name (str): Name of the collection.
+        query (dict, optional): Filter criteria. Defaults to None (returns all).
+        limit (int, optional): Maximum number of documents to return.
+
+    Returns:
+        list: A list of documents matching the criteria.
     """
     db = get_mongo_db()
     query = query or {}
@@ -43,9 +71,19 @@ def get_many_documents(collection_name: str, query: dict = None, limit: int = 0)
 
 def get_visible_musicians(requester_uuid: str, is_admin: bool):
     """
-    Logique de filtrage :
-    - Admin : voit tout le monde.
-    - Musicien : voit les profils avec 'accord_donnees_perso': True + son propre profil.
+    Implements GDPR-compliant filtering logic for musician profiles.
+
+    Visibility rules:
+    - Admins: Can view all musician profiles in the collection.
+    - Musicians: Can only view profiles where 'accord_donnees_perso' is True, 
+      plus their own profile regardless of consent status.
+
+    Args:
+        requester_uuid (str): The UUID of the user making the request.
+        is_admin (bool): True if the requester has administrative privileges.
+
+    Returns:
+        list: Filtered list of visible musician documents.
     """
     db = get_mongo_db()
     
@@ -65,7 +103,15 @@ def get_visible_musicians(requester_uuid: str, is_admin: bool):
     return list(cursor)
 
 def get_partition_by_uuid(hbm_uuid: str):
-    """Récupère la nomenclature Mongo via l'identifiant SQL."""
+    """
+    Retrieves technical partition nomenclature using the SQL-linked UUID.
+
+    Args:
+        hbm_uuid (str): The unique identifier used to link SQL and NoSQL records.
+
+    Returns:
+        dict: The MongoDB document containing technical partition details.
+    """
     db = get_mongo_db()
     return db["COL_partitions"].find_one({"hbm_uuid": hbm_uuid})
 
@@ -73,8 +119,15 @@ def get_partition_by_uuid(hbm_uuid: str):
 @trace_action(logger_name)
 def update_one_document(collection_name: str, filter_query: dict, update_data: dict):
     """
-    Met à jour un document. 
-    Note : On utilise l'opérateur "$set" pour ne modifier que les champs envoyés.
+    Updates a specific document using the '$set' operator for partial updates.
+
+    Args:
+        collection_name (str): Collection name.
+        filter_query (dict): Criteria to identify the document to update.
+        update_data (dict): Key-value pairs to update.
+
+    Returns:
+        bool: True if at least one document was modified, False otherwise.
     """
     db = get_mongo_db()
     result = db[collection_name].update_one(
@@ -86,8 +139,17 @@ def update_one_document(collection_name: str, filter_query: dict, update_data: d
 
 def link_partition_hbm_to_mongo(mongo_id: str, hbm_uuid: str):
     """
-    Réalise le 'mariage' manuel entre un document Mongo et une ligne SQL.
-    C'est un simple update du champ hbm_uuid dans COL_partitions.
+    Performs the manual linkage ('marriage') between a NoSQL document and a SQL record.
+
+    Updates the 'hbm_uuid' field in the 'COL_partitions' document to establish 
+    the relationship used in hybrid API views.
+
+    Args:
+        mongo_id (str): The MongoDB ObjectId (as a string).
+        hbm_uuid (str): The SQL-generated UUID to link.
+
+    Returns:
+        bool: True if the linkage was successful.
     """
     db_mongo = get_mongo_db()
     
@@ -99,26 +161,31 @@ def link_partition_hbm_to_mongo(mongo_id: str, hbm_uuid: str):
         )
         
         if result.modified_count > 0:
-            logger.info(f"Liaison manuelle réussie : Mongo[{mongo_id}] <-> SQL[{hbm_uuid}]")
+            logger.info(f"Manual link success: Mongo[{mongo_id}] <-> SQL[{hbm_uuid}]")
             return True
         else:
-            logger.warning(f"Aucune modification : le document {mongo_id} n'existe pas ou a déjà cet UUID.")
+            logger.warning(f"No modification: document {mongo_id} not found or already linked.")
             return False
             
     except Exception as e:
-        logger.error(f"Erreur lors de la liaison manuelle : {e}")
+        logger.error(f"Error during manual linkage: {e}")
         return False
 
 # ******** DELETE / DELETE ********
 @trace_action(logger_name)
 def delete_one_document(collection_name: str, filter_query: dict):
     """
-    Supprime un document correspondant au filtre.
+    Removes a single document from a collection based on a filter.
+
+    Args:
+        collection_name (str): Collection name.
+        filter_query (dict): Criteria to identify the document to delete.
+
+    Returns:
+        bool: True if a document was deleted, False otherwise.
     """
     db = get_mongo_db()
     result = db[collection_name].delete_one(filter_query)
-    logger.info(f"Document {collection_name} supprimé pour {filter_query}")
+    logger.info(f"Document {collection_name} deleted for {filter_query}")
     return result.deleted_count > 0
 
-if __name__ == "__main__":
-    doc = create_one_document("COL_instruments", {"nom_sql": "Célestat"})

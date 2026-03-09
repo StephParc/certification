@@ -1,4 +1,12 @@
 # daily_exchange_rates_dag.py
+"""
+DAG for Daily Forex Exchange Rates Generation and Ingestion.
+
+This workflow automates the daily generation of currency exchange rates 
+and their subsequent ingestion into the PostgreSQL database. 
+It supports financial reporting and currency conversion tasks within 
+the MusicShop data warehouse.
+"""
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
@@ -21,7 +29,6 @@ with DAG(
     tags=['finance', 'E6'],
 ) as dag:
 
-    # Commande de base docker
     docker_exec = "docker exec -t fastapi_hbm"
 
     task_generate_rates = BashOperator(

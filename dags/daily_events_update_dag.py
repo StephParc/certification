@@ -1,22 +1,22 @@
 # daily_events_update_dag.py
-import os
-import requests
+"""
+DAG for Daily Events Synchronization.
+
+This DAG monitors a specific CSV file on GitHub. If changes are detected 
+(via SHA comparison), it downloads the file and transfers it to the 
+Garage Data Lake (S3). Finally, it triggers an internal API command 
+to refresh the SQL database with the new data.
+"""
 from datetime import datetime
-from pathlib import Path
-from dotenv import load_dotenv
+import requests
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import ShortCircuitOperator, PythonOperator
 from airflow.operators.bash import BashOperator
 
 from utils.S3_utils import upload_bytes
+from config.config import GIT_RAW_URL, GIT_API_URL
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(dotenv_path=BASE_DIR / ".env")
-
-GIT_RAW_URL = os.getenv("GIT_RAW_URL")
-GIT_API_URL = os.getenv("GIT_API_URL")
-S3_ENDPOINT = os.getenv("DL_ENDPOINT")
 BUCKET_NAME = "zone-brutes"
 
 default_args = {
@@ -25,9 +25,25 @@ default_args = {
     'retries': 1,
 }
 
-# 2. LOGIQUE DES FONCTIONS
 def check_for_changes():
-    """Vérifie si le fichier sur Git a un nouveau SHA."""
+    """
+    Check if the remote GitHub file has been updated by comparing SHAs.
+
+    It fetches the latest commit metadata from the GitHub API and compares 
+    the current SHA with the one stored in Airflow's Variables.
+
+    Returns:
+        bool: True if the file has changed or if no previous SHA exists 
+              (forcing a sync), False otherwise.
+
+    Side Effects:
+        - Initializes the 'last_events_git_sha' Airflow Variable on the first run.
+        - Updates the local workflow state based on remote repository changes.
+
+    Notes:
+        - Requires 'GIT_API_URL' environment variable to be set.
+        - Uses the Airflow Metadata Database to persist the SHA.
+    """
     response = requests.get(GIT_API_URL)
     response.raise_for_status()
     
@@ -40,11 +56,28 @@ def check_for_changes():
         old_sha = "first_run"
     
     if latest_sha != old_sha:
-        # On stocke le nouveau SHA pour que le prochain run le connaisse
         return True 
     return False
 
 def transfer_git_to_garage():
+    """
+    Download the raw CSV from GitHub and upload it to the Garage Data Lake.
+
+    The function acts as a bridge between the external source (GitHub) 
+    and the internal raw zone (S3 Bucket). It attaches metadata to the 
+    S3 object for traceability.
+
+    Raises:
+        Exception: If the 'upload_bytes' utility fails to persist the data 
+                   into the S3 bucket.
+
+    Side Effects:
+        - Performs a GET request to GitHub Raw URL.
+        - Writes data into the 'zone-brutes' S3 bucket at 'E4/events_latest.csv'.
+
+    Notes:
+        - Uses 'datetime.now()' to timestamp the 'sync_date' metadata.
+    """
     git_url = GIT_RAW_URL
     res = requests.get(git_url)
     res.raise_for_status()

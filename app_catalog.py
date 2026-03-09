@@ -1,4 +1,23 @@
 # app_catalogue.py
+"""
+HBM Data Governance Dashboard.
+
+This Streamlit application serves as the visual front-end for the 
+Data Catalog. It provides an intuitive interface for data stewards and 
+analysts to explore the platform's metadata.
+
+Key Operational Features:
+1. RBAC-Simulated Authentication: Implements a dual-role access system 
+   (Admin/User) linked to environment credentials.
+2. Live Metadata Sync: Automatically downloads the latest 'data_catalog.json' 
+   from the 'zone-config' S3 bucket on startup.
+3. Multi-Source Exploration: Interactive search and drill-down for 
+   PostgreSQL, MongoDB, and S3 Data Lake objects.
+4. Automated Lineage Visualization: Renders dbt model dependencies and 
+   Airflow DAG flows using Graphviz.
+5. Proactive Monitoring (Admin Only): Displays system health metrics 
+   and storage quota alerts.
+"""
 import streamlit as st
 import json
 import pandas as pd
@@ -53,13 +72,11 @@ if st.sidebar.button("🔄 Forcer la mise à jour S3"):
 # Fonction pour charger le JSON avec mise en cache (évite de recharger à chaque clic)
 @st.cache_data
 def load_data():
-    # # On cherche le fichier à la racine
-    # path = "data_catalog.json"
-    # if not os.path.exists(path):
-    #     st.error(f"Fichier {path} introuvable à la racine !")
-    #     return None
-    # with open(path, "r", encoding="utf-8") as f:
-    #     return json.load(f)
+    """
+    Retrieves and caches the Data Catalog from S3.
+    Ensures that the dashboard displays the most recent governance snapshot 
+    without redundant network calls during a session.
+    """
     local_path = "data_catalog.json"
     # On récupère la version fraîche sur le Data Lake
     success = download_file(bucket="zone-config", s3_path="governance/data_catalog.json", local_path=local_path)
@@ -197,13 +214,6 @@ if catalog:
     else:
         st.info("💡 Tapez un mot-clé ci-dessus pour filtrer l'inventaire.")
 
-    # col1.metric("Postgres", f"{len(df_sql)}/{len(catalog.get('relational_db', []))} col.")
-    # col2.metric("Datalake", f"{len(df_s3)}/{len(items_s3)} fichiers")
-    # col3.metric("NoSQL", f"{len(nosql_data)}/{len(catalog.get('nosql_db', []))} coll.")
-    # col1.metric("Tables SQL (Postgres)", f"{nb_sql} colonnes")
-    # col2.metric("Datalake", f"{nb_s3} objets")
-    # col3.metric("Collections NoSQL", f"{nb_nosql} sources")
-
     st.markdown("---")
 
     # --- SECTION EXPLORATION ---
@@ -213,21 +223,11 @@ if catalog:
 
     tabs = st.tabs(tab_titles)
 
-    # tab1, tab2, tab3, tab4, tab5 = st.tabs(["🛢️ Base Relationnelle", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🏗️🩺 Santé", "🗺️ Lignage"])
-
     with tabs[0]:
         st.subheader("Dictionnaire des données Postgres")
         if not df_sql.empty:
-        # if nb_sql > 0:
-            # df_sql = pd.DataFrame(catalog['relational_db'])
-            # if search_query:
-            #     df_sql = df_sql[
-            #         df_sql['nom_table'].str.contains(search_query, case=False) | 
-            #         df_sql['nom_colonne'].str.contains(search_query, case=False) |
-            #         df_sql['colonne_description'].str.contains(search_query, case=False, na=False)
-            #     ]
-
-# 1. Groupe par Base
+        
+        # 1. Groupe par Base
             for nom_base, group_base in df_sql.groupby('nom_base'):
                 with st.expander(f"🛢️ **Base : {nom_base}**", expanded=False):
                     
@@ -253,23 +253,14 @@ if catalog:
 
                                 label_table = f"{type_t.upper()} : {nom_table} ({taille_display} | {lignes_display})"
 
-                                # label_table = f"{type_t.upper()} : {nom_table} ({group_table['nb_lignes'].iloc[0]} lignes | {taille_display})"
-
-                                # # On formate le label avec les stats
-                                # label_table = f"{type_t.upper()} : {nom_table} ({nb_lignes} lignes | {format_taille(taille)})"
-                                
                                 with st.expander(f"&nbsp;&nbsp;&nbsp;&nbsp;{label_table}"):
-                                    # 4. Affichage final des colonnes de la table
-                                    # st.caption(f"📊 Volume total : {format_taille(taille)} | Enregistrements estimés : {nb_lignes}")
-                                    # On ne garde que les infos de colonnes pour le tableau final
                                     cols_view = ['nom_colonne', 'type_data', 'nullable', 'contraintes', 'colonne_description']
                                     st.dataframe(
                                         group_table[cols_view],
                                         width='stretch', 
                                         hide_index=True
                                     )
-        # else:
-        #     st.warning("Aucune donnée SQL trouvée.")
+
         else:
             st.info("Aucun résultat dans Postgres")
 
@@ -303,26 +294,7 @@ if catalog:
                             )   
         else:
             st.info("Aucun résultat dans le Data Lake")
-        # if not df_s3.empty:
-        # # if nb_s3 > 0:
-        #     # df_s3 = pd.DataFrame(items_s3)
-        #     # try:
-        #     #     cols = [['bucket','path', 'file_name','size_ko', 'last_modified']]
-        #     #     st.dataframe(df_s3[cols], width='stretch', hide_index=True)
-        #     # except:
-        #     #     st.info(f"Le datalake ne contient pas de fichier")
-        #     cols_target = ['bucket','path', 'file_name','size_ko', 'last_modified']
-        #     cols_final = df_s3.columns.intersection(cols_target)
         
-        #     if not cols_final.empty:
-        #         st.dataframe(df_s3[cols_final], width='stretch', hide_index=True)
-        #     else:
-        #         st.info("Les métadonnées S3 ne contiennent pas les colonnes standards")
-        # # else:
-        # #     st.warning("Data Lake vide.")
-        # else:
-        #     st.info("Aucun résultat dans le Data Lake")
-
     with tabs[2]:
         st.subheader("Schémas MongoDB")
         if nosql_data:
@@ -389,13 +361,6 @@ if catalog:
                         dot_files.edge(src, pref)
                         
                     st.graphviz_chart(dot_files)
-
-        # # On récupère les vraies données de lignage
-        # items_s3 = catalog.get('datalake', {}).get('items', [])
-        # steps_disponibles = sorted(list(set([str(i.get('step') or 'unknown') for i in items_s3])))
-        # selected_steps = st.multiselect("🔍 Filtrer les étapes à afficher", 
-        #                             options=steps_disponibles, 
-        #                             default=steps_disponibles)
     
         if st.session_state["role"] == "Admin":
             with subtabs[2]:
@@ -490,93 +455,3 @@ if catalog:
                 c1.metric("Disque Libre", f"{health['disk_free_gb']} GB")
                 c2.metric("Usage RAM", f"{health['ram_usage_pct']}%")
                 c3.info(f"Serveur: {health['server_name']} ({health['status']})")
-
-
-        # # Filtrage des données
-        # items_to_show = [i for i in items_s3 if str(i.get('step') or 'unknown') in selected_steps]
-        # if items_to_show:
-        #     dot = graphviz.Digraph(comment='Lignage Metadata')
-        #    # Paramètres de compression
-        #     dot.attr(rankdir='LR', size='12,12') # Taille maximale
-        #     dot.attr(nodesep='0.1')   # Espace réduit entre les lignes (défaut: 0.25)
-        #     dot.attr(ranksep='0.5')   # Espace réduit entre les colonnes (défaut: 0.5)
-        #     dot.attr(concentrate='true') # Fusionne les flèches parallèles
-        #     dot.attr(ratio='compress')   # Tente de faire tenir le tout dans l'espace imparti
-
-        #     for item in items_to_show:
-        #         # On récupère tes métadonnées spécifiques
-        #         file_name = item.get('file_name')
-        #         if not file_name:
-        #             continue
-
-        #         source_info = str(item.get('source') or 'Source inconnue')
-        #         dag_info = str(item.get('dag') or 'Manuel')
-        #         dest_info = str(item.get('destination') or 'N/A')
-        #         step = str(item.get('step') or 'unknown')
-
-        #         # Couleur selon le step
-        #         color = "#E1F5FE" if "raw" in step.lower() else "#C8E6C9"
-        #         dot.node(file_name, f"📄 {file_name}\n({step})", fillcolor=color)
-                
-        #         # 3. Création du Noeud Source
-        #         # On prend le premier mot pour éviter les nœuds géants
-        #         parts = source_info.split(' ')
-        #         short_source = "Source"
-                # for p in parts:
-                #     if ".py" in p or "API" in p:
-                #         short_source = p
-                #         break
-                # else:
-                #     short_source = parts[0]
-                # dot.node(short_source, short_source, shape='ellipse', fillcolor='#F5F5F5')
-                # dot.edge(short_source, file_name, label=f"DAG: {dag_info}", fontsize='8', color='gray')
-
-                # # 4. Création du Noeud Destination (si mentionné)
-                # if dest_info and dest_info != 'N/A':
-                #     # On simplifie le nom de destination
-                #     short_dest = dest_info.split(' ')[0]
-                #     dot.node(short_dest, short_dest, shape='cylinder', fillcolor='#FFF9C4')
-                #     dot.edge(file_name, short_dest, label="Chargement", color='blue')
-
-        #     st.graphviz_chart(dot, use_container_width=True)
-        # else:
-        #     st.info("Aucune donnée S3 disponible pour le lignage.")
-
-        # 2. Création dynamique de la flèche "Source -> Fichier"
-
-
-# *********************************
-        # nodes_info = catalog.get('dbt_nodes', {})
-        # edges_info = catalog.get('dbt_edges', [])
-        
-        # if nodes_info and edges_info:
-        #     # Création du graphe
-        #     dot = graphviz.Digraph(comment='Lignage Musicshop Dynamique')
-        #     dot.attr(rankdir='LR') # De gauche à droite
-        #     dot.attr('node', shape='box', style='filled', fontname='Arial')
-
-        #     # Définition des couleurs par type de matérialisation
-        #     # (Plus précis pour dbt que Bronze/Gold)
-        #     colors = {
-        #         "view": "#BBDEFB",      # Bleu (Views)
-        #         "table": "#C8E6C9",     # Vert (Tables)
-        #         "snapshot": "#F8BBD0",  # Rose (Snapshots)
-        #         "source": "#B0BEC5"     # Gris (Sources raw)
-        #     }
-
-        #     # 1. On dessine les NOEUDS dynamiquement
-        #     for node_name, materialized in nodes_info.items():
-        #         fillcolor = colors.get(materialized, "#EEEEEE") # Couleur par défaut
-        #         dot.node(node_name, f"{node_name}\n({materialized})", fillcolor=fillcolor)
-            
-        #     # 2. On dessine les LIENS dynamiquement
-        #     for edge in edges_info:
-        #         dot.edge(edge['from'], edge['to'])
-
-        #     # 3. Affichage
-        #     st.graphviz_chart(dot, use_container_width=True)
-            
-        #     st.info("💡 Ce graphe est généré automatiquement en analysant le `manifest.json` de dbt. Il reflète l'état réel de ton projet.")
-            
-        # else:
-        #     st.warning("Données de lignage indisponibles. Assure-toi que le Harvester a pu lire le `manifest.json` de dbt (nécessite `dbt build`).")

@@ -1,4 +1,20 @@
 # schemas_mongo.py
+"""
+NoSQL Pydantic Schemas - Harmonie Manager 2026.
+
+This module defines the data structures for MongoDB documents. It ensures 
+strict validation for non-relational data while maintaining compatibility 
+with MongoDB's ObjectId format.
+
+Key Features:
+- PyObjectId: Custom type to handle the conversion of MongoDB's BSON 
+  ObjectId to a standard string.
+- GDPR Compliance: Schemas for musicians include privacy-related fields 
+  (accord_donnees_perso).
+- Hybrid Composition: The 'FullPartitionDetailsResponse' schema acts as 
+  the master contract for merging SQL catalog data with NoSQL 
+  technical nomenclature.
+"""
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, BeforeValidator
 from typing import List, Annotated
 import uuid
