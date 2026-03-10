@@ -217,7 +217,7 @@ if catalog:
     st.markdown("---")
 
     # --- SECTION EXPLORATION ---
-    tab_titles = ["🛢️ Base Relationnelle", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🗺️ Lignage"]
+    tab_titles = ["🛢️ Bases Relationnelles", "☁️ Data Lake", "🍃 NoSQL MongoDB", "🗺️ Lignage"]
     if st.session_state["role"] == "Admin":
         tab_titles += ["🏗️🩺 Santé"]
 
