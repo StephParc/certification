@@ -25,7 +25,7 @@ with DAG(
     default_args=default_args,
     description='Continuous generation and ingestion of orders and profile updates',
     # Runs every hour to simulate frequent business activity
-    schedule_interval='* */1 * * *',
+    schedule_interval='@hourly',
     start_date=datetime(2026, 2, 12),
     catchup=False,
     tags=['production', 'E6'],

@@ -100,7 +100,7 @@ def generate_orders(n=50):
         bucket="zone-brutes", 
         s3_path=f"E6/musicshop/orders/{filename}",
         metadata={
-            "source": "Généré par gen_orders.py à partir de hbm.public.TB_partition et customer",
+            "source": "Genere par gen_orders.py a partir de hbm.public.TB_partition et customer",
             "step": "raw",
             "dag": "simulate_musicshop_orders_dag.py",
             "destination": "musicshop.raw.orders et zone-brutes/E6/musicshop/archives"

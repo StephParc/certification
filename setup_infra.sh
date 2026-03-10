@@ -53,23 +53,9 @@ if [[ ! "$EXISTING_DBS" =~ "ticketmaster" ]]; then
     echo "ERREUR CRITIQUE : La base ticketmaster n'existe pas encore."
     exit 1
 fi
-# docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} <<EOF
-# CREATE DATABASE ${DBNAME_AIRFLOW};
-# CREATE DATABASE ${DBNAME_TICKETMASTER};
-# CREATE DATABASE ${DBNAME_MUSICSHOP};
-# EOF
 
 echo "Pause de 2 secondes pour laisser Postgres créer les bases"
 sleep 2
-
-
-# echo "Création du schéma et des accès pour l'analytics"
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE SCHEMA IF NOT EXISTS raw;"
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE TABLE IF NOT EXISTS raw.ticketmaster_events (id SERIAL PRIMARY KEY, inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, file_name TEXT, payload JSONB);"
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE INDEX idx_ticketmaster_filename ON raw.ticketmaster_events (file_name)";
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE USER ${DBUSER_RO} WITH PASSWORD '${PASSWORD_RO}';"
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "CREATE ROLE analyst_group;"
-# docker exec postgres_db psql -U ${DBUSER_RW} -d ${DBNAME} -c "GRANT analyst_group TO ${DBUSER_RO};"
 
 echo "Configuration ticketmaster"
 docker exec -i postgres_db psql -U ${DBUSER_RW} -d ${DBNAME_TICKETMASTER} \
@@ -115,17 +101,6 @@ docker exec airflow_scheduler airflow variables set last_events_git_sha "initial
 
 # Sauvegarde de sécurité du .env (seulement si le .env n'est pas déjà corrompu)
 cp .env .env.last_run
-
-# # Création rcp_secret pour garage.toml
-# cp garage.toml.template garage.toml
-# RPC_SECRET=$(openssl rand -hex 32)
-# sed -i "s/^rpc_secret.*/rpc_secret = \"$RPC_SECRET\"/" garage.toml
-
-# # Remplacement des valeurs dans ngrok.yml
-# cp ngrok.yml.template ngrok.yml
-# sed -i "s|DOMAIN_A_REMPLACER|$NGROK_DOMAIN|g" ngrok.yml
-# sed -i "s|USER_A_REMPLACER|$NGROK_USER|g" ngrok.yml
-# sed -i "s|MOT_DE_PASSE_A_REMPLACER|$NGROK_PASSWORD|g" ngrok.yml
 
 until [ "$(docker ps -a -q -f name=garage_datalake)" ]; do
     echo "Le conteneur n'est pas encore créé... (téléchargement des images ?)"

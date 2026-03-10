@@ -76,7 +76,7 @@ def generate_exchange_rates():
         bucket="zone-brutes", 
         s3_path=f"E6/musicshop/exchange_rates/{today}.csv",
         metadata={
-                "source": "Généré par gen_exchange_rates.py",
+                "source": "Genere par gen_exchange_rates.py",
                 "step": "raw",
                 "dag": "daily_exchange_rates_dag.py",
                 "destination": "musicshop.raw.exchange_rates et zone-brutes/E6/musicshop/exchange_rates/"

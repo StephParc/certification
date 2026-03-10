@@ -96,7 +96,7 @@ def save_to_s3():
             bucket="zone-brutes",
             s3_path="E6/musicshop/customers.csv",
             metadata={
-                "source": "Généré par gen_customers.py",
+                "source": "Genere par gen_customers.py",
                 "step": "raw",
                 "dag": "simulate_musicshop_customers_dag.py",
                 "destination": "musicshop.raw.customer"

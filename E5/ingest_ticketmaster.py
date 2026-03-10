@@ -106,7 +106,6 @@ def fetch_and_upload(country_code, start_date, end_date, label, extraction_date)
     local_path = f"/tmp/{filename}"
 
     with open(local_path, "w", encoding="utf-8") as f:
-        # json.dump({"events": all_events, "metadata": {"total": len(all_events), "extract_date": today_str}}, f, ensure_ascii=False, indent=4)
         json.dump({"events": all_events, "metadata": {
                     "total": len(all_events), 
                     "country": country_code,

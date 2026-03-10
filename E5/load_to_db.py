@@ -86,7 +86,7 @@ def load_ticketmaster_file_to_bd(folder_date=datetime.now().strftime("%Y-%m-%d")
         logger.info(f"LOAD COMPLETED: {count_files} files processed, {count_events} events inserted.")
 
     except Exception as e:
-        logger.error(f""Global Ingestion Error: {e}")
+        logger.error(f"Global Ingestion Error: {e}")
     finally:
         if conn:
             cur.close()

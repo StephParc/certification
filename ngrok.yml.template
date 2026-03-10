@@ -2,7 +2,7 @@ version: "3"
 
 endpoints:
   - name: harmonie-tunnel
-    url: https://DOMAIN_A_REMPLACER.ngrok-free.dev # Si tu as un domaine fixe, sinon enlève cette ligne
+    url: https://DOMAIN_A_REMPLACER.ngrok-free.dev
     upstream:
       url: http://nginx_proxy:80
     # traffic_policy:

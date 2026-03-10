@@ -71,7 +71,7 @@ harmonie_dbt/target/
 harmonie_dbt/dbt_packages/
 harmonie_dbt/logs/
 
-Sauvegarde_garage/
+*Sauvegarde_garage/
 backups/
 
 *ngrok.yml

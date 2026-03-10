@@ -3,6 +3,28 @@
 
 ```
 .
+├── Avant-projet/ 
+|   ├── présentation certif.odp
+|   └── référentiel écoresponsable.odt
+├── backups
+├── certification.log
+├── config
+│   ├── __init__.py
+│   ├── access_control.json
+│   └── config.py
+├── dags/
+│   ├── catalog_dag.py
+│   ├── daily_events_update_dag.py
+│   ├── daily_exchange_rates_dag.py
+│   ├── daily_musicshop_update_dag.py
+│   ├── daily_scrapy_update_dag.py
+│   ├── daily_synchro_dag.py
+│   ├── daily_ticketmaster_update_dag.py
+│   ├── sauvegarde_bases_dag.py
+│   ├── setup_hbm_dag.py
+│   ├── simulate_musicshop_customers_dag.py
+│   ├── simulate_musicshop_orders_dag.py
+│   └── test_alerting.py
 ├── docs/  
 |    ├── E1.md
 |    ├── E2.md
@@ -13,107 +35,37 @@
 |    ├── E7.md  
 |    ├── index.md  
 |    └── structure_du_projet.md
-├── Avant-projet/ 
-|   ├── présentation certif.odp
-|   └── référentiel écoresponsable.odt
 ├── E1/   
-|    ├── grilles/
-|       ├── GD01.odt
-|       ├── grille utilisateur.odt
-|       ├── GU01.odt
-|       ├── GU02.odt
-|       ├── GU03.odt
-|       ├── GU04.odt
-|       └── GU05.odt
-|   └── E1.odt
 ├── E2/
-|   └── E2.odt
 ├── E3/
-|   └── E3.odt
 ├── E4/
-|   ├── harmonie/
-|       ├── BDD/
-|           ├── pages/
-|               ├── 1_auteurs.py
-|               ├── 2_partitions.py
-|               ├── 3_evenements.py
-|               ├──
-|           ├── routes/
-|               ├── associations.py
-|               ├── auteurs.py
-|               ├── authentification.py
-|               ├── evenements.py
-|               ├── partitions_hbm.py
-|               ├── partitions.py
-|               └── users.py
-|           ├── .env
-|           ├── api_externe.py
-|           ├── api_hbm.py
-|           ├── app_streamlit.py
-|           ├── auth.py
-|           ├── config.py
-|           ├── create_db.py
-|           ├── crud.py
-|           ├── hbm.db
-|           ├── models.py
-|           └── schemas.py
-|       ├── harmonie/
-|           ├── archives/
-|               ├── musicshop_2025-02-27.csv
-|               ├── musicshop_2025-07-02.csv
-|               └── ...
-|           ├── spiders/
-|               └── hbm_scrap.py
-|           ├── clean_scrapy.py 
-|           ├── items.py
-|           ├── middlewares.py
-|           ├── musicshop_all.csv
-|           ├── musicshop_last.csv
-|           ├── musicshop_new.csv
-|           ├── pipelines.py
-|           ├── settings.py
-|           └── sources/
-|               ├── events.csv
-|               └── users.csv
-|       ├── scrapy.cfg
-|       └── schema.md
-|   RGPD_fake.ods
 ├── E5/
-|   ├── infoconcert/
-|       ├── infoconcert/
-|           ├── spiders/
-|               └── infoconcert_scrap.py
-|           ├── items.py
-|           ├── middlewares.py
-|           ├── pipelines.py
-|           └── settings.py
-|       └── scrpy.cfg
-|   └── E5.odt
 ├── E6/
 ├── E7/
-|   ├── .terraform/
-|   ├── modules/
-|        ├── resource_group/
-|           ├── main.tf
-|           ├── outputs.tf
-|           └── variables.tf
-|        ├── storage/
-|           ├── main.tf
-|           ├── outputs.tf
-|           └── variables.tf
-|   ├── (export_scrapy.py)
-|   ├── main.tf
-|   ├── provider.tf
-|   ├── (test.py)
-|   └── variables.tf
+├── harmonie_dbt
+├── logs
+├── nginx
+│   └── nginx.conf
+├── ngrok.yml
+├── poetry.lock
+├── pyproject.toml
+├── requirements-airflow.txt
+├── requirements-app.txt
+├── scripts_postgres_init
+│   ├── setup_musicshop.sql
+│   └── setup_ticketmaster.sql
+├── setup_infra.sh
 ├── utils
+|   ├── __init__.py
+|   ├── drop_clean.py
+|   ├── init_mongo.py
 |   ├── logger_config.py
-|   └── S3_utils.py 
+|   ├── S3_utils.py
+|   └── utils_functions.py
 ├── .gitignore
 ├── app_catalog.py
 ├── certification.log
 ├── data_catalog.json   
-├── (musicbrainz.org.json)
 ├── poetry.lock
 ├── pyproject.toml
 └── requirements.txt
