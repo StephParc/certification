@@ -75,3 +75,6 @@ harmonie_dbt/logs/
 backups/
 
 *ngrok.yml
+
+# MkDocs
+site/

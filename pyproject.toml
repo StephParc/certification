@@ -35,6 +35,8 @@ scrapy-playwright = "^0.0.46"
 faker = "^40.5.1"
 psutil = "^7.2.2"
 graphviz = "^0.21"
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.7.4"
 
 [build-system]
 requires = ["poetry-core"]

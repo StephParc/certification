@@ -1,0 +1,21 @@
+site_name: Certification Harmonie Batterie Municipale
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: blue
+
+nav:
+  - Accueil: index.md
+  - Gestion du projet:
+      - E1 - Analyse du besoin: E1.md
+      - E2 - Préparation, Installation & Architecture: E2.md
+      - E3 - Lancement: E3.md
+  - Architecture Technique:
+      - E4 - Service Numérique: E4.md
+      - E5 - Data Warehouse: E5.md
+      - E6 - Évolution DWH: E6.md
+      - E7 - Data Lake & Gouv: E7.md
+  - Annexes:
+      - Structure du projet: structure_du_projet.md
+      - Paramétrages: parametrages_utilitaires.md
