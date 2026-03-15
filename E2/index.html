@@ -934,12 +934,12 @@
 </code></pre>
 <hr />
 <h2 id="description">Description:</h2>
-<p>Cette partie concerne la gestion du projet. Tous les documents requis sont dans le dossier E2/.  <br />
-- les attendus du rendu E2 détaillés dans le fichier E2.odt
-- les documents demandés  </p>
-<p>Le choix de l'architecture générale ce faisant à ce stade, j'y ai joint la structure la concernant.  </p>
+<p>Cette partie concerne la gestion du projet. Tous les documents requis sont dans le dossier E2/.    <br />
+- les attendus du rendu E2 détaillés dans le fichier E2.odt<br />
+- les documents demandés    </p>
+<p>Le choix de l'architecture générale ce faisant à ce stade, y est jointe la structure la concernant.  </p>
 <h2 id="architecture">Architecture:</h2>
-<p>Le langage de programmation de ce projet est python. Tous les dossiers sont des modules python (présence des fichiers <code>__init__.py</code> dans chacun d'eux) et les scripts sont prévus pour être exécutés depuis la racine du projet. J'ai opté pour poetry pour la gestion de l'environnement mais c'est facultatif.<br />
+<p>Le langage de programmation de ce projet est python. Tous les dossiers sont des modules python (présence des fichiers <code>__init__.py</code> dans chacun d'eux) et les scripts sont prévus pour être exécutés depuis la racine du projet. L'utilisation de poetry pour la gestion de l'environnement est facultative.<br />
 Toutes les librairies nécessaires sont listées dans les fichiers poetry.lock, pyproject.toml, requirements-airflow.txt et requirements-app.txt. Airflow et SQLAlchemy fonctionnent avec des versions de python incompatibles (&lt;3.11 pour le premier et 3.12 pour second) imposant deux requirements différents.   </p>
 <p>Le .env contient toutes les variables d'environnement. Elles sont chargées dans le fichier config/config.py (module python), pouvant ainsi être importées facilement dans chaque script.<br />
 Certaines étant renseignées automatiquement, par précaution une copie (.env.last_run), en est faite avant.<br />
@@ -952,17 +952,17 @@ Le fichier nginx.conf définit les différentes redirections:
 - airflow/ pour l'orchestration (port 8080 sinon)
 - api/ et api/docs pour l'API (port 8000 sinon)
 - mail/ pour la messagerie (port 8025)  </p>
-<p>Dernier fichier de configuration garage.toml. Comme pour ngrok.yml, il en existe un miroir, le garage.toml.template auquel il n'est pas nécessaire de toucher. Le seul secret qu'il contient est une clé hexadécimale pour le rpc_secret (Remote Procedure Call). Elle est générée et injectée par le setup_infra.sh.</p>
+<p>Dernier fichier de configuration: garage.toml. Comme pour ngrok.yml, il en existe un miroir, le garage.toml.template auquel il n'est pas nécessaire de toucher. Le seul secret qu'il contient est une clé hexadécimale pour le rpc_secret (Remote Procedure Call). Elle est générée et injectée par le setup_infra.sh.</p>
 <h2 id="le-deployeur-setup_infrash">Le déployeur setup_infra.sh</h2>
-<p>Ce script permet d'automatiser presque intégralement le déploiement du projet (voir la procédure ). Les principes fonctions:<br />
+<p>Ce script permet d'automatiser presque intégralement le déploiement du projet (voir la procédure ). Les principales fonctions:<br />
 - contruction des images et démarrage des conteneurs une fois leur configuration prête
-- création des dossiers dags, logs et plugins pour Airflow avoir restitution des droits à l'utilisateur
+- création des dossiers dags, logs et plugins pour Airflow et restitution des droits à l'utilisateur
 - mise à jour des requirements
 - création des bases de données (Airflow et dwh E5/E6) et configuration via leur fichier sql (schémas, tables, rôles, droits)
 - création des garage.toml et ngrok.yml par copie de leur template et injection automatique des variables générées 
 - configuration complète de Garage (capacité, layout, clés, buckets, droits) et copies des informations nécessaires aux connexions dans garage_dl.txt</p>
 <h2 id="les-services-docker">Les services Docker</h2>
-<p>Les différents services sont répertoriés dans le docker-compose.yml. Les installations supllémentaires sont dans deux dockerfiles: 
+<p>Les différents services sont répertoriés dans le docker-compose.yml. Les installations supplémentaires sont dans deux dockerfiles: 
 - Dockerfile pour l'image Airflow avec python 3.11 et ses requirements 
 - Dockerfile.app pour l'image python 3.12 (requise par SQLAlchemy entre autre), des installations supplémentaires (notamment chromium pour playwright) et ses requirements </p>
 <p>Les services:
@@ -978,19 +978,19 @@ Le fichier nginx.conf définit les différentes redirections:
 - ngrok (le tunnel)
 - mailhog (simulateur de messagerie mail pour l'alerting)</p>
 <h2 id="les-jobstreams-dags">Les jobstreams - DAGs</h2>
-<p>Ils seront repris dans leurs parties respectives:
-- catalog_dag.py (E7)
-- daily_events_update_dag.py (E4)
-- daily_exchange_rates_dag.py (E6)
-- daily_musicshop_update_dag.py (E6)
-- daily_scrapy_update_dag.py (E4)
-- daily_synchro_dag.py (E4)
-- daily_ticketmaster_update_dag.py (E5)
-- sauvegarde_bases_dag.py (E6)
-- setup_hbm_dag.py (E4)
-- simulate_musicshop_customers_dag.py (E6)
-- simulate_musicshop_orders_dag.py (E6)
-- test_alerting.py (E6)</p>
+<p>Ils seront repris dans leurs parties respectives:<br />
+- catalog_dag.py (E7)<br />
+- daily_events_update_dag.py (E4)<br />
+- daily_exchange_rates_dag.py (E6)<br />
+- daily_musicshop_update_dag.py (E6)<br />
+- daily_scrapy_update_dag.py (E4)<br />
+- daily_synchro_dag.py (E4)<br />
+- daily_ticketmaster_update_dag.py (E5)<br />
+- sauvegarde_bases_dag.py (E6)<br />
+- setup_hbm_dag.py (E4)<br />
+- simulate_musicshop_customers_dag.py (E6)<br />
+- simulate_musicshop_orders_dag.py (E6)<br />
+- test_alerting.py (E6)  </p>
 <h2 id="le-logger-logger_configpy">Le logger logger_config.py</h2>
 <p>Fonction décoration pour formaliser, identifier et générer des logs sur toutes les fonctions désirées.</p>
 

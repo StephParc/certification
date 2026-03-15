@@ -846,10 +846,10 @@
 </code></pre>
 <hr />
 <h2 id="description">Description:</h2>
-<p>Dans cette partie, il s'agit de prendre en compte l'historisation de données. Tout comme pour E5, elle traitée avec Dbt.<br />
+<p>Dans cette partie, il s'agit de prendre en compte l'historisation de données. Tout comme pour E5, elle est traitée avec Dbt.<br />
 Les scripts dans le dossier E6 simulent une base OLTP et une évolution du profil client dont on veut garder la trace.<br />
 Le dossier snapshots contient les tables dont on veut surveiller les changements avec les colonnes à observer. Dbt crée automatiquement les colonnes dbt_scd_id (slowly changing dimension), dbt_updates_at, dbt_valid_from et dbt_valid_to.  </p>
-<p>Le dossier seeds, quant à lui, permet de stocker des données peu évolutives voire statiques par le biais de fichiers csv. Ils sont convertis en table par la commande <code>dbt seed</code>à exécuter avant <code>dbt run</code>. Deux fichiers pour ce projet: les pays pris en compte (nom, fuseau horaire, devise) et les devises (nom, code, symbole). </p>
+<p>Le dossier seeds, quant à lui, permet de stocker des données peu évolutives voire statiques par le biais de fichiers csv. Ils sont convertis en table par la commande <code>dbt seed</code>, à exécuter avant <code>dbt run</code>. Deux fichiers pour ce projet: les pays pris en compte (nom, fuseau horaire, devise) et les devises (nom, code, symbole). </p>
 <p>Le schéma raw ainsi que les tables, les rôles et les droits sont crées par le script <em>setup_musicshop.sql</em>, exécuté par <em>setup_infra.sh</em>.  Une policy de sécurité au niveau des lignes (RLS) est ajoutée pour <em>gold.fact_orders</em> et <em>gold.view_fact_orders</em>, ne rendant visibles aux éditeurs que les commandes les concernant.  </p>
 <h2 id="orchestration">Orchestration:</h2>
 <p>Les DAGs concernés sont:<br />
