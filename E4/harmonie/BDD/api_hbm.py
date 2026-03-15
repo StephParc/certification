@@ -20,7 +20,7 @@ from E4.harmonie.BDD.routes import (
 )
 
 app = FastAPI(
-    title="HBM - Harmonie Manager 2026",
+    title="HBM - Harmonie Batterie Municipale",
     # root_path is essential for proper Swagger/OpenAPI documentation 
     # when running behind a proxy or in a sub-folder.
     root_path="/api"

@@ -105,7 +105,7 @@ with DAG(
     'maintenance_database_backups',
     default_args=default_args,
     description='Automated PostgreSQL and MongoDB backups',
-    schedule_interval='@daily',
+    schedule_interval='@weekly',
     catchup=False
 ) as dag:
 
