@@ -1,0 +1,86 @@
+# schema.yml
+version: 2
+
+models:
+  - name: fact_events
+    description: "Table de faits centrale regroupant les événements Ticketmaster"
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: event_key
+        description: "Clé unique de l'événement."
+        data_type: text
+        constraints:
+          - type: primary_key
+          - type: not_null
+      - name: event_nom
+        data_type: text
+      - name: date_key
+        data_type: text
+        constraints:
+          - type: not_null
+      - name: genre_key
+        data_type: text
+        constraints:
+          - type: not_null
+      - name: localisation_key
+        data_type: text
+        constraints:
+          - type: not_null
+      - name: nb_events
+        data_type: integer
+
+  - name: dim_venues
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: localisation_key
+        data_type: text
+        constraints:
+          - type: primary_key
+      - name: pays
+        data_type: text
+      - name: etat
+        data_type: text
+      - name: ville
+        data_type: text
+
+  - name: dim_genres
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: genre_key
+        data_type: text
+        constraints:
+          - type: primary_key
+      - name: genre
+        data_type: text
+      - name: sous_categorie
+        data_type: text
+
+  - name: dim_dates
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: date_key
+        data_type: text
+        constraints:
+          - type: primary_key
+      - name: event_date
+        data_type: date
+      - name: event_heure
+        data_type: time
+      - name: annee
+        data_type: integer
+      - name: mois
+        data_type: integer
+      - name: jour
+        data_type: integer
+      - name: jour_semaine
+        data_type: text
+      - name: tranche_horaire
+        data_type: text

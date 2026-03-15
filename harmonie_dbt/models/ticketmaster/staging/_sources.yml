@@ -1,0 +1,10 @@
+# _sources.yml
+version: 2
+
+sources:
+  - name: raw_ticketmaster
+    database: "{{ env_var('DBNAME_TICKETMASTER') }}"
+    schema: raw
+    tables:
+      - name: ticketmaster_events
+        description: "Données brutes extraites de l'API Ticketmaster"

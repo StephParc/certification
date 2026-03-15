@@ -1,0 +1,40 @@
+{
+    "COL_partitions":[
+        {
+            "titre": "Call of the clans",
+            "compositeur": "Kevin Houben",
+            "nomenclature": [
+                {"instrument":"Piccolo", "priorite":10},
+                {"instrument":"Flûte 1", "priorite":10},
+                {"instrument":"Flûte 2", "priorite":5},
+                {"instrument":"Clarinette mib", "priorite":10},
+                {"instrument":"Clarinette sib 1", "priorite":10},
+                {"instrument":"Clarinette sib 2", "priorite":5},
+                {"instrument":"Clarinette sib 3", "priorite":1},
+                {"instrument":"Clarinette basse", "priorite":10},
+                {"instrument":"Saxophone alto", "priorite":10},
+                {"instrument":"Saxophone tenor", "priorite":10},
+                {"instrument":"Saxophone baryton", "priorite":1}
+            ],
+            "prestation":["concert","défilé","autre prestation"],
+            "date_distribution": "30-01-2026",
+            "rendue": false,
+            "numero_archive": null,
+            "audios":["concert printemps.mp3"],
+            "numérisation":[
+                {
+                    "instrument":"Clarinette basse",
+                    "fichier":"Call of cl basse.pdf"
+                },
+                {
+                    "instrument":"Hautbois",
+                    "fichier":"Call of hautbois.pdf"
+                },
+                {
+                    "instrument":"Flûte 1",
+                    "fichier":"Call of fl1.pdf"
+                }
+            ]
+        }
+    ]
+}

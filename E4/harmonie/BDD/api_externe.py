@@ -1,7 +1,52 @@
 # api_externe.py
-import requests
+"""
+MusicBrainz API Integration Module.
 
-def get_api_externe(identity):
+This module provides high-level functions to query the MusicBrainz database 
+for artist metadata. It implements:
+    - Fuzzy matching logic to handle name variations.
+    - Robust retry mechanisms for API rate limits (429/503).
+    - Automatic logging of rejected data for quality control.
+"""
+import requests
+import csv
+import sys
+import os
+import time
+from requests.exceptions import RequestException, Timeout
+from datetime import datetime
+import difflib
+
+from utils.logger_config import setup_logger, trace_action
+from utils.S3_utils import upload_file, get_s3_client
+from utils.utils_functions import write_rejection_log
+from config.config import REJET_AUTEURS_PATH
+
+logger_name = "E4 - API Musicbrainz"
+logger = setup_logger(logger_name)
+
+REJET_HEADERS = ["identity_recherchee", "raison_rejet", "time_rejet"]
+
+class MusicBrainzAPIError(Exception):
+    """Exception levée pour les erreurs critiques de l'API MusicBrainz (503, Timeout)."""
+    pass
+
+def is_fuzzy_match(words_source, words_target, threshold=0.7):
+    """
+    Vérifie si chaque mot de la source a un équivalent proche dans la cible.
+    """
+    if not words_source: return False
+    matches = 0
+    for w_src in words_source:
+        # On cherche si w_src ressemble à au moins un mot de la cible
+        if any(difflib.SequenceMatcher(None, w_src, w_tgt).ratio() >= threshold 
+               for w_tgt in words_target):
+            matches += 1
+    # On considère que c'est un match si tous les mots recherchés sont trouvés (approximativement)
+    return matches == len(words_source)
+
+@trace_action(logger_name)
+def get_api_externe(identity, retries=2):
     """
     Retrieve artist information from the MusicBrainz API based on the provided identity.
 
@@ -23,50 +68,128 @@ def get_api_externe(identity):
     """
     
     headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0"
+    "User-Agent": "HBM_HarmonieManager/1.0 ( ste.parcollet@gmail.com )"
     }
-    if identity:
-        url = f"https://musicbrainz.org/ws/2/artist/?query={identity}&fmt=json"
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
+
+    if not identity or str(identity).strip().lower() == "none":
+        write_rejection_log(
+            REJET_AUTEURS_PATH, 
+            REJET_HEADERS, 
+            ["None/Vide", "Identité absente dans le fichier source", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+        )
+        return None
+    
+    clean_identity_str = identity.strip()
+    words_identity = set(clean_identity_str.lower().split())
+
+    url = f"https://musicbrainz.org/ws/2/artist/?query={identity}&fmt=json"
+    
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code in [429, 503]:
+                if attempt < retries:
+                    logger.warning(f" MusicBrainz saturé. (Code {response.status_code}). Tentative {attempt+1}/{retries} pour '{clean_identity_str}'")
+                    time.sleep(5)
+                    continue
+                else:
+                    raise MusicBrainzAPIError("Service indisponible après plusieurs tentatives.")
+            
+            response.raise_for_status()
             data = response.json()
-            if data["artists"]:               
-                artists = data["artists"][0]
-                if "isnis" in artists:
-                    artist = artists
-                else:
-                    artist = data["artists"][1]
+            artists = data.get("artists", [])
 
-                identity_list = artist["sort-name"].split(",") # "name" renvoie dans la langue -> pb pour les noms asiatiques
-                nom = identity_list[0]
-                if len(identity_list)>=2:
-                    prenom = identity_list[1]
-                else:
-                    prenom = None
-                pays = artist.get("area", {}).get("name")
-                IPI = ",".join(artist.get("ipis")) if artist.get("ipis") else None
-                ISNI = ",".join(artist.get("isnis")) if artist.get("isnis") else None
+            if not artists:
+                write_rejection_log(
+                    REJET_AUTEURS_PATH, 
+                    REJET_HEADERS, 
+                    [clean_identity_str, "Aucun résultat trouvé sur MusicBrainz", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+                )
+                return None
 
-                auteur = {"Nom": nom, "Prénom": prenom, "Pays": pays, "IPI": IPI, "ISNI": ISNI}
+            # recherche de la meilleure correspondance
+            selected_artist = None
+            best_score = -1
+
+            for a in artists[:3]:
+                mb_name = a.get("name", "").lower()
+                mb_sort_name_raw = a.get("sort-name", "").lower()
+                mb_sort_name_clean = mb_sort_name_raw.replace(",", "")
+                
+                words_mb_name = set(mb_name.split())
+                words_mb_sort = set(mb_sort_name_clean.split())
+
+                if is_fuzzy_match(words_identity, words_mb_name) or \
+                is_fuzzy_match(words_identity, words_mb_sort):
+                    
+                    current_score = 0
+                    # On ajoute une pondération basée sur la similarité réelle pour départager les homonymes
+                    similarity = difflib.SequenceMatcher(None, clean_identity_str.lower(), mb_name).ratio()
+                    current_score += int(similarity * 10)
+                    if "," in mb_sort_name_raw: current_score += 10  
+                    if a.get("isnis"): current_score += 5        
+                    if a.get("ipis"): current_score += 5         
+                    if a.get("area"): current_score += 2         
+
+                    if current_score > best_score:
+                        best_score = current_score
+                        selected_artist = a
+            
+            if not selected_artist:
+                write_rejection_log(
+                    REJET_AUTEURS_PATH, 
+                    REJET_HEADERS, 
+                    [clean_identity_str, "Nom trouvé mais correspondance incertaine (homonymes)", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+                )
+                return None
+
+            sort_name = selected_artist.get("sort-name", "")
+            if "," in sort_name:
+                parts = [p.strip() for p in sort_name.split(",")]
+                
+                if len(parts) == 3:
+                    # Cas "Nom, Particule, Prénom" (ex: Roost, van der, Jan)
+                    nom = f"{parts[1]} {parts[0]}" # "van der" + " " + "Roost"
+                    prenom = parts[2]              # "Jan"
+                elif len(parts) == 2:
+                    # Cas "Nom, Prénom" (ex: Deleruyelle, Thierry)
+                    nom = parts[0]
+                    prenom = parts[1]
+                else:
+                    # Cas complexe (plus de 3 parties), on prend le dernier comme prénom
+                    prenom = parts[-1]
+                    nom = " ".join(parts[:-1])
             else:
-                auteur = None
-        else:
-            print("Erreur :", response.status_code)
+                # Pas de virgule (ex: Nirvana)
+                nom = sort_name.strip()
+                prenom = None
 
-    else:
-        auteur = None
-        print("pas d'identité")
+            return {
+                "Nom": nom,
+                "Prénom": prenom,
+                "Pays": selected_artist.get("area", {}).get("name", None),
+                "IPI": ",".join(selected_artist.get("ipis")) if selected_artist.get("ipis") else None,
+                "ISNI": ",".join(selected_artist.get("isnis")) if selected_artist.get("isnis") else None
+            }
 
-    return auteur
+        except (RequestException, Timeout) as e:
+            if attempt < retries:
+                logger.warning(f"Erreur réseau pour '{clean_identity_str}': {e}. Nouvelle tentative...")
+                time.sleep(2)
+                continue
+            raise MusicBrainzAPIError(f"Erreur réseau persistante : {e}")
+
+        finally:
+            time.sleep(1.0)
 
 ## Exemples pour tester l'API
-
-# print(get_api_externe("ravel"))
-# print(get_api_externe("Satoshi Yagisawa"))
-# print(get_api_externe("MIMI"))
-# print(get_api_externe("ijdzoij"))
-# print(get_api_externe("erik satie"))
-# print(get_api_externe("nirvana"))
-# print(get_api_externe(None))
-# print(get_api_externe(""))
-    
+if __name__ == "__main__":
+    print("Test Satoshi:", get_api_externe("Satoshi Yagisawa"))
+    print("Test Thierry Deleruyelle:", get_api_externe("Thierry Deleruyelle"))
+    print("Test Jan van der Roost", get_api_externe("Jan van der Roost"))
+    print("Test ijdzoij", get_api_externe("ijdzoij"))
+    print("Test Nirvana", get_api_externe("nirvana"))
+    print("Test Erik Satie", get_api_externe("eric satie"))
+    print("Test Ravel", get_api_externe("ravel"))
+    print("Test None:", get_api_externe(None))
+    print("Test vide", get_api_externe(""))

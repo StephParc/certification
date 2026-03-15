@@ -1,0 +1,21 @@
+# stg_ticketmaster.yml
+version: 2
+
+models:
+  - name: stg_ticketmaster
+    description: "Version nettoyée et typée des événements Ticketmaster"
+    columns:
+      - name: event_id
+        description: "ID unique de l'événement provenant de l'API"
+        tests:
+          - unique
+          - not_null
+      - name: event_key
+        description: "Clé de substitution (Surrogate Key) générée par dbt_utils"
+        tests:
+              - unique
+              - not_null
+      - name: event_date
+        description: "Date locale de l'événement"
+        tests:
+          - not_null

@@ -1,0 +1,76 @@
+{
+    "COL_musiciens":[
+        {
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "date_naissance":"01/01/1970",
+            "date_entree_hbm": 2000,
+            "date_federation": 1995,
+            "adresse": {
+                "numero": 2,
+                "rue": "allée des pinsons",
+                "cp": 59820,
+                "ville": "Gravelines"
+            },
+            "telephone": "0328230000",
+            "portable": "0600000000",
+            "email": "jean.dupont@fai.com",
+            "poste_nominal": "Clarinette mib",
+            "competences": [
+                {
+                    "instrument": "Clarinette mib", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Buffet Crampon 1546451"
+                },
+                {
+                    "instrument": "Clarinette sib 1", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Selmer Signature personnelle"
+                },
+                {
+                    "instrument": "Percussions", 
+                    "niveau":"Cycle 2",
+                    "polyvalence_poids": 2,
+                    "details": ["Claviers", "Peaux", "Accessoires"]
+                }
+            ],
+            "statut": "actif",
+            "accord_donnees_perso": true
+        },
+        {
+            "nom": "Martin",
+            "prenom": "Marie",
+            "date_naissance":"01/01/2000",
+            "date_entree_hbm": 2020,
+            "adresse": {
+                "numero": 25,
+                "rue": "chemin des mésanges",
+                "cp": 59140,
+                "ville": "Dunkerque"
+            },
+            "telephone": "0328230000",
+            "portable": "0700000000",
+            "email": "marie.martin@fai.com",
+            "poste_nominal": "Saxophone baryton",
+            "competences": [
+                {
+                    "instrument": "Saxophone baryton", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 10,
+                    "reference": "Yamaha 564511"
+                },
+                {
+                    "instrument": "Saxophone soprano", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 5,
+                    "reference": "Selmer serie II 1546451"
+                }
+            ],
+            "statut": "inactif",
+            "date_depart": "07/2025",
+            "accord_donnees_perso": false
+        }
+    ] 
+}

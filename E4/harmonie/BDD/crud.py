@@ -1,197 +1,181 @@
 # crud.py
-from models import Auteur, AssAuteurPartition, Partition, PartitionHBM, AssEvenementHbm, Evenement, User
-from schemas import UserPublic, UserAdmin, UserPass
-from auth import get_password_hash
-from database import get_session_sql, sql_connect
-from api_externe import get_api_externe
+"""
+Data Access Layer (DAL) for PostgreSQL.
+
+This module implements the core business logic for the relational database. 
+It utilizes SQLAlchemy ORM to perform robust data operations, including:
+1. Automated Data Enrichment: Merging local inputs with MusicBrainz API data.
+2. Relationship Management: Handling complex Many-to-Many associations.
+3. Data Normalization: Ensuring consistency in titles and identity strings.
+"""
 from sqlalchemy.orm import noload
 from sqlalchemy import select, update, delete, func, distinct, and_, or_, text
 
-## pour exécuter les fonctions directemet de ce script, il faut ouvrir la session ainsi et la fermer à la fin:
-# Session = sql_connect()
-# session = Session()
-## selon les opérations
-# session.commit()
-# session.close()
+from E4.harmonie.BDD.models import (
+    Auteur, AssAuteurPartition, Partition, 
+    PartitionHBM, AssEvenementHbm, Evenement, User, Instrument
+)
+from E4.harmonie.BDD.schemas import UserPublic, UserAdmin, UserPass
+from E4.harmonie.BDD.auth import get_password_hash
+from E4.harmonie.BDD.database import get_session_sql, sql_connect
+from E4.harmonie.BDD.api_externe import get_api_externe
+from utils.logger_config import setup_logger, trace_action
+from utils.utils_functions import normalize_name
 
 # ******** CREATE / POST ********
-def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
-    # Définition des variables de la requête pour vérifier l'existence
-    # date_evenement = datetime.strptime(date_evenement, "%d-%m-%Y").date()
-    date_evenement_test = date_evenement
-    nom_evenement_test = nom_evenement
-    lieu_test = lieu
-    type_evenement_test = type_evenement
-    affiche_test = affiche
-
-    # Requête de vérification d"existence
-    event_exist = session.query(Evenement).filter_by(
-                    date_evenement = date_evenement_test,
-                    nom_evenement = nom_evenement_test).first()
     
-    # Création d'un nouvel Evenement
-    if event_exist is None:
-        evenement = Evenement(
-                date_evenement = date_evenement_test,
-                nom_evenement = nom_evenement_test,
-                lieu = lieu_test,
-                type_evenement = type_evenement_test,
-                affiche= affiche_test
-                )
-        session.add(evenement)
-        session.flush()
+def create_event(session, date_evenement, nom_evenement, lieu=None, type_evenement=None, affiche=None):
+    # date_evenement = datetime.strptime(date_evenement, "%d-%m-%Y").date()
+    existing = session.query(Evenement).filter_by(
+        date_evenement=date_evenement, 
+        nom_evenement=nom_evenement
+    ).first()
+    
+    if existing:
+        return existing
+    
+    evenement = Evenement(
+        date_evenement=date_evenement,
+        nom_evenement=nom_evenement,
+        lieu=lieu,
+        type_evenement=type_evenement,
+        affiche=affiche
+    )
+    session.add(evenement)
+    session.flush()
     return evenement          
 
 def create_part(session, titre, sous_titre=None, edition=None, collection=None,
                 instrumentation=None, niveau=None, genre=None, style=None, annee_sortie=None,
                 ISMN=None, ref_editeur=None, duree=None, description=None, url=None):
-    # Définition des variables de la requête pour vérifier l'existence
-    titre_test           = titre
-    sous_titre_test      = sous_titre
-    edition_test         = edition
-    collection_test      = collection
-    instrumentation_test = instrumentation
-    niveau_test          = niveau
-    genre_test           = genre
-    style_test           = style
-    annee_sortie_test    = annee_sortie
-    ISMN_test            = ISMN
-    ref_editeur_test     = ref_editeur 
-    duree_test           = duree
-    description_test     = description
-    url_test             = url
-
+    titre_clean = titre.strip().upper() if titre else None
+    ref_clean = ref_editeur.strip() if ref_editeur else None
     # Requête de vérification d"existence
     existing_partition = session.query(Partition).filter_by(
-                    titre = titre_test,
-                    ref_editeur = ref_editeur_test
+                    titre = titre_clean,
+                    ref_editeur = ref_clean
                     ).first()
                 
     # Sélection ou création de la partition
     if existing_partition:
-        partition = existing_partition
-    else:
-        partition = Partition(
-                titre           = titre_test,
-                sous_titre      = sous_titre_test,
-                edition         = edition_test,
-                collection      = collection_test,
-                instrumentation = instrumentation_test,
-                niveau          = niveau_test,
-                genre           = genre_test,
-                style           = style_test,
-                annee_sortie    = annee_sortie_test,
-                ISMN            = ISMN_test,
-                ref_editeur     = ref_editeur_test, 
-                duree           = duree_test,
-                description     = description_test,
-                url             = url_test
-                )
-        session.add(partition)
-        session.flush()  
+        return existing_partition
+    
+    partition = Partition(
+                titre           = titre_clean,
+                sous_titre      = sous_titre,
+                edition         = edition,
+                collection      = collection,
+                instrumentation = instrumentation,
+                niveau          = niveau,
+                genre           = genre,
+                style           = style,
+                annee_sortie    = annee_sortie,
+                ISMN            = ISMN,
+                ref_editeur     = ref_clean, 
+                duree           = duree,
+                description     = description,
+                url             = url)
+    session.add(partition)
+    session.flush()  
     return partition
 
-def create_auteur(session, nom=None, prenom=None, pays=None, IPI=None, ISNI=None):
-    # Définition des variables de la requête pour vérifier l'existence
-    nom_test = nom
-    prenom_test = prenom
-    pays_test = pays
-    IPI_test = IPI
-    ISNI_test = ISNI
-
-    # Requête de vérification d"existence
-    existing_auteur = session.query(Auteur).filter_by(
-                    nom = nom_test,
-                    prenom = prenom_test,
-                    pays = pays_test,
-                    IPI = IPI_test,
-                    ISNI = ISNI_test).first()
+def create_auteur(session, nom=None, prenom=None, identite=None, pays=None, IPI=None, ISNI=None):
     
-    # Sélection ou création de l'auteur
-    if existing_auteur :
-        auteur = existing_auteur
+    search_id = normalize_name(nom, prenom)
+    search_id_inv = normalize_name(prenom, nom)
+
+    existing_brut = session.query(Auteur).filter(
+        or_(
+            Auteur.identite == search_id,
+            Auteur.identite == search_id_inv
+            )
+        ).first()
+    if existing_brut:
+        return existing_brut
+    
+    auteur_api = get_api_externe(search_id)
+
+    if auteur_api:
+        final_nom = auteur_api.get("Nom")
+        final_prenom = auteur_api.get("Prénom")
+        final_identite = normalize_name(final_nom, final_prenom)
+
+        existing_clean = session.query(Auteur).filter_by(identite=final_identite).first()
+        if existing_clean:
+            return existing_clean
+
+        final_pays = auteur_api.get("Pays")
+        final_ipi = auteur_api.get("IPI")
+        final_isni = auteur_api.get("ISNI")
     else:
-        auteur_identity = f"{nom} {prenom}"
-        auteur_api = get_api_externe(auteur_identity)
-        nom_api = auteur_api.get("Nom")
-        prenom_api = auteur_api.get("Prénom")
-        pays_api = auteur_api.get("Pays")
-        IPI_api = auteur_api.get("IPI")
-        ISNI_api = auteur_api.get("ISNI")
-        auteur = Auteur(
-                nom = nom_api,
-                prenom = prenom_api,
-                pays = pays_api,
-                IPI = IPI_api,
-                ISNI = ISNI_api
-                )
-        session.add(auteur)
-        session.flush()
+        final_nom = nom
+        final_prenom = prenom
+        final_identite = search_id
+        final_pays = pays
+        final_ipi = IPI
+        final_isni = ISNI
+
+    auteur = Auteur(
+        nom=final_nom,
+        prenom=final_prenom,
+        identite=final_identite,
+        pays=final_pays,
+        IPI=final_ipi,
+        ISNI=final_isni
+    )
+
+    session.add(auteur)
+    session.flush()
     return auteur
 
 def create_asso_auteur_partition(session, partition_id, auteur_id, role):
-    # Définition des variables de la requête pour vérifier l'existence
-    partition_id_test = partition_id
-    auteur_id_test = auteur_id 
-    role_test = role  
-
     # Requête de vérification d"existence
     existing_asso = session.query(AssAuteurPartition).filter_by(
-                partition_id = partition_id_test,
-                auteur_id = auteur_id_test,
-                role = role_test
+                partition_id = partition_id,
+                auteur_id = auteur_id,
+                role = role
                 ).first()
     
+    if existing_asso:
+        return existing_asso
+    
     # Création de l'association auteur/partition
-    if existing_asso is None:
-        # Création de l'association
-        asso = AssAuteurPartition(
-                partition_id = partition_id_test,
-                auteur_id = auteur_id_test,
-                role = role_test
-                )
-        session.add(asso)
-        session.flush()
-        return asso
-    else:
-        return "L'association existe déjà"
+    asso = AssAuteurPartition(
+            partition_id = partition_id,
+            auteur_id = auteur_id,
+            role = role
+            )
+    session.add(asso)
+    session.flush()
+    return asso
 
-def create_part_hbm_from_partition(session, partition_id, distribution=None, rendue=None, 
-                archive=None, concert=True, defile=False, sonnerie=False):
-    # Définition des variables de la requête pour vérifier l'existence
-    partition_id_test = partition_id
-    distribution_test = distribution
-    rendue_test = rendue
-    archive_test = archive
-    concert_test = concert
-    defile_test = defile
-    sonnerie_test = sonnerie
 
-    existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id_test)
-
-    if existing_hbm is None:
-        pass
-    else:
-        hbm = PartitionHBM(
-            partition_id = partition_id_test,
-            distribution = distribution_test,
-            rendue = rendue_test,
-            archive = archive_test,
-            concert = concert_test,
-            defile = defile_test,
-            sonnerie = sonnerie_test)
-        session.add(hbm)
-        session.flush()
+# A revoir
+def create_part_hbm_from_partition(session, partition_id=None, distribution=None, rendue=None, 
+                numerisation=None, concert=True, defile=False, sonnerie=False):
+    if partition_id:
+        existing_hbm = session.query(PartitionHBM).filter_by(partition_id=partition_id).first()
+        if existing_hbm :
+            return existing_hbm
+        hbm = PartitionHBM(partition_id = partition_id,
+                distribution = distribution,
+                rendue = rendue,
+                numerisation = numerisation,
+                concert = concert,
+                defile = defile,
+                sonnerie = sonnerie)
+    session.add(hbm)
+    session.flush()
     return hbm
 
 
 ######## A FAIRE OU PAS (procédure création par étapes: partition, auteur(s), asso, partition_hbm) ########
 # def create_hbm_from_scratch(session, partition_id, distribution=None, rendue=None, 
-#                archive=None, concert=True, defile=False, sonnerie=False):
+#                numerisation=None, concert=True, defile=False, sonnerie=False):
 #     partition_id_test = partition_id
 #     distribution_test = distribution
 #     rendue_test = rendue
-#     archive_test = archive
+#     numerisation_test = numerisation
 #     concert_test = concert
 #     defile_test = defile
 #     sonnerie_test = sonnerie
@@ -206,7 +190,7 @@ def create_part_hbm_from_partition(session, partition_id, distribution=None, ren
 #             partition_id = partition_id_test,
 #             distribution = distribution_test,
 #             rendue = rendue_test,
-#             archive = archive_test,
+#             numerisation = numerisation_test,
 #             concert = concert_test,
 #             defile = defile_test,
 #             sonnerie = sonnerie_test)
@@ -214,131 +198,111 @@ def create_part_hbm_from_partition(session, partition_id, distribution=None, ren
 #         session.flush()
 
 def create_asso_hbm_event(session, hbm_id, evenement_id):
-    hbm_id_test = hbm_id
-    event_id_test = evenement_id
-
     existing_asso = session.query(AssEvenementHbm).filter_by(
-        partition_hbm_id=hbm_id_test, evenement_id=event_id_test).first()
+        partition_hbm_id=hbm_id, evenement_id=evenement_id).first()
 
     if existing_asso is None:
-        existing_partition = session.query(PartitionHBM).filter_by(partition_hbm_id=hbm_id_test).first()
+        existing_partition = session.query(PartitionHBM).filter_by(partition_hbm_id=hbm_id).first()
         if existing_partition:
             asso = AssEvenementHbm(
-                partition_hbm_id = hbm_id_test,
-                evenement_id = event_id_test
-            )
+                partition_hbm_id = hbm_id,
+                evenement_id = evenement_id            )
             session.add(asso)
             session.flush()
             return asso
 
-def create_user(session, username, password, fullname=None, email=None):
+def create_user(session, pseudo, password, fullname=None, email=None):
     # Fonction de hachage du mot de passe
-    password = get_password_hash(password)
+    hashed_password = get_password_hash(password)
     
     # Requête de vérification d"existence
-    existing_user = session.query(User).filter_by(
-                    username = username,
-                    hashed_password = password,
-                    fullname = fullname,
-                    email = email).first()
+    existing_user = session.query(User).filter_by(pseudo = pseudo).first()
+    if existing_user:
+        return "Cet utilisateur existe déjà"
 
     # Création d'un nouvel utilisateur
-    if existing_user is None:
-        user = User(
-                username = username,
+    user = User(
+                pseudo = pseudo,
                 fullname = fullname,
                 email = email,
-                hashed_password = password
-                )
-    else:
-        return "Cet utilisateur existe déjà"
+                hashed_password = hashed_password
+    )
     
     session.add(user)
-    session.commit()
+    session.flush()
     return user
 
-def create_user_admin(session, username, fullname, hashed_password, email, permissions):
-     # Requête de vérification d"existence
-    username_test = username
-    fullname_test = fullname
-    hashed_password_test = hashed_password
-    email_test = email
-    permissions_test = permissions
+def create_user_admin(session, pseudo, password, fullname=None, email=None, permissions="read_only"):
+    hashed_password = get_password_hash(password)
+    # Vérification d'existence
+    existing_user = session.query(User).filter_by(pseudo=pseudo).first()
+    if existing_user:
+        return None
 
-    existing_user = session.query(User).filter_by(
-                    username = username_test,
-                    fullname = fullname_test,
-                    hashed_password =hashed_password_test,
-                    email = email_test,
-                    permissions = permissions_test).first()
+    # Création de l'utilisateur avec l'UUID généré par Postgres
+    user = User(
+        pseudo=pseudo, 
+        fullname = fullname,
+        email = email,
+        hashed_password = hashed_password,
+        permissions = permissions)
 
-    # Création d'un nouvel utilisateur
-    if existing_user is None:
-        user = User(
-                username = username_test,
-                fullname = fullname_test,
-                email = email_test,
-                hashed_password = hashed_password_test,
-                permissions = permissions_test
-                )
-    else:
-        return print("Cet utilisateur existe déjà")
-    
     session.add(user)
-    session.commit()
+    session.flush()
     return user
+
+def create_instrument(session, nom, famille, sous_famille=None):
+    existing_instrument = session.query(Instrument).filter_by(nom=nom).first()
+    if existing_instrument:
+        return existing_instrument
+    
+    instrument = Instrument(nom=nom, famille=famille, sous_famille=sous_famille)
+    session.add(instrument)
+    session.flush()
+    return instrument
 
 # ******** DELETE / DELETE ********
 def delete_event(session, event_id):
     try:
         existing_event = session.query(Evenement).filter_by(evenement_id=event_id).first()
         if existing_event:
-            event_id = existing_event.evenement_id
+            target_id = existing_event.evenement_id
+            stmt = delete(AssEvenementHbm).where(AssEvenementHbm.evenement_id == target_id)
+            session.execute(stmt)
             session.delete(existing_event)
             session.flush()
-
-            stmt = delete(AssEvenementHbm).where(AssEvenementHbm.evenement_id == event_id)
-            session.execute(stmt) 
-            # existing_asso = session.query(AssEvenementHbm).filter_by(evenement_id=event_id).first()
-            # session.delete(existing_asso)
-            message = "L'événement a été supprimé"
-            session.commit()
+            message = f"Succès : L'événement {target_id} a été supprimé."
         else:
-            message = "L'événement n'existe pas"
+            message = f"Échec : L'événement n'existe pas."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
-    finally:
-        # Fermeture de la session
-        session.close()
-        return message
+        message = f"Erreur lors de la suppression de l'événement : {str(e)}"
+    
+    return message
 
 def delete_auteur(session, auteur_id):
     try:
         existing_auteur = session.query(Auteur).filter_by(auteur_id=auteur_id).first()
         if existing_auteur:
             auteur_id = existing_auteur.auteur_id
-            session.delete(existing_auteur)
-            session.flush()
-
             stmt = delete(AssAuteurPartition).where(AssAuteurPartition.auteur_id == auteur_id)
             session.execute(stmt) 
-            message = "L'auteur a été supprimé"
-            session.commit()
+            session.delete(existing_auteur)                     
+            session.flush()
+            message = f"Succès : L'auteur {auteur_id} a été supprimé ainsi que ses associations"
         else:
-            message = "aucun auteur trouvé"
+            message = f"Échec : Aucun auteur trouvé avec l'ID {auteur_id}."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
-    finally:
-        # Fermeture de la session
-        session.close()
-        return message
+        message = f"Erreur lors de la suppression de l'auteur: {str(e)}"
 
+    return message
+
+# A revoir
 def delete_partition(session, partition_id):
     try:
         existing_partition = session.query(Partition).filter_by(partition_id=partition_id).first()
@@ -364,6 +328,7 @@ def delete_partition(session, partition_id):
         session.close()
         return message
 
+# A revoir
 def delete_partition_hbm(session, partition_hbm_id):
     try:
         existing_partition = session.query(PartitionHBM).filter_by(partition_hbm_id=partition_hbm_id).first()
@@ -401,19 +366,17 @@ def delete_asso_auteur_partition(session, partition_id, auteur_id, role):
                 AssAuteurPartition.auteur_id == auteur_id,
                 AssAuteurPartition.role == role)
             session.execute(stmt) 
-            message = "L'association partition/auteur/role a été supprimée"
-            session.commit()
+            session.flush()
+            message = f"Succès : L'association pour la partition {partition_id} a été supprimée."
         else:
-            message = "aucune correspondance trouvée"
+            message = f"Échec : Aucune correspondance trouvée pour cette association."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
-    finally:
-        # Fermeture de la session
-        session.close()
-        return message
+        message = f"Erreur lors de la suppression de l'association : {str(e)}"
+
+    return message
 
 def delete_asso_partition_event(session, partition_hbm_id, event_id):
     try:
@@ -429,39 +392,52 @@ def delete_asso_partition_event(session, partition_hbm_id, event_id):
                 AssEvenementHbm.partition_hbm_id == partition_hbm_id,
                 AssEvenementHbm.evenement_id == event_id)
             session.execute(stmt) 
-            message = "L'association partition/évènement a été supprimée"
-            session.commit()
+            session.flush()
+            message = f"Succès : L'association entre la partition HBM {partition_hbm_id} et l'événement {event_id} a été supprimée."
         else:
-            message = "aucune correspondance trouvée"
+            message = f"Échec : Aucune correspondance trouvée pour cette association."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        message = f"Erreur lors de la suppression de l'enregistrement : {e}"
-    finally:
-        # Fermeture de la session
-        session.close()
-        return message
+        message = f"Erreur lors de la suppression de l'association : {str(e)}"
+
+    return message
 
 def delete_user(session, user_id):
     try:
         existing_user = session.query(User).filter_by(user_id=user_id).first()
         if existing_user:
+            u_id = existing_user.user_id
             session.delete(existing_user)
-            message = "L'utilisateur a été supprimé"
-            session.commit()
+            session.flush()
+            message = f"Succès : L'utilisateur {u_id} a été supprimé."
         else:
-            message = "L'utilisateur n'existe pas"
+            message = f"Échec : L'utilisateur avec l'ID {user_id} n'existe pas."
 
     except Exception as e:
         # En cas d'erreur, annuler les changements
         session.rollback()
-        print(f"Erreur lors de la suppression de l'enregistrement : {e}")
+        message = f"Erreur lors de la suppression de l'utilisateur : {str(e)}"
 
-    finally:
-        # Fermeture de la session
-        session.close()
-        return message
+    return message
+    
+def delete_instrument(session, instrument_id):
+    instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
+    if not instrument:
+        return "Instrument introuvable"
+
+    try:
+        instrument = session.query(Instrument).filter_by(instrument_id=instrument_id).first()
+        if not instrument:
+            return "Instrument introuvable"
+        else:
+            session.delete(instrument)
+            message = f"Succès : Instrument '{instrument.nom}' supprimé."
+    except Exception as e:
+        session.rollback()
+        message = f"Erreur lors de la suppression : {e}"
+    return message
 
 # ******** READ / GET ********
 def read_event_by_id(session, event_id):
@@ -622,13 +598,7 @@ def read_partition_by_creation_date(session, creation_date):
 
 def read_partition_by_grade(session, grade):
     # l'option noload permet de ne pas charger les relations avec les autres tables
-    # les champs sont retournés null
-    # stmt = select(Partition).options(noload('*'))\
-    #     .join(AssAuteurPartition, AssAuteurPartition.partition_id==Partition.partition_id)\
-    #     .join(Auteur, AssAuteurPartition.auteur_id==Auteur.auteur_id)\
-    #     .add_columns(AssAuteurPartition.role, Auteur.prenom + " " + Auteur.nom)\
-    #     .where(Partition.niveau==grade)
-    
+    # les champs sont retournés null  
     stmt = select(Partition.partition_id, Partition.titre, Partition.sous_titre,Partition.edition, Partition.collection, \
                 Partition.instrumentation, Partition.niveau, Partition.genre, \
                 Partition.style, Partition.annee_sortie, Partition.ISMN, Partition.ref_editeur,\
@@ -758,7 +728,6 @@ def read_auteur_by_role(session, role):
     session.close()
     return auteur
 
-
 # user complet pour admin
 def read_user_by_id(session, user_id):
     stmt = select(User).where(User.user_id==user_id)
@@ -766,9 +735,10 @@ def read_user_by_id(session, user_id):
     user = result.first()
     return user
 
-def read_user_by_username(session, username):
-    stmt = select(User.username, User.fullname, User.email).where(User.username==username)
+def read_user_by_pseudo(session, pseudo):
+    stmt = select(User.pseudo, User.fullname, User.email).where(User.pseudo==pseudo)
     result = session.execute(stmt)
+    # user = result.scalars().first()
     user = result.first()
     return user
 
@@ -790,6 +760,9 @@ def read_asso_partition_event_all(session):
 
 def read_asso_auteur_partition_all(session):
     return session.query(AssAuteurPartition).all()
+
+def read_instrument_all(session):
+    return session.query(Instrument).all()
 
 # ******** UPDATE / PUT ********
 # A FINIR
@@ -830,55 +803,17 @@ def update_partition(session, partition_id):
 def update_auteur(session, author_id):
     pass
 
-def update_user_sample(session, username, fullname, password, email):
+def update_user_sample(session, pseudo, fullname, password, email):
     pass
 
-def update_user_complete(session, user_id, username, fullname, email, permissions):
+def update_user_complete(session, user_id, pseudo, fullname, email, permissions):
     pass
 
-# with open("database.py") as m:
-#     code = m.read()
-# exec(code)
-# session=SessionLocal()
-# print(read_event_by_id(session, 10))
-# print(read_event_by_year(session, 2025))
-# print(read_event_by_partition(session, 1))
-# print(read_partition_by_event_id(session, 8))
-# print(read_partition_by_event_date(session, '2025-04-27'))
-# print(read_partition_by_event_year(session, 2025))
-# print(read_auteur_by_id(session, 7))
-# print(read_auteur_by_name(session, 'on'))
-# print(read_auteur_by_role(session, 'arrangeur'))
-# print(read_partition_by_id(session, 1))
-# print(read_partition_by_author(session, 1, name='on'))
-# print(read_partition_by_creation_date(session, None))
-# print(read_partition_by_grade(session, None))
-# print(read_partition_by_type(session, 'jazz'))
-# print(read_partition_possessed(session))
-# print(read_partition_hbm_by_id(session, 1))
-# print(read_partition_hbm_by_composer(session, None, 'cahn'))
-# print(read_partition_possessed_by_type(session, 'concert'))
-# create_auteur(session, "Mozart", "Wolfgang")
-# delete_auteur(session, 10)
-# create_partition_hbm_from_partition(session, 3)
-# session.commit()
-# create_partition_hbm_from_partition(session, 4)
-# session.commit()
-# create_asso_hbm_event(session, 1,8)
-# session.commit()
-# create_asso_hbm_event(session, 2, 2)
-# session.commit()
-# delete_asso_partition_event(session, 4, 2)
-# session.commit()
-# delete_event(session, 2)
-# session.commit()
-# create_event(session,datetime.strptime("03-10-2025", "%d-%m-%Y").date(),"semaine découverte", "auditorium CACFM", "concert","" )
-# update_event(session, 32, datetime.strptime("03-10-2025", "%d-%m-%Y").date(), "modif", "ailleurs", "défilé","mon_affiche.jpg")
-# session.commit()
-# session.close()
-
-# Session = sql_connect()
-# session = Session()
-# print(read_partition_by_creation_date(session, 2024))
-# # session.commit()
-# session.close()
+if __name__ == "__main__":
+    # from E4.harmonie.BDD.database import sql_connect
+    SessionLocal = sql_connect()
+    session = SessionLocal()
+    create_auteur(session, nom="Zola", prenom="Emile")
+    # delete_user(session,7)
+    session.commit()
+    session.close()

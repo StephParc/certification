@@ -42,11 +42,39 @@ terraform.rc
 site/
 
 # Ignore les csv
-#*.csv
+*.csv
 #**/*musicshop0*.csv
 #**/*musicshop1*.csv
 
 *.env
+*.env.*
+!.env.template
 .venv/
 
 E4/registre-traitement-simplifie.ods
+
+E7/upload_test.py
+
+E7/data_lake/
+*.log
+
+__pycache__/
+**/.~lock.*
+*.pyc
+*.pyo
+*.pyd
+
+*garage.toml
+*garage_dl.txt
+
+harmonie_dbt/target/
+harmonie_dbt/dbt_packages/
+harmonie_dbt/logs/
+
+*Sauvegarde_garage/
+backups/
+
+*ngrok.yml
+
+# MkDocs
+site/

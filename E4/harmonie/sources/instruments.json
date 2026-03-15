@@ -1,0 +1,48 @@
+{
+    "COL_instruments":[
+        {
+            "nom_sql": "Flûte",
+            "synonymes": ["Flute", "Fl", "Grande flûte", "Flöte"]
+        },
+        {
+            "nom_sql": "Flûte 1",
+            "synonymes": ["Flute 1", "Fl1", "Grande flûte 1", "Flöte 1"]
+        },
+        {
+            "nom_sql": "Clarinette mib",
+            "synonymes": ["Eb Clarinet", "Klarinette Mib", "Petite clarinette"]
+        },
+        {
+            "nom_sql": "Percussions",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 1",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 2",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+          {
+            "nom_sql": "Percussions 3",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        }
+    ]
+}

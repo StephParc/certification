@@ -1,8 +1,35 @@
-# schema.py . Contient les modèles Pydantic.
+# schema.py 
+"""
+Pydantic Data Schemas - Harmonie Manager 2026.
+
+This module defines the Data Transfer Objects (DTO) used for request 
+validation and response serialization. It acts as the "Contract" 
+between the API and its consumers.
+
+Key Features:
+- ORM Compatibility: Uses 'from_attributes=True' to allow seamless 
+  conversion from SQLAlchemy models to JSON responses.
+- Enumerations: Implements strict 'TypeEvent' and 'Role' enums to 
+  enforce data quality at the API entry point.
+- Security: Separates public profiles (UserPublic) from sensitive 
+  administrative data (UserAdmin/UserPass).
+"""
 from datetime import date
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, List
 from enum import Enum
+import uuid
+
+class Instrument(BaseModel):
+    nom: str | None = None
+    famille: str | None = None
+    sous_famille: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class InstrumentId(Instrument):
+    instrument_id: int
+    instrument_uuid: uuid.UUID
 
 # pour aller plus loin
 class TypeEvent(str, Enum):
@@ -19,24 +46,22 @@ class Event(BaseModel):
     type_evenement: str | None = None
     affiche: str | None = None
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventId(Event):
     evenement_id: int | None = None
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class Auteur(BaseModel):
     nom : str | None = None
     prenom: str | None = None
+    # identite: str | None = None
     pays: str | None = None
     IPI : str | None = None
     ISNI : str | None = None
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class AuteurId(Auteur):
     auteur_id : int | None = None
@@ -57,11 +82,11 @@ class Partition(BaseModel):
     description : str | None = None
     url : str | None = None
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class PartitionID(Partition):
     partition_id : int | None = None
+    partition_uuid: uuid.UUID | None = None
 
 class Role(str, Enum):
     compositeur = "compositeur"
@@ -79,45 +104,39 @@ class PartitionHBM(BaseModel):
     partition_id: int | None = None
     distribution: date | None = None
     rendue: bool | None = False
-    archive: int | None = None
+    numerisation: bool | None = None
     concert: bool | None = True
     defile: bool | None = False 
     sonnerie: bool | None = False
 
 class PartitionHbmID(PartitionHBM):
-    partition_hbm_id : int 
+    partition_hbm_id : int | None = None
+    hbm_uuid: uuid.UUID | None = None
 
 class PartitionEvent(BaseModel):
     evenement_id : int | None = None
     partition_hbm_id : int | None = None
 
-    class Config:
-        orm_mode=True
-
-# class Combo(BaseModel):
-#     partition: List[PartitionID]
-#     auteur: Dict["auteur":List[Auteur], "role": AssoAuteurPartition]
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPublic(BaseModel):
-    username: str | None = None
+    pseudo: str | None = None
     fullname: str | None = None
     email: str | None = None
+    user_uuid: uuid.UUID | None = None
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserPass(UserPublic):
     password: str
+    permissions: str | None = "read_only"
 
 class UserAdmin(UserPublic):
     user_id: int | None = None
     permissions: str | None = None
-    hashed_password: str | None =None
-    scopes: list[str] | None = []
 
-    class Config:
-        orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
 
 class TokenData(BaseModel):
-    username: str | None = None
+    pseudo: str | None = None
     scopes: list[str] = []

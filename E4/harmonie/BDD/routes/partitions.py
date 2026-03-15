@@ -1,17 +1,33 @@
 # partitions.py
+"""
+API Router for Sheet Music Catalog (SQL).
+
+This module manages the central catalog of sheet music (partitions). 
+It provides extensive search capabilities, allowing users to filter 
+the repertoire by:
+- Technical IDs (Internal, ISMN, Publisher reference).
+- Authorship (Composers, Arrangers, Artists).
+- Musical attributes (Grade/Level, Genre, Style).
+- Associated events (Concerts, Tours).
+
+Security:
+    - Default: 'read_only' scope required for all catalog queries.
+    - Administrative: 'full_admin' scope required for adding or deleting works.
+"""
 from fastapi import APIRouter, Depends, Security, Query
 from sqlalchemy.orm import  Session
-from crud import read_partition_by_id, read_partition_by_event_id, read_partition_by_event_date, read_partition_by_event_year, read_partition_by_id_complete, read_partition_by_composer, read_partition_by_arranger, read_partition_by_artist,read_partition_by_author, read_partition_by_creation_date, read_partition_by_grade, read_partition_by_genre, read_partition_all
-from crud import create_part, delete_partition
-from schemas import Partition, PartitionID, PartitionHbmID
-from auth import get_current_user
-from database import get_session_sql
+
+from E4.harmonie.BDD.crud import read_partition_by_id, read_partition_by_event_id, read_partition_by_event_date, read_partition_by_event_year, read_partition_by_id_complete, read_partition_by_composer, read_partition_by_arranger, read_partition_by_artist,read_partition_by_author, read_partition_by_creation_date, read_partition_by_grade, read_partition_by_genre, read_partition_all
+from E4.harmonie.BDD.crud import create_part, delete_partition
+from E4.harmonie.BDD.schemas import Partition, PartitionID, PartitionHbmID
+from E4.harmonie.BDD.auth import get_current_user
+from E4.harmonie.BDD.database import get_session_sql
 
 router = APIRouter(
     prefix="/partitions",
     tags=["Partition"],
-    dependencies=[Depends(get_current_user)],
-    responses={404: {"description":"Not found"}},
+    dependencies=[Security(get_current_user,scopes=["read_only"])],
+    responses={404: {"description":"Not found"}}
 )
 
 @router.get("/{partition_id}", response_model=list[PartitionID])
@@ -82,7 +98,8 @@ def get_partition_by_grade(grade: float,session:Session=Depends(get_session_sql)
 #     return read_partition_by_genre/(session, genre)
 
 @router.post("/", response_model=Partition)
-def create_partition(part:Partition, session:Session=Depends(get_session_sql)):
+def create_partition(part:Partition, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     titre = part.titre
     sous_titre = part.sous_titre
     edition = part.edition
@@ -103,7 +120,8 @@ def create_partition(part:Partition, session:Session=Depends(get_session_sql)):
     return part
 
 @router.delete("/{partition_id}")
-def del_partition(id:int, session:Session=Depends(get_session_sql)):
+def del_partition(id:int, session:Session=Depends(get_session_sql),
+            current_user = Security(get_current_user, scopes=["full_admin"])):
     result = delete_partition(session,id)
     session.commit()
     return result

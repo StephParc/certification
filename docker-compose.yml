@@ -1,0 +1,288 @@
+# docker-compose.yml
+services:
+  garage:
+    image: dxflrs/garage:v0.9.0
+    container_name: garage_datalake
+    # network_mode: "bridge" # supprimé pour la communication avec airflow
+    restart: unless-stopped
+    command: /garage server
+    environment:
+      - GARAGE_CONFIG_FILE=/etc/garage.toml
+    ports:
+      - "3900:3900"
+      - "3901:3901"
+      - "3902:3902"
+      - "3903:3903"
+    networks:
+      - harmonie_net
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro 
+      - garage_meta:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  db_postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DBUSER_RW}
+      POSTGRES_PASSWORD: ${PASSWORD_RW}
+      POSTGRES_DB: ${DBNAME}
+    ports:
+      - "5433:5432"
+    networks:
+      - harmonie_net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_archives:/archives
+
+  db_mongo:
+    image: mongo:latest
+    container_name: mongodb_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27018:27017"
+    networks:
+      - harmonie_net
+    volumes:
+      - mongo_data:/data/db    
+
+  airflow_init:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow_init
+    env_file: .env
+    depends_on:
+      - db_postgres
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW_DATABASE_URL}
+    command: >
+      bash -c "airflow db migrate &&
+      airflow users create
+      --username \"$$AIRFLOW_ADMIN_USER\"
+      --password \"$$AIRFLOW_ADMIN_PASSWORD\"
+      --firstname \"$$AIRFLOW_FIRSTNAME\"
+      --lastname \"$$AIRFLOW_LASTNAME\"
+      --role Admin
+      --email \"$$AIRFLOW_EMAIL\""
+    user: "${AIRFLOW_UID:-50000}:0"
+    networks:
+      - harmonie_net
+
+  airflow_webserver:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow_ui
+    env_file: .env
+    depends_on:
+      db_postgres:
+        condition: service_started
+      airflow_init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW_DATABASE_URL}
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW_EXECUTOR}
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - PYTHONPATH=/opt/airflow
+      - AIRFLOW__WEBSERVER__BASE_URL=${AIRFLOW_WEBSERVER_URL}
+      - AIRFLOW__SMTP__SMTP_HOST=mailhog
+      - AIRFLOW__SMTP__SMTP_PORT=1025
+      - AIRFLOW__SMTP__SMTP_USE_SSL=False
+      - AIRFLOW__SMTP__SMTP_USE_TLS=False
+      - AIRFLOW__SMTP__SMTP_STARTTLS=False
+      - AIRFLOW__SMTP__SMTP_MAIL_FROM=alerting@harmonie-project.fr
+      - AIRFLOW__WEBSERVER__BASE_URL=https://${NGROK_DOMAIN}.ngrok-free.dev/airflow
+      # - AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    # ports:
+    #   - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags 
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./backups:/opt/airflow/backups
+      - ./config:/opt/airflow/config
+      - ./E4:/opt/airflow/E4
+      - ./E5:/opt/airflow/E5
+      - ./E6:/opt/airflow/E6
+      - ./E7:/opt/airflow/E7
+      - ./harmonie_dbt:/opt/airflow/harmonie_dbt  
+      - ./scripts_postgres_init:/opt/airflow/scripts_postgres_init    
+      - ./utils:/opt/airflow/utils  
+      - .env:/opt/airflow/.env
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: webserver
+    user: "${AIRFLOW_UID:-50000}:0"
+    group_add:
+      - "1001" # à remplacer par la valeur obtenue par commande: getent group docker | cut -d: -f3 ou stat -c '%g' /var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/airflow/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - harmonie_net
+
+  airflow_scheduler:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow_scheduler
+    env_file: .env
+    depends_on:
+      db_postgres:
+        condition: service_started
+      airflow_init:
+        condition: service_completed_successfully
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${AIRFLOW_DATABASE_URL}
+      - AIRFLOW__CORE__EXECUTOR=${AIRFLOW_EXECUTOR}
+      - PYTHONPATH=/opt/airflow
+      - AIRFLOW__SMTP__SMTP_HOST=mailhog
+      - AIRFLOW__SMTP__SMTP_PORT=1025
+      - AIRFLOW__SMTP__SMTP_USE_SSL=False
+      - AIRFLOW__SMTP__SMTP_USE_TLS=False
+      - AIRFLOW__SMTP__SMTP_STARTTLS=False
+      - AIRFLOW__SMTP__SMTP_MAIL_FROM=alerting@harmonie-project.fr
+      - AIRFLOW__WEBSERVER__BASE_URL=https://${NGROK_DOMAIN}.ngrok-free.dev/airflow
+      # - AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./backups:/opt/airflow/backups:rw
+      - ./config:/opt/airflow/config
+      - ./E4:/opt/airflow/E4
+      - ./E5:/opt/airflow/E5
+      - ./E6:/opt/airflow/E6
+      - ./E7:/opt/airflow/E7
+      - ./harmonie_dbt:/opt/airflow/harmonie_dbt
+      - ./scripts_postgres_init:/opt/airflow/scripts_postgres_init 
+      - ./utils:/opt/airflow/utils
+      - .env:/opt/airflow/.env
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: scheduler
+    user: "${AIRFLOW_UID:-50000}:0"
+    group_add:
+      - "1001" # à remplacer par la valeur obtenue par commande: getent group docker | cut -d: -f3 ou stat -c '%g' /var/run/docker.sock
+    networks:
+      - harmonie_net
+
+  streamlit_catalog:
+    build: 
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: catalog_app
+    env_file: .env
+    environment:
+      - PYTHONPATH=/app
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+      - STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+    entrypoint: [""]
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python3 -m streamlit run app_catalog.py --server.port 8501 --server.address 0.0.0.0
+    # ports:
+    #   - "8501:8501"
+    networks:
+      - harmonie_net
+    depends_on:
+      db_postgres:
+        condition: service_started
+      db_mongo:
+        condition: service_started
+      garage:
+        condition: service_healthy
+
+  fastapi_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: fastapi_hbm
+    env_file: .env
+    environment:
+      # On force le PYTHONPATH à la racine pour que les imports "from E4..." fonctionnent
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    working_dir: /app
+    # Commande pour lancer l'API (on pointe vers le module complet)
+    command: uvicorn E4.harmonie.BDD.api_hbm:app --host 0.0.0.0 --port 8000 --reload
+    # ports:
+    #   - "8000:8000"
+    networks:
+      - harmonie_net
+    depends_on:
+      db_postgres:
+        condition: service_started
+      db_mongo:
+        condition: service_started
+
+  nginx_proxy:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - harmonie_net
+    depends_on:
+      - fastapi_api
+      - streamlit_catalog
+      - airflow_webserver
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok_tunnel
+    restart: always
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      # - NGROK_HTTP_AUTH=${NGROK_USER}:${NGROK_PASSWORD}
+    command:
+      - "start"
+      - "--all"
+      - "--config=/etc/ngrok.yml"
+      # - "http"
+      # - "nginx_proxy:80"
+      # - "--basic-auth=${NGROK_USER}:${NGROK_PASSWORD}"
+      # - "--log=stdout" # pour forcer les logs
+    networks:
+      - harmonie_net
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml:ro
+    depends_on:
+      - nginx_proxy    
+  
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025" #SMTP (pour Airflow)
+      - "8025:8025" #Interface Web
+    networks:
+      - harmonie_net
+
+volumes:
+  garage_meta:
+  garage_data:
+  postgres_data: 
+  postgres_archives:
+  mongo_data:  
+
+networks:
+  harmonie_net:
+    driver: bridge

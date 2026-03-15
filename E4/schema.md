@@ -1,4 +1,4 @@
-```mermaid
+date```mermaid
 ---
 title: Schéma BDD
 ---
@@ -9,12 +9,14 @@ erDiagram
         int auteur_id PK
         string nom
         string prenom
+        string identite
         string pays
         string IPI
         string ISNI
     }
     partition{
         int partition_id PK
+        string partition_uuid
         string titre
         string sous_titre
         string edition
@@ -24,7 +26,6 @@ erDiagram
         string genre
         string style
         int annee_sortie
-        bool partie_euro
         string ISMN
         string ref_editeur
         string duree
@@ -33,10 +34,11 @@ erDiagram
     }
     partition_hbm {
         int partition_hbm_id PK
+        string hbm_uuid
         int partition_id FK
         date distribution
         bool rendue
-        int archive
+        bool numerisation
         bool concert
         bool defile
         bool sonnerie 
@@ -65,6 +67,13 @@ erDiagram
         string hashed_password
         string email
         string permissions
+    }
+    instrument{
+        int instrument_id PK
+        string instrument_uuid
+        string nom
+        string famille
+        string sous_fammille
     }
 
     auteur ||--|{ ass_auteur_partition : a_oeuvre_pour

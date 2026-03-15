@@ -1,0 +1,210 @@
+{
+    "COL_regles_substitution": [
+        {
+            "sous_famille": "flûtes",
+            "ordre": ["Flûte", "Flûte 1", "Flûte solo", "Flûte 2"]
+        },
+        {
+            "sous_famille": "hautbois",
+            "ordre": ["Hautbois", "Hautbois 1", "Hautbois solo", "Hautbois 2"]
+        },
+        {
+            "sous_famille": "clarinettes",
+            "ordre": ["Clarinette sib", "Clarinette sib 1","Clarinette sib solo", "Clarinette sib 2", "Clarinette sib 3"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone alto", "Saxophone alto 1", "Saxophone alto solo", "Saxophone alto 2"]
+        },
+        {
+            "sous_famille": "saxophones",
+            "ordre": ["Saxophone tenor", "Saxophone tenor 1", "Saxophone tenor solo", "Saxophone tenor 2"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Trompette", "Trompette 1","Trompette solo", "Trompette 2", "Trompette 3"]
+        },
+        {
+            "sous_famille": "trompettes",
+            "ordre": ["Cornet", "Cornet 1","Cornet solo", "Cornet 2", "Cornet 3"]
+        },
+        {
+            "sous_famille": "cors",
+            "ordre": ["Cor", "Cor 1", "Cor solo", "Cor 2"]
+        },
+        {
+            "sous_famille": "trombones",
+            "ordre": ["Trombone", "Trombone 1", "Trombone solo", "Trombone 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Euphonium", "Euphonium 1", "Euphonium solo", "Euphonium 2"]
+        },
+        {
+            "sous_famille": "tubas",
+            "ordre": ["Tuba", "Tuba 1", "Tuba solo", "Tuba 2"]
+        },
+        {
+            "sous_famille": "percussions",
+            "ordre": ["Percussions", "Percussions 1", "Percussions 2", "Percussions 3"]
+        }
+    ],
+    "COL_instruments":[
+        {
+            "nom_sql": "Flûte",
+            "synonymes": ["Flute", "Fl", "Grande flûte", "Flöte"]
+        },
+        {
+            "nom_sql": "Flûte 1",
+            "synonymes": ["Flute 1", "Fl1", "Grande flûte 1", "Flöte 1"]
+        },
+        {
+            "nom_sql": "Clarinette mib",
+            "synonymes": ["Eb Clarinet", "Klarinette Mib", "Petite clarinette"]
+        },
+        {
+            "nom_sql": "Percussions",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 1",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+        {
+            "nom_sql": "Percussions 2",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        },
+          {
+            "nom_sql": "Percussions 3",
+            "synonymes": {
+                "Claviers": ["Xylophone", "Glockenspiel", "Marimba", "Vibraphone"],
+                "Peaux": ["Bongo", "Congas", "Grosse caisse"],
+                "Accessoires": ["Triangle", "Cymbales", "Blocks", "Tambourin"]
+            }
+        }
+    ],
+    "COL_musiciens":[
+        {
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "date_naissance":"01/01/1970",
+            "date_entree_hbm": 2000,
+            "date_federation": 1995,
+            "adresse": {
+                "numero": 2,
+                "rue": "allée des pinsons",
+                "cp": 59820,
+                "ville": "Gravelines"
+            },
+            "telephone": "0328230000",
+            "portable": "0600000000",
+            "email": "jean.dupont@fai.com",
+            "poste_nominal": "Clarinette mib",
+            "competences": [
+                {
+                    "instrument": "Clarinette mib", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Buffet Crampon 1546451"
+                },
+                {
+                    "instrument": "Clarinette sib 1", 
+                    "niveau":"Cycle 3",
+                    "polyvalence_poids": 10,
+                    "reference": "Selmer Signature personnelle"
+                },
+                {
+                    "instrument": "Percussions", 
+                    "niveau":"Cycle 2",
+                    "polyvalence_poids": 2,
+                    "details": ["Claviers", "Peaux", "Accessoires"]
+                }
+            ],
+            "statut": "actif",
+            "accord_donnees_perso": true
+        },
+        {
+            "nom": "Martin",
+            "prenom": "Marie",
+            "date_naissance":"01/01/2000",
+            "date_entree_hbm": 2020,
+            "adresse": {
+                "numero": 25,
+                "rue": "chemin des mésanges",
+                "cp": 59140,
+                "ville": "Dunkerque"
+            },
+            "telephone": "0328230000",
+            "portable": "0700000000",
+            "email": "marie.martin@fai.com",
+            "poste_nominal": "Saxophone baryton",
+            "competences": [
+                {
+                    "instrument": "Saxophone baryton", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 10,
+                    "reference": "Yamaha 564511"
+                },
+                {
+                    "instrument": "Saxophone soprano", 
+                    "niveau":"Professionnel",
+                    "polyvalence_poids": 5,
+                    "reference": "Selmer serie II 1546451"
+                }
+            ],
+            "statut": "inactif",
+            "date_depart": "07/2025",
+            "accord_donnees_perso": false
+        }
+    ],
+    "COL_partitions":[
+        {
+            "titre": "Call of the clans",
+            "compositeur": "Kevin Houben",
+            "nomenclature": [
+                {"instrument":"Piccolo", "priorite":10},
+                {"instrument":"Flûte 1", "priorite":10},
+                {"instrument":"Flûte 2", "priorite":5},
+                {"instrument":"Clarinette mib", "priorite":10},
+                {"instrument":"Clarinette sib 1", "priorite":10},
+                {"instrument":"Clarinette sib 2", "priorite":5},
+                {"instrument":"Clarinette sib 3", "priorite":1},
+                {"instrument":"Clarinette basse", "priorite":10},
+                {"instrument":"Saxophone alto", "priorite":10},
+                {"instrument":"Saxophone tenor", "priorite":10},
+                {"instrument":"Saxophone baryton", "priorite":1}
+            ],
+            "prestation":["concert","défilé","autre prestation"],
+            "date_distribution": "30-01-2026",
+            "rendue": false,
+            "numero_archive": null,
+            "audios":["concert printemps.mp3"],
+            "numérisation":[
+                {
+                    "instrument":"Clarinette basse",
+                    "fichier":"Call of cl basse.pdf"
+                },
+                {
+                    "instrument":"Hautbois",
+                    "fichier":"Call of hautbois.pdf"
+                },
+                {
+                    "instrument":"Flûte 1",
+                    "fichier":"Call of fl1.pdf"
+                }
+            ]
+        }
+    ]
+}
