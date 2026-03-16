@@ -1,6 +1,7 @@
 import re
 import scrapy
 from harmonie.items import HarmonieItem
+from scrapy_playwright.page import PageMethod
 
 class HbmScrapSpider(scrapy.Spider):
     """
@@ -13,6 +14,8 @@ class HbmScrapSpider(scrapy.Spider):
     """
     name = "hbm_scrap"
     allowed_domains = ["musicshopeurope.com"]
+
+    handle_httpstatus_list = [403]
    
     # start_urls = ["https://www.musicshopeurope.com/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page=1"] 
     # start_urls = ["https://www.musicshopeurope.fr/partitions/band/orchestre-d-harmonie/type de produit=conducteur -15= parties/?sort=Marketable+from_desc&page=1"]
@@ -24,15 +27,20 @@ class HbmScrapSpider(scrapy.Spider):
             callback=self.parse_home,
             meta={
                 "playwright": True,
+                "playwright_include_page": True, # On demande à garder la page ouverte
                 "playwright_page_methods": [
-                    # On simule l'acceptation des cookies comme dans ton test
-                    {"method": "click", "args": ["button:has-text('Accept all')"]},
-                    {"method": "wait_for_timeout", "args": [2000]},
+                    # Utilisation obligatoire des objets PageMethod
+                    PageMethod("wait_for_timeout", 5000), 
+                    PageMethod("evaluate", '() => { const btn = document.querySelector("button"); if(btn && btn.innerText.includes("Accept")) btn.click(); }'),
                 ],
             }
         )
 
-    def parse_home(self, response):
+    async def parse_home(self, response):
+        page = response.meta["playwright_page"]
+        if response.status == 403:
+            self.logger.warning("Barrage Azure détecté, attente de 5s...")
+            await page.wait_for_timeout(5000)
         # ÉTAPE 2 : Une fois la session "chaude", on va vers les partitions
         target_url = "https://www.musicshopeurope.com/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc"
         yield scrapy.Request(
@@ -40,6 +48,7 @@ class HbmScrapSpider(scrapy.Spider):
             callback=self.parse,
             meta={
                 "playwright": True,
+                "playwright_include_page": True,
                 "playwright_page_goto_params": {"wait_until": "networkidle"},
             }
         )
@@ -58,6 +67,12 @@ class HbmScrapSpider(scrapy.Spider):
         Yields:
             Request: A request to follow the link to the music sheet page for detailed scraping.
         """
+        page = response.meta.get("playwright_page")
+
+        if not page:
+            self.logger.error(f"Objet Playwright absent pour l'URL : {response.url}")
+            return
+
         partitions = response.xpath("//a[@class='product-title']")
         # for partition in partitions:
         #     if partition.xpath("./following-sibling::div[@class='product-attributes']/span[contains(text(), 'Set')]"):
@@ -68,22 +83,28 @@ class HbmScrapSpider(scrapy.Spider):
             yield response.follow(partition, callback=self.parse_partition, meta={"playwright": True})
 
         # Nombres de pages à scraper (commenter la ligne non retenue)
-        #       ligne 45 pour le nombre de pages du site
-        #       ligne 46 pour un nombre choisi
+        #       ligne 88 pour le nombre de pages du site
+        #       ligne 89 pour un nombre choisi
         # nombre_pages = int(response.xpath("//ul[@class='pager-list reset']/li//a/text()").getall()[-1])
-        nombre_pages = 1
+        nombre_pages = 2
+
+        page_matches = re.findall(r'page=(\d+)', response.url)
+        if page_matches:
+            numero_page_actuelle = int(page_matches[0])
+        else:
+            numero_page_actuelle = 1
 
         # Page de démarrage du scraping
-        numero_page_actuelle = 1
-        if re.findall(r'page=(\d+)', response.url)[0] and int(re.findall(r'page=(\d+)', response.url)[0]) < nombre_pages:
-            numero_page_actuelle = int(re.findall(r'page=(\d+)', response.url)[0])
+        if numero_page_actuelle < nombre_pages:
             numero_page_suivante = numero_page_actuelle + 1
+            # next_page = f"https://www.musicshopeurope.com/sheet-music-and-books/band/concert-band/product%20type=Set/?sort=Marketable+from_desc&page={numero_page_suivante}"
+            next_page = f"https://www.musicshopeurope.com/partitions/band/orchestre-d-harmonie/type%20de%20produit=conducteur%20-15=%20parties/?sort=Marketable+from_desc&page={numero_page_suivante}"
+            self.logger.info(f"Passage à la page suivante : {numero_page_suivante}")
+            yield response.follow(next_page, callback=self.parse, meta={"playwright": True, "playwright_include_page": True})
         
-        next_page = f"https://www.musicshopeurope.com/sheet-music-and-books/band/concert-band/product%20type=Set/?sort=Marketable+from_desc&page={numero_page_suivante}"
-
-        if next_page is not None:
-            yield response.follow(next_page, callback=self.parse, meta={"playwright": True})
-        self.logger.info(f"Statut final : {response.status}")
+        self.logger.info(f"Statut final de cette page : {response.status}")
+        
+        await page.close()
 
     def parse_partition(self, response):
         """
