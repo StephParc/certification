@@ -43,7 +43,7 @@ ROBOTSTXT_OBEY = False
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = True
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -73,11 +73,23 @@ DOWNLOAD_HANDLERS = {
     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
 PLAYWRIGHT_BROWSER_TYPE = "chromium"
+# PLAYWRIGHT_LAUNCH_OPTIONS = {
+#     "headless": True,
+#     "args": [
+#         "--disable-blink-features=AutomationControlled", 
+#     ],
+# }
 PLAYWRIGHT_LAUNCH_OPTIONS = {
     "headless": True,
     "args": [
-        "--disable-blink-features=AutomationControlled", 
+        "--disable-blink-features=AutomationControlled",
+        "--start-maximized",
     ],
+}
+
+PLAYWRIGHT_CONTEXT_ARGS = {
+    "viewport": {"width": 1920, "height": 1080},
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
 }
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
